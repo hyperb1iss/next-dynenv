@@ -1,0 +1,9 @@
+# Dependencies
+node_modules/
+pnpm-lock.yaml
+
+# Next.js build output
+.next/
+
+# Testing
+coverage/
