@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 import { PublicEnvProvider } from './public-env-provider';
 import { useEnvContext } from './use-env-context';
@@ -20,7 +20,7 @@ describe('PublicEnvProvider', () => {
     process.env = {};
   });
 
-  it("should make the public env available to it's children", () => {
+  it("should make the public env available to it's children", async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
     };
@@ -35,18 +35,19 @@ describe('PublicEnvProvider', () => {
       );
     };
 
-    const { getByText } = render(
-      <PublicEnvProvider>
-        <SomeClientComponent />
-      </PublicEnvProvider>,
-    );
+    const Component = await PublicEnvProvider({
+      children: <SomeClientComponent />,
+    });
+    const { getByText } = render(Component);
 
-    expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
-      'NEXT_PUBLIC_FOO: foo-value',
-    );
+    await waitFor(() => {
+      expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
+        'NEXT_PUBLIC_FOO: foo-value',
+      );
+    });
   });
 
-  it("should not make private env available to it's children", () => {
+  it("should not make private env available to it's children", async () => {
     process.env = {
       BAR: 'bar-value',
     };
@@ -61,16 +62,17 @@ describe('PublicEnvProvider', () => {
       );
     };
 
-    const { getByText } = render(
-      <PublicEnvProvider>
-        <SomeClientComponent />
-      </PublicEnvProvider>,
-    );
+    const Component = await PublicEnvProvider({
+      children: <SomeClientComponent />,
+    });
+    const { getByText } = render(Component);
 
-    expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
+    await waitFor(() => {
+      expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
+    });
   });
 
-  it("should only make public env available to it's children", () => {
+  it("should only make public env available to it's children", async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
       BAR: 'bar-value',
@@ -87,15 +89,16 @@ describe('PublicEnvProvider', () => {
       );
     };
 
-    const { getByText } = render(
-      <PublicEnvProvider>
-        <SomeClientComponent />
-      </PublicEnvProvider>,
-    );
+    const Component = await PublicEnvProvider({
+      children: <SomeClientComponent />,
+    });
+    const { getByText } = render(Component);
 
-    expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
-      'NEXT_PUBLIC_FOO: foo-value',
-    );
-    expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
+    await waitFor(() => {
+      expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
+        'NEXT_PUBLIC_FOO: foo-value',
+      );
+      expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
+    });
   });
 });

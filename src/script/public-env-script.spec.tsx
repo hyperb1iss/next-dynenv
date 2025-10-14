@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom';
 
-import { render } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react';
 
 import { PublicEnvScript } from './public-env-script';
 
@@ -23,58 +23,73 @@ describe('PublicEnvScript', () => {
       NEXT_PUBLIC_FOO: 'foo-value',
     };
 
-    render(<PublicEnvScript />);
+    const Component = await PublicEnvScript({});
+    render(Component);
 
-    expect(document.querySelector('script')?.textContent).toBe(
-      `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
-    );
+    await waitFor(() => {
+      expect(document.querySelector('script')?.textContent).toBe(
+        `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
+      );
+    });
   });
 
-  it('should not set a private env in the script', () => {
+  it('should not set a private env in the script', async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
       BAR: 'bar-value',
     };
 
-    render(<PublicEnvScript />);
+    const Component = await PublicEnvScript({});
+    render(Component);
 
-    expect(document.querySelector('script')?.textContent).toBe(
-      `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
-    );
+    await waitFor(() => {
+      expect(document.querySelector('script')?.textContent).toBe(
+        `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
+      );
+    });
   });
 
-  it('should only set public env in the script', () => {
+  it('should only set public env in the script', async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
       BAR: 'bar-value',
     };
 
-    render(<PublicEnvScript />);
+    const Component = await PublicEnvScript({});
+    render(Component);
 
-    expect(document.querySelector('script')?.textContent).toBe(
-      `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
-    );
+    await waitFor(() => {
+      expect(document.querySelector('script')?.textContent).toBe(
+        `window['__ENV'] = {"NEXT_PUBLIC_FOO":"foo-value"}`,
+      );
+    });
   });
 
-  it("should set a nonce when it's available", () => {
+  it("should set a nonce when it's available", async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
       BAR: 'bar-value',
     };
 
-    render(<PublicEnvScript nonce="test-nonce-xyz" />);
+    const Component = await PublicEnvScript({ nonce: 'test-nonce-xyz' });
+    render(Component);
 
-    expect(document.querySelector('script')).toHaveAttribute('nonce');
+    await waitFor(() => {
+      expect(document.querySelector('script')).toHaveAttribute('nonce');
+    });
   });
 
-  it("should not set a nonce when it's not available", () => {
+  it("should not set a nonce when it's not available", async () => {
     process.env = {
       NEXT_PUBLIC_FOO: 'foo-value',
       BAR: 'bar-value',
     };
 
-    render(<PublicEnvScript />);
+    const Component = await PublicEnvScript({});
+    render(Component);
 
-    expect(document.querySelector('script')).not.toHaveAttribute('nonce');
+    await waitFor(() => {
+      expect(document.querySelector('script')).not.toHaveAttribute('nonce');
+    });
   });
 });
