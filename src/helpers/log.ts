@@ -52,7 +52,6 @@ function prefixedLog(
 
   const prefix = prefixes[prefixType];
 
-  // eslint-disable-next-line no-console
   console[consoleMethod](` ${prefix}`, message, suffix);
 }
 

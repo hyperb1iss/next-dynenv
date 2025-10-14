@@ -22,7 +22,6 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
 
   process.env[prefixedKey] = process.env[key];
 
-  // eslint-disable-next-line no-console
   event(`Prefixed environment variable '${key}'`, options);
 }
 
