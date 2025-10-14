@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from 'next/cache';
+import { headers } from 'next/headers';
 
 import { isBrowser } from '../helpers/is-browser';
 import { PUBLIC_ENV_KEY } from './constants';
@@ -23,7 +23,9 @@ export function env(key: string): string | undefined {
     return window[PUBLIC_ENV_KEY][key];
   }
 
-  noStore();
+  // Force dynamic rendering by accessing headers (Next.js 15+)
+  // This replaces the deprecated unstable_noStore() call
+  headers();
 
   return process.env[key];
 }

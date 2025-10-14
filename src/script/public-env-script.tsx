@@ -1,6 +1,6 @@
-import { unstable_noStore as noStore } from 'next/cache';
-import { type FC } from 'react';
 import { type ScriptProps } from 'next/script';
+import { connection } from 'next/server';
+import { type FC } from 'react';
 
 import { getPublicEnv } from '../helpers/get-public-env';
 import { type NonceConfig } from '../typings/nonce';
@@ -16,7 +16,7 @@ type PublicEnvScriptProps = {
  * Sets the public environment variables in the browser. If an nonce is
  * available, it will be set on the script tag.
  *
- * This component is disables Next.js' caching mechanism to ensure that the
+ * This component disables Next.js' caching mechanism to ensure that the
  * environment variables are always up-to-date.
  *
  * Usage:
@@ -26,12 +26,13 @@ type PublicEnvScriptProps = {
  * </head>
  * ```
  */
-export const PublicEnvScript: FC<PublicEnvScriptProps> = ({
+export const PublicEnvScript: FC<PublicEnvScriptProps> = async ({
   nonce,
   disableNextScript,
   nextScriptProps,
 }) => {
-  noStore(); // Opt into dynamic rendering
+  // Opt into dynamic rendering (Next.js 15+)
+  await connection();
 
   // This value will be evaluated at runtime
   const publicEnv = getPublicEnv();

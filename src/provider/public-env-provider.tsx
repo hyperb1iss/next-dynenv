@@ -1,4 +1,4 @@
-import { unstable_noStore as noStore } from 'next/cache';
+import { connection } from 'next/server';
 import { type FC, type PropsWithChildren } from 'react';
 
 import { getPublicEnv } from '../helpers/get-public-env';
@@ -8,7 +8,7 @@ type PublicEnvProviderProps = PropsWithChildren;
 
 /**
  * Provides the public environment variables to the application. This component
- * is disables Next.js' caching mechanism to ensure that the environment
+ * disables Next.js' caching mechanism to ensure that the environment
  * variables are always up-to-date.
  *
  * This component should be used in a server component.
@@ -20,8 +20,11 @@ type PublicEnvProviderProps = PropsWithChildren;
  * </PublicEnvProvider>
  * ```
  */
-export const PublicEnvProvider: FC<PublicEnvProviderProps> = ({ children }) => {
-  noStore(); // Opt into dynamic rendering
+export const PublicEnvProvider: FC<PublicEnvProviderProps> = async ({
+  children,
+}) => {
+  // Opt into dynamic rendering (Next.js 15+)
+  await connection();
 
   // This value will be evaluated at runtime
   const publicEnv = getPublicEnv();
