@@ -2,7 +2,6 @@
   "name": "next-runtime-env",
   "version": "0.0.0-development",
   "description": "Next.js Runtime Environment Configuration - Populates your environment at runtime rather than build time.",
-  "type": "module",
   "main": "build/index.js",
   "scripts": {
     "lint": "eslint ./src",
@@ -10,6 +9,7 @@
     "test": "jest",
     "test:coverage": "pnpm test -- --coverage",
     "test:watch": "pnpm test -- --maxWorkers=50% --watchAll",
+    "test:integration": "node test-app/integration-test.mjs",
     "build": "tsc -p .",
     "build:watch": "pnpm build --watch",
     "audit-ci": "audit-ci",
