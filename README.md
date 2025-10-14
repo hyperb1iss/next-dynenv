@@ -6,7 +6,7 @@
 
 🌟 **Highlights:**
 - **Isomorphic Design:** Works seamlessly on both server and browser, and even in middleware.
-- **Next.js 13 & 14 Ready:** Fully compatible with the latest Next.js features.
+- **Next.js 15 & React 19 Ready:** Fully compatible with the latest Next.js features.
 - **`.env` Friendly:** Use `.env` files during development, just like standard Next.js.
 
 ### 🤔 Why `next-runtime-env`?
@@ -19,6 +19,7 @@ In the modern software development landscape, the "[Build once, deploy many][bui
 
 ### 🤝 Compatibility Notes
 
+- **Next.js 15:** Use `next-runtime-env@3.x` for Next.js 15 and React 19 with modern async server components.
 - **Next.js 14:** Use `next-runtime-env@3.x` for optimal caching support.
 - **Next.js 13:** Opt for [`next-runtime-env@2.x`][app-router-branch-link], tailored for the App Router.
 - **Next.js 12/13 Page Router:** Stick with [`next-runtime-env@1.x`][pages-router-branch-link].
@@ -27,7 +28,7 @@ In the modern software development landscape, the "[Build once, deploy many][bui
 
 - **1.x:** Next.js 12/13 Page Router
 - **2.x:** Next.js 13 App Router
-- **3.x:** Next.js 14 with advanced caching
+- **3.x:** Next.js 14/15 with advanced caching and React Server Components
 
 ### 🚀 Getting Started
 

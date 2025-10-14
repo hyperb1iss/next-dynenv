@@ -17,4 +17,4 @@ makeEnvPublic('FOO');
 makeEnvPublic(['BAR', 'BAZ']);
 ```
 
-> You can also use the experimental instrumentation hook introduced in Next.js 13. See the `with-app-router` example for more details.
+> You can also use the instrumentation hook for server-side initialization. See the `with-app-router` example for more details.
