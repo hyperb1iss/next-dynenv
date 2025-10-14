@@ -1,4 +1,4 @@
-import { PublicEnvScript } from 'next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
 
 export default function RootLayout({
   children,

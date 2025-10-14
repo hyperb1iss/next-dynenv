@@ -1,4 +1,4 @@
-import { PublicEnvProvider } from 'next-runtime-env';
+import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
 
 export default function ContextLayout({
   children,

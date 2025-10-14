@@ -12,7 +12,7 @@ export default function ContextPage() {
 function ClientContextReader() {
   'use client';
 
-  const { useEnv } = require('next-runtime-env');
+  const { useEnv } = require('@hyperb1iss/next-runtime-env');
   const value = useEnv('NEXT_PUBLIC_TEST_VAR');
 
   return (

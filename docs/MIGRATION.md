@@ -129,4 +129,4 @@ If you're still using the Pages Router:
 
 - Check the [examples](../examples/) for working implementations
 - Review the [documentation](../README.md)
-- [Open an issue](https://github.com/expatfile/next-runtime-env/issues) on GitHub
+- [Open an issue](https://github.com/hyperb1iss/next-runtime-env/issues) on GitHub

@@ -1,4 +1,4 @@
-import { env } from 'next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env';
 
 export async function GET() {
   return Response.json({

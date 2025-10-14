@@ -1,6 +1,6 @@
 {
-  "name": "next-runtime-env",
-  "version": "0.0.0-development",
+  "name": "@hyperb1iss/next-runtime-env",
+  "version": "4.0.0",
   "description": "Next.js Runtime Environment Configuration - Populates your environment at runtime rather than build time.",
   "main": "build/index.js",
   "scripts": {
@@ -22,16 +22,16 @@
     "runtime env",
     "next-runtime-env"
   ],
-  "author": "Expatfile.tax LLC",
+  "author": "Stefanie Jane <hyperb1iss@gmail.com> (Forked from Expatfile.tax LLC)",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/expatfile/next-runtime-env.git"
+    "url": "https://github.com/hyperb1iss/next-runtime-env.git"
   },
   "bugs": {
-    "url": "https://github.com/expatfile/next-runtime-env/issues"
+    "url": "https://github.com/hyperb1iss/next-runtime-env/issues"
   },
-  "homepage": "https://github.com/expatfile/next-runtime-env#readme",
+  "homepage": "https://github.com/hyperb1iss/next-runtime-env#readme",
   "dependencies": {
     "next": "^15",
     "react": "^19"

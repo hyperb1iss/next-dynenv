@@ -1,4 +1,4 @@
-import { env } from 'next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env';
 
 import styles from './page.module.css';
 

@@ -1,5 +1,5 @@
 import React from 'react';
-import { env } from 'next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env';
 
 export default function HomePage() {
   const serverValue = env('NEXT_PUBLIC_TEST_VAR');

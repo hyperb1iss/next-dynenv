@@ -1,8 +1,10 @@
-![GitHub branch checks state][build-url] [![codecov][cov-img]][cov-url] [![Known Vulnerabilities][snyk-img]][snyk-url]
+[![npm version][npm-img]][npm-url] [![GitHub][github-img]][github-url] [![License][license-img]][license-url]
 
 # 🌐 Next.js Runtime Environment Configuration
 
-**Effortlessly populate your environment at runtime, not just at build time, with `next-runtime-env`.**
+**Effortlessly populate your environment at runtime, not just at build time, with `@hyperb1iss/next-runtime-env`.**
+
+> **Note:** This is a fork of [expatfile/next-runtime-env](https://github.com/expatfile/next-runtime-env) upgraded to Next.js 15 and React 19. The original project appears unmaintained. All credit for the original implementation goes to Expatfile.tax LLC.
 
 🌟 **Highlights:**
 - **Isomorphic Design:** Works seamlessly on both server and browser, and even in middleware.
@@ -19,16 +21,31 @@ In the modern software development landscape, the "[Build once, deploy many][bui
 
 ### 🤝 Compatibility Notes
 
-- **Next.js 15:** Use `next-runtime-env@3.x` for Next.js 15 and React 19 with modern async server components.
-- **Next.js 14:** Use `next-runtime-env@3.x` for optimal caching support.
-- **Next.js 13:** Opt for [`next-runtime-env@2.x`][app-router-branch-link], tailored for the App Router.
-- **Next.js 12/13 Page Router:** Stick with [`next-runtime-env@1.x`][pages-router-branch-link].
+- **Next.js 15:** Use `@hyperb1iss/next-runtime-env@4.x` for Next.js 15 and React 19 with modern async server components.
+- **Next.js 14 (original project):** Use `next-runtime-env@3.x` for optimal caching support.
+- **Next.js 13 (original project):** Opt for `next-runtime-env@2.x`, tailored for the App Router.
+- **Next.js 12/13 Page Router (original project):** Use `next-runtime-env@1.x`.
 
 ### 🔖 Version Guide
 
-- **1.x:** Next.js 12/13 Page Router
-- **2.x:** Next.js 13 App Router
-- **3.x:** Next.js 14/15 with advanced caching and React Server Components
+This fork starts at version **4.x** to clearly differentiate from the original project:
+
+- **@hyperb1iss/next-runtime-env@4.x:** Next.js 15 & React 19 with modern async server components
+
+Original project versions (unmaintained):
+- **next-runtime-env@3.x:** Next.js 14 with advanced caching
+- **next-runtime-env@2.x:** Next.js 13 App Router
+- **next-runtime-env@1.x:** Next.js 12/13 Pages Router
+
+### 📦 Installation
+
+```bash
+npm install @hyperb1iss/next-runtime-env
+# or
+pnpm add @hyperb1iss/next-runtime-env
+# or
+yarn add @hyperb1iss/next-runtime-env
+```
 
 ### 🚀 Getting Started
 
@@ -36,7 +53,7 @@ In your `app/layout.tsx`, add:
 
 ```js
 // app/layout.tsx
-import { PublicEnvScript } from 'next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
 
 export default function RootLayout({ children }) {
   return (
@@ -61,7 +78,7 @@ Access your environment variables easily:
 ```tsx
 // app/client-page.tsx
 'use client';
-import { env } from 'next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env';
 
 export default function SomePage() {
   const NEXT_PUBLIC_FOO = env('NEXT_PUBLIC_FOO');
@@ -75,25 +92,22 @@ Need to expose non-prefixed environment variables to the browser? Check out [MAK
 
 ### 👷 Maintenance
 
-`next-runtime-env` is proudly maintained by [Expatfile.tax](expatfile-site), the leading US expat tax e-filing software.
+This fork is maintained by [Stefanie Jane (@hyperb1iss)](https://github.com/hyperb1iss).
 
 ### 📚 Acknowledgments
 
-Kudos to the [react-env](react-env-repo) project for the inspiration, and a shoutout to @andonirdgz for the innovative context provider idea!
+- **Original Project:** [next-runtime-env](https://github.com/expatfile/next-runtime-env) by [Expatfile.tax](https://expatfile.tax) - All credit for the original implementation and core concepts
+- **Inspiration:** [react-env](https://github.com/andrewmclagan/react-env) project
+- **Context Provider:** Thanks to @andonirdgz for the innovative context provider idea
 
 ---
 
-[build-url]: https://img.shields.io/github/checks-status/expatfile/next-runtime-env/main
-[cov-img]: https://codecov.io/gh/expatfile/next-runtime-env/branch/main/graph/badge.svg?token=mbGgsweFuP
-[cov-url]: https://codecov.io/gh/expatfile/next-runtime-env
-[snyk-img]: https://snyk.io/test/github/expatfile/next-runtime-env/badge.svg
-[snyk-url]: https://snyk.io/test/github/expatfile/next-runtime-env
-[nextjs-env-vars-order]: https://nextjs.org/docs/basic-features/environment-variables#environment-variable-load-order
+[npm-img]: https://img.shields.io/npm/v/@hyperb1iss/next-runtime-env
+[npm-url]: https://www.npmjs.com/package/@hyperb1iss/next-runtime-env
+[github-img]: https://img.shields.io/github/stars/hyperb1iss/next-runtime-env?style=social
+[github-url]: https://github.com/hyperb1iss/next-runtime-env
+[license-img]: https://img.shields.io/npm/l/@hyperb1iss/next-runtime-env
+[license-url]: https://github.com/hyperb1iss/next-runtime-env/blob/main/LICENSE.md
 [build-once-deploy-many-link]: https://www.mikemcgarr.com/blog/build-once-deploy-many.html
 [fundamental-principle-link]: https://cloud.redhat.com/blog/build-once-deploy-anywhere
 [twelve-factor-link]: https://12factor.net
-[pages-router-branch-link]: https://github.com/expatfile/next-runtime-env/tree/1.x
-[app-router-branch-link]: https://github.com/expatfile/next-runtime-env/tree/2.x
-[nextjs-env-vars]: https://nextjs.org/docs/basic-features/environment-variables
-[react-env-repo]: https://github.com/andrewmclagan/react-env
-[expatfile-site]: https://expatfile.tax
