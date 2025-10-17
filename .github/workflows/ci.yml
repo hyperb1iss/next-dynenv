@@ -57,7 +57,7 @@ jobs:
         run: pnpm build
 
       - name: 🧪 Run unit tests
-        run: pnpm test -- --ci --runInBand --coverage
+        run: pnpm test --ci --runInBand --coverage
 
       - name: 🚀 Run integration tests
         run: pnpm test:integration
@@ -120,4 +120,4 @@ jobs:
         run: pnpm build
 
       - name: 🧪 Test
-        run: pnpm test -- --ci --runInBand
+        run: pnpm test --ci --runInBand
