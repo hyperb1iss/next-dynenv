@@ -1,104 +1,100 @@
-import '@testing-library/jest-dom';
+import '@testing-library/jest-dom'
 
-import { render, waitFor } from '@testing-library/react';
+import { render, waitFor } from '@testing-library/react'
 
-import { PublicEnvProvider } from './public-env-provider';
-import { useEnvContext } from './use-env-context';
+import { PublicEnvProvider } from './public-env-provider'
+import { useEnvContext } from './use-env-context'
 
-let processEnv: NodeJS.ProcessEnv;
+let processEnv: NodeJS.ProcessEnv
 
 beforeAll(() => {
-  processEnv = process.env;
-});
+    processEnv = process.env
+})
 
 afterAll(() => {
-  process.env = processEnv;
-});
+    process.env = processEnv
+})
 
 describe('PublicEnvProvider', () => {
-  beforeEach(() => {
-    process.env = {};
-  });
+    beforeEach(() => {
+        process.env = {}
+    })
 
-  it("should make the public env available to it's children", async () => {
-    process.env = {
-      NEXT_PUBLIC_FOO: 'foo-value',
-    };
+    it("should make the public env available to it's children", async () => {
+        process.env = {
+            NEXT_PUBLIC_FOO: 'foo-value',
+        }
 
-    const SomeClientComponent = () => {
-      const { NEXT_PUBLIC_FOO } = useEnvContext();
+        const SomeClientComponent = () => {
+            const { NEXT_PUBLIC_FOO } = useEnvContext()
 
-      return (
-        <>
-          <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
-        </>
-      );
-    };
+            return (
+                <>
+                    <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
+                </>
+            )
+        }
 
-    const Component = await PublicEnvProvider({
-      children: <SomeClientComponent />,
-    });
-    const { getByText } = render(Component);
+        const Component = await PublicEnvProvider({
+            children: <SomeClientComponent />,
+        })
+        const { getByText } = render(Component)
 
-    await waitFor(() => {
-      expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
-        'NEXT_PUBLIC_FOO: foo-value',
-      );
-    });
-  });
+        await waitFor(() => {
+            expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe('NEXT_PUBLIC_FOO: foo-value')
+        })
+    })
 
-  it("should not make private env available to it's children", async () => {
-    process.env = {
-      BAR: 'bar-value',
-    };
+    it("should not make private env available to it's children", async () => {
+        process.env = {
+            BAR: 'bar-value',
+        }
 
-    const SomeClientComponent = () => {
-      const { BAR } = useEnvContext();
+        const SomeClientComponent = () => {
+            const { BAR } = useEnvContext()
 
-      return (
-        <>
-          <p>BAR: {BAR}</p>
-        </>
-      );
-    };
+            return (
+                <>
+                    <p>BAR: {BAR}</p>
+                </>
+            )
+        }
 
-    const Component = await PublicEnvProvider({
-      children: <SomeClientComponent />,
-    });
-    const { getByText } = render(Component);
+        const Component = await PublicEnvProvider({
+            children: <SomeClientComponent />,
+        })
+        const { getByText } = render(Component)
 
-    await waitFor(() => {
-      expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
-    });
-  });
+        await waitFor(() => {
+            expect(getByText(/^BAR:/).textContent).toBe('BAR: ')
+        })
+    })
 
-  it("should only make public env available to it's children", async () => {
-    process.env = {
-      NEXT_PUBLIC_FOO: 'foo-value',
-      BAR: 'bar-value',
-    };
+    it("should only make public env available to it's children", async () => {
+        process.env = {
+            NEXT_PUBLIC_FOO: 'foo-value',
+            BAR: 'bar-value',
+        }
 
-    const SomeClientComponent = () => {
-      const { NEXT_PUBLIC_FOO, BAR } = useEnvContext();
+        const SomeClientComponent = () => {
+            const { NEXT_PUBLIC_FOO, BAR } = useEnvContext()
 
-      return (
-        <>
-          <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
-          <p>BAR: {BAR}</p>
-        </>
-      );
-    };
+            return (
+                <>
+                    <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
+                    <p>BAR: {BAR}</p>
+                </>
+            )
+        }
 
-    const Component = await PublicEnvProvider({
-      children: <SomeClientComponent />,
-    });
-    const { getByText } = render(Component);
+        const Component = await PublicEnvProvider({
+            children: <SomeClientComponent />,
+        })
+        const { getByText } = render(Component)
 
-    await waitFor(() => {
-      expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe(
-        'NEXT_PUBLIC_FOO: foo-value',
-      );
-      expect(getByText(/^BAR:/).textContent).toBe('BAR: ');
-    });
-  });
-});
+        await waitFor(() => {
+            expect(getByText(/^NEXT_PUBLIC_FOO:/).textContent).toBe('NEXT_PUBLIC_FOO: foo-value')
+            expect(getByText(/^BAR:/).textContent).toBe('BAR: ')
+        })
+    })
+})

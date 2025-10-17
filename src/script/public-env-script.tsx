@@ -1,60 +1,60 @@
-import { type ScriptProps } from 'next/script';
-import { connection } from 'next/server';
-import { type FC } from 'react';
+import { type ScriptProps } from 'next/script'
+import { connection } from 'next/server'
+import { type FC } from 'react'
 
-import { getPublicEnv } from '../helpers/get-public-env';
-import { type NonceConfig } from '../typings/nonce';
-import { EnvScript } from './env-script';
+import { getPublicEnv } from '../helpers/get-public-env'
+import { type NonceConfig } from '../typings/nonce'
+import { EnvScript } from './env-script'
 
 /**
  * Props for the {@link PublicEnvScript} component.
  */
 type PublicEnvScriptProps = {
-  /**
-   * Content Security Policy nonce to apply to the script tag.
-   *
-   * Can be a string value directly, or a NonceConfig object that specifies
-   * a header key to read the nonce from at runtime.
-   *
-   * @example
-   * ```tsx
-   * // Direct nonce string
-   * <PublicEnvScript nonce="random-nonce-value" />
-   *
-   * // Nonce from header (currently blocked by Next.js PR #58129)
-   * <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
-   * ```
-   */
-  nonce?: string | NonceConfig;
+    /**
+     * Content Security Policy nonce to apply to the script tag.
+     *
+     * Can be a string value directly, or a NonceConfig object that specifies
+     * a header key to read the nonce from at runtime.
+     *
+     * @example
+     * ```tsx
+     * // Direct nonce string
+     * <PublicEnvScript nonce="random-nonce-value" />
+     *
+     * // Nonce from header (currently blocked by Next.js PR #58129)
+     * <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
+     * ```
+     */
+    nonce?: string | NonceConfig
 
-  /**
-   * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
-   *
-   * Set to `true` when using tools like Sentry where the Next.js Script component's
-   * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
-   *
-   * @default false
-   * @example
-   * ```tsx
-   * <PublicEnvScript disableNextScript={true} />
-   * ```
-   */
-  disableNextScript?: boolean;
+    /**
+     * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
+     *
+     * Set to `true` when using tools like Sentry where the Next.js Script component's
+     * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
+     *
+     * @default false
+     * @example
+     * ```tsx
+     * <PublicEnvScript disableNextScript={true} />
+     * ```
+     */
+    disableNextScript?: boolean
 
-  /**
-   * Additional props to pass to Next.js' `<Script>` component.
-   *
-   * Only used when `disableNextScript` is `false`.
-   *
-   * @default { strategy: 'beforeInteractive' }
-   * @see https://nextjs.org/docs/app/api-reference/components/script
-   * @example
-   * ```tsx
-   * <PublicEnvScript nextScriptProps={{ strategy: 'afterInteractive' }} />
-   * ```
-   */
-  nextScriptProps?: ScriptProps;
-};
+    /**
+     * Additional props to pass to Next.js' `<Script>` component.
+     *
+     * Only used when `disableNextScript` is `false`.
+     *
+     * @default { strategy: 'beforeInteractive' }
+     * @see https://nextjs.org/docs/app/api-reference/components/script
+     * @example
+     * ```tsx
+     * <PublicEnvScript nextScriptProps={{ strategy: 'afterInteractive' }} />
+     * ```
+     */
+    nextScriptProps?: ScriptProps
+}
 
 /**
  * Server component that injects public environment variables into the browser.
@@ -107,23 +107,19 @@ type PublicEnvScriptProps = {
  * @see {@link EnvScript} for the underlying implementation
  * @see {@link PublicEnvProvider} for the React Context alternative
  */
-export const PublicEnvScript: FC<PublicEnvScriptProps> = async ({
-  nonce,
-  disableNextScript,
-  nextScriptProps,
-}) => {
-  // Opt into dynamic rendering (Next.js 15+)
-  await connection();
+export const PublicEnvScript: FC<PublicEnvScriptProps> = async ({ nonce, disableNextScript, nextScriptProps }) => {
+    // Opt into dynamic rendering (Next.js 15+)
+    await connection()
 
-  // This value will be evaluated at runtime
-  const publicEnv = getPublicEnv();
+    // This value will be evaluated at runtime
+    const publicEnv = getPublicEnv()
 
-  return (
-    <EnvScript
-      env={publicEnv}
-      nonce={nonce}
-      disableNextScript={disableNextScript}
-      nextScriptProps={nextScriptProps}
-    />
-  );
-};
+    return (
+        <EnvScript
+            disableNextScript={disableNextScript}
+            env={publicEnv}
+            nextScriptProps={nextScriptProps}
+            nonce={nonce}
+        />
+    )
+}

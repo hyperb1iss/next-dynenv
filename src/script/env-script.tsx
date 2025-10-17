@@ -1,87 +1,87 @@
 // XXX: Blocked by https://github.com/vercel/next.js/pull/58129
 // import { headers } from 'next/headers';
-import Script, { type ScriptProps } from 'next/script';
-import { type FC } from 'react';
+import Script, { type ScriptProps } from 'next/script'
+import { type FC } from 'react'
 
-import { type NonceConfig } from '../typings/nonce';
-import { type ProcessEnv } from '../typings/process-env';
-import { PUBLIC_ENV_KEY } from './constants';
+import { type NonceConfig } from '../typings/nonce'
+import { type ProcessEnv } from '../typings/process-env'
+import { PUBLIC_ENV_KEY } from './constants'
 
 /**
  * Props for the {@link EnvScript} component.
  */
 type EnvScriptProps = {
-  /**
-   * Environment variables object to inject into the browser.
-   *
-   * This object will be serialized and attached to the window object,
-   * making the variables accessible to client-side code.
-   *
-   * @example
-   * ```tsx
-   * const env = {
-   *   NEXT_PUBLIC_API_URL: 'https://api.example.com',
-   *   NEXT_PUBLIC_APP_NAME: 'My App',
-   * };
-   * <EnvScript env={env} />
-   * ```
-   */
-  env: ProcessEnv;
+    /**
+     * Environment variables object to inject into the browser.
+     *
+     * This object will be serialized and attached to the window object,
+     * making the variables accessible to client-side code.
+     *
+     * @example
+     * ```tsx
+     * const env = {
+     *   NEXT_PUBLIC_API_URL: 'https://api.example.com',
+     *   NEXT_PUBLIC_APP_NAME: 'My App',
+     * };
+     * <EnvScript env={env} />
+     * ```
+     */
+    env: ProcessEnv
 
-  /**
-   * Content Security Policy nonce to apply to the script tag.
-   *
-   * Can be a string value directly, or a NonceConfig object that specifies
-   * a header key to read the nonce from at runtime.
-   *
-   * **Note:** NonceConfig object support is currently blocked by Next.js PR #58129.
-   *
-   * @example
-   * ```tsx
-   * // Direct nonce string
-   * <EnvScript env={env} nonce="random-nonce-value" />
-   * ```
-   */
-  nonce?: string | NonceConfig;
+    /**
+     * Content Security Policy nonce to apply to the script tag.
+     *
+     * Can be a string value directly, or a NonceConfig object that specifies
+     * a header key to read the nonce from at runtime.
+     *
+     * **Note:** NonceConfig object support is currently blocked by Next.js PR #58129.
+     *
+     * @example
+     * ```tsx
+     * // Direct nonce string
+     * <EnvScript env={env} nonce="random-nonce-value" />
+     * ```
+     */
+    nonce?: string | NonceConfig
 
-  /**
-   * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
-   *
-   * Set to `true` when using tools like Sentry where the Next.js Script component's
-   * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
-   *
-   * When `true`, renders a standard HTML script tag. When `false`, uses Next.js'
-   * optimized Script component.
-   *
-   * @default false
-   * @example
-   * ```tsx
-   * <EnvScript env={env} disableNextScript={true} />
-   * ```
-   */
-  disableNextScript?: boolean;
+    /**
+     * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
+     *
+     * Set to `true` when using tools like Sentry where the Next.js Script component's
+     * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
+     *
+     * When `true`, renders a standard HTML script tag. When `false`, uses Next.js'
+     * optimized Script component.
+     *
+     * @default false
+     * @example
+     * ```tsx
+     * <EnvScript env={env} disableNextScript={true} />
+     * ```
+     */
+    disableNextScript?: boolean
 
-  /**
-   * Additional props to pass to Next.js' `<Script>` component.
-   *
-   * Only used when `disableNextScript` is `false`. Allows customization of
-   * script loading behavior through Next.js Script component props.
-   *
-   * @default { strategy: 'beforeInteractive' }
-   * @see https://nextjs.org/docs/app/api-reference/components/script
-   * @example
-   * ```tsx
-   * <EnvScript
-   *   env={env}
-   *   nextScriptProps={{
-   *     strategy: 'afterInteractive',
-   *     onLoad: () => console.log('Env loaded')
-   *   }}
-   * />
-   * ```
-   */
-  nextScriptProps?: ScriptProps;
-};
+    /**
+     * Additional props to pass to Next.js' `<Script>` component.
+     *
+     * Only used when `disableNextScript` is `false`. Allows customization of
+     * script loading behavior through Next.js Script component props.
+     *
+     * @default { strategy: 'beforeInteractive' }
+     * @see https://nextjs.org/docs/app/api-reference/components/script
+     * @example
+     * ```tsx
+     * <EnvScript
+     *   env={env}
+     *   nextScriptProps={{
+     *     strategy: 'afterInteractive',
+     *     onLoad: () => console.log('Env loaded')
+     *   }}
+     * />
+     * ```
+     */
+    nextScriptProps?: ScriptProps
+}
 
 /**
  * Low-level component that injects custom environment variables into the browser.
@@ -138,40 +138,34 @@ type EnvScriptProps = {
  * @see {@link PublicEnvScript} for automatic NEXT_PUBLIC_* variable injection
  */
 export const EnvScript: FC<EnvScriptProps> = ({
-  env,
-  nonce,
-  disableNextScript = false,
-  nextScriptProps = { strategy: 'beforeInteractive' },
+    env,
+    nonce,
+    disableNextScript = false,
+    nextScriptProps = { strategy: 'beforeInteractive' },
 }) => {
-  let nonceString: string | undefined;
+    let nonceString: string | undefined
 
-  // XXX: Blocked by https://github.com/vercel/next.js/pull/58129
-  // if (typeof nonce === 'object' && nonce !== null) {
-  //   // It's strongly recommended to set a nonce on your script tags.
-  //   nonceString = headers().get(nonce.headerKey) ?? undefined;
-  // }
+    // XXX: Blocked by https://github.com/vercel/next.js/pull/58129
+    // if (typeof nonce === 'object' && nonce !== null) {
+    //   // It's strongly recommended to set a nonce on your script tags.
+    //   nonceString = headers().get(nonce.headerKey) ?? undefined;
+    // }
 
-  if (typeof nonce === 'string') {
-    nonceString = nonce;
-  }
+    if (typeof nonce === 'string') {
+        nonceString = nonce
+    }
 
-  const innerHTML = {
-    __html: `window['${PUBLIC_ENV_KEY}'] = ${JSON.stringify(env)}`,
-  };
+    const innerHTML = {
+        __html: `window['${PUBLIC_ENV_KEY}'] = ${JSON.stringify(env)}`,
+    }
 
-  // You can opt to use a regular "<script>" tag instead of Next.js' Script Component.
-  // Note: When using Sentry, sentry.client.config.ts might run after the Next.js <Script> component, even when the strategy is "beforeInteractive"
-  // This results in the runtime environments being undefined and the Sentry client config initialized without the correct configuration.
-  if (disableNextScript) {
-    return <script nonce={nonceString} dangerouslySetInnerHTML={innerHTML} />;
-  }
+    // You can opt to use a regular "<script>" tag instead of Next.js' Script Component.
+    // Note: When using Sentry, sentry.client.config.ts might run after the Next.js <Script> component, even when the strategy is "beforeInteractive"
+    // This results in the runtime environments being undefined and the Sentry client config initialized without the correct configuration.
+    if (disableNextScript) {
+        return <script dangerouslySetInnerHTML={innerHTML} nonce={nonceString} />
+    }
 
-  // Use Next.js Script Component by default
-  return (
-    <Script
-      {...nextScriptProps}
-      nonce={nonceString}
-      dangerouslySetInnerHTML={innerHTML}
-    />
-  );
-};
+    // Use Next.js Script Component by default
+    return <Script {...nextScriptProps} dangerouslySetInnerHTML={innerHTML} nonce={nonceString} />
+}

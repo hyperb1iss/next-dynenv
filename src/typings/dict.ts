@@ -1,3 +1,3 @@
 export type Dict<T> = {
-  [key: string]: T | undefined;
-};
+    [key: string]: T | undefined
+}

@@ -1,3 +1,3 @@
-import { type Dict } from './dict';
+import { type Dict } from './dict'
 
-export type ProcessEnv = Dict<string>;
+export type ProcessEnv = Dict<string>

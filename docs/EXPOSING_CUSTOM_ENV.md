@@ -1,88 +1,80 @@
 # Exposing custom environment variables 🛠
 
 - [Exposing custom environment variables 🛠](#exposing-custom-environment-variables-)
-  - [Using the script approach (recommend)](#using-the-script-approach-recommend)
-    - [Example](#example)
-  - [Using the context approach](#using-the-context-approach)
-    - [Example](#example-1)
+    - [Using the script approach (recommend)](#using-the-script-approach-recommend)
+        - [Example](#example)
+    - [Using the context approach](#using-the-context-approach)
+        - [Example](#example-1)
 
 ## Using the script approach (recommend)
 
-You might not only want to expose environment variables that are prefixed with `NEXT_PUBLIC_`. In this case you can use the `EnvScript` to expose custom environment variables to the browser.
+You might not only want to expose environment variables that are prefixed with `NEXT_PUBLIC_`. In this case you can use
+the `EnvScript` to expose custom environment variables to the browser.
 
 ### Example
 
 ```tsx
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
-import { connection } from 'next/server';
-import { EnvScript } from 'next-runtime-env';
+import { connection } from 'next/server'
+import { EnvScript } from 'next-runtime-env'
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Opt into dynamic rendering (Next.js 15+)
-  await connection();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    // Opt into dynamic rendering (Next.js 15+)
+    await connection()
 
-  // This value will be evaluated at runtime
-  return (
-    <html lang="en">
-      <head>
-        <EnvScript
-          env={{
-            NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
-            BAR: process.env.BAR,
-            BAZ: process.env.BAZ,
-            notAnEnvVar: 'not-an-env-var',
-          }}
-        />
-      </head>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+    // This value will be evaluated at runtime
+    return (
+        <html lang="en">
+            <head>
+                <EnvScript
+                    env={{
+                        NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
+                        BAR: process.env.BAR,
+                        BAZ: process.env.BAZ,
+                        notAnEnvVar: 'not-an-env-var',
+                    }}
+                />
+            </head>
+            <body>{children}</body>
+        </html>
+    )
 }
 ```
 
 ## Using the context approach
 
-You might not only want to expose environment variables that are prefixed with `NEXT_PUBLIC_`. In this case you can use the `EnvProvider` to expose custom environment variables to the context.
+You might not only want to expose environment variables that are prefixed with `NEXT_PUBLIC_`. In this case you can use
+the `EnvProvider` to expose custom environment variables to the context.
 
 ### Example
 
 ```tsx
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
-import { connection } from 'next/server';
-import { EnvProvider } from 'next-runtime-env';
+import { connection } from 'next/server'
+import { EnvProvider } from 'next-runtime-env'
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  // Opt into dynamic rendering (Next.js 15+)
-  await connection();
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    // Opt into dynamic rendering (Next.js 15+)
+    await connection()
 
-  // This value will be evaluated at runtime
-  return (
-    <html lang="en">
-      <body>
-        <EnvProvider
-          env={{
-            NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
-            BAR: process.env.BAR,
-            BAZ: process.env.BAZ,
-            notAnEnvVar: 'not-an-env-var',
-          }}
-        >
-          {children}
-        </EnvProvider>
-      </body>
-    </html>
-  );
+    // This value will be evaluated at runtime
+    return (
+        <html lang="en">
+            <body>
+                <EnvProvider
+                    env={{
+                        NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
+                        BAR: process.env.BAR,
+                        BAZ: process.env.BAZ,
+                        notAnEnvVar: 'not-an-env-var',
+                    }}
+                >
+                    {children}
+                </EnvProvider>
+            </body>
+        </html>
+    )
 }
 ```

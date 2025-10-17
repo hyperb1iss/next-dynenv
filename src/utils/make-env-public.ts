@@ -1,9 +1,9 @@
-import { event, LogOptions, warn } from '../helpers/log';
+import { event, LogOptions, warn } from '../helpers/log'
 
 /**
  * Options for controlling the logging behavior of {@link makeEnvPublic}.
  */
-export type MakeEnvPublicOptions = LogOptions;
+export type MakeEnvPublicOptions = LogOptions
 
 /**
  * Internal helper function that adds NEXT_PUBLIC_ prefix to a single environment variable.
@@ -13,26 +13,23 @@ export type MakeEnvPublicOptions = LogOptions;
  * @param options - Logging configuration options
  */
 function prefixKey(key: string, options?: MakeEnvPublicOptions) {
-  // Check if key is available in process.env.
-  if (!process.env[key]) {
-    warn(
-      `Skipped prefixing environment variable '${key}'. Variable not in process.env`,
-      options,
-    );
+    // Check if key is available in process.env.
+    if (!process.env[key]) {
+        warn(`Skipped prefixing environment variable '${key}'. Variable not in process.env`, options)
 
-    return;
-  }
+        return
+    }
 
-  // Check if key is already public.
-  if (/^NEXT_PUBLIC_/i.test(key)) {
-    warn(`Environment variable '${key}' is already public`, options);
-  }
+    // Check if key is already public.
+    if (/^NEXT_PUBLIC_/i.test(key)) {
+        warn(`Environment variable '${key}' is already public`, options)
+    }
 
-  const prefixedKey = `NEXT_PUBLIC_${key}`;
+    const prefixedKey = `NEXT_PUBLIC_${key}`
 
-  process.env[prefixedKey] = process.env[key];
+    process.env[prefixedKey] = process.env[key]
 
-  event(`Prefixed environment variable '${key}'`, options);
+    event(`Prefixed environment variable '${key}'`, options)
 }
 
 /**
@@ -115,13 +112,10 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * @see {@link PublicEnvScript} for injecting public variables into the browser
  * @see {@link env} for accessing variables at runtime
  */
-export function makeEnvPublic(
-  key: string | string[],
-  options?: MakeEnvPublicOptions,
-): void {
-  if (typeof key === 'string') {
-    prefixKey(key, options);
-  } else {
-    key.forEach((value) => prefixKey(value, options));
-  }
+export function makeEnvPublic(key: string | string[], options?: MakeEnvPublicOptions): void {
+    if (typeof key === 'string') {
+        prefixKey(key, options)
+    } else {
+        key.forEach((value) => prefixKey(value, options))
+    }
 }

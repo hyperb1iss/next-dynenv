@@ -1,72 +1,66 @@
-import { bold, green, red, white, yellow } from '../lib/picocolors';
+import { bold, green, red, white, yellow } from '../lib/picocolors'
 
-export type Level = 'error' | 'warn' | 'info';
-export type LevelWithSilent = 'silent' | Level;
+export type Level = 'error' | 'warn' | 'info'
+export type LevelWithSilent = 'silent' | Level
 
 export type LogOptions = {
-  /**
-   * Level of logging
-   * @default 'event'
-   */
-  logLevel?: LevelWithSilent;
-};
+    /**
+     * Level of logging
+     * @default 'event'
+     */
+    logLevel?: LevelWithSilent
+}
 
 export const prefixes = {
-  error: red(bold('⨯')),
-  warn: yellow(bold('⚠')),
-  info: white(bold(' ')),
-  event: green(bold('✓')),
-} as const satisfies Record<Level | string, string>;
+    error: red(bold('⨯')),
+    warn: yellow(bold('⚠')),
+    info: white(bold(' ')),
+    event: green(bold('✓')),
+} as const satisfies Record<Level | string, string>
 
 export const prefixLevels = {
-  silent: Infinity,
-  error: 40,
-  warn: 30,
-  info: 20,
-  event: 10,
-} as const satisfies Record<keyof typeof prefixes | 'silent', number>;
+    silent: Number.POSITIVE_INFINITY,
+    error: 40,
+    warn: 30,
+    info: 20,
+    event: 10,
+} as const satisfies Record<keyof typeof prefixes | 'silent', number>
 
-const suffix = '(next-runtime-env)';
+const suffix = '(next-runtime-env)'
 
 const LOGGING_METHOD = {
-  log: 'log',
-  warn: 'warn',
-  error: 'error',
-} as const;
+    log: 'log',
+    warn: 'warn',
+    error: 'error',
+} as const
 
-function prefixedLog(
-  prefixType: keyof typeof prefixes,
-  message: string,
-  options?: LogOptions,
-) {
-  const { logLevel = 'event' } = options || {};
+function prefixedLog(prefixType: keyof typeof prefixes, message: string, options?: LogOptions) {
+    const { logLevel = 'event' } = options || {}
 
-  if (prefixLevels[prefixType] < prefixLevels[logLevel]) {
-    return;
-  }
+    if (prefixLevels[prefixType] < prefixLevels[logLevel]) {
+        return
+    }
 
-  const consoleMethod: keyof typeof LOGGING_METHOD =
-    prefixType in LOGGING_METHOD
-      ? LOGGING_METHOD[prefixType as keyof typeof LOGGING_METHOD]
-      : 'log';
+    const consoleMethod: keyof typeof LOGGING_METHOD =
+        prefixType in LOGGING_METHOD ? LOGGING_METHOD[prefixType as keyof typeof LOGGING_METHOD] : 'log'
 
-  const prefix = prefixes[prefixType];
+    const prefix = prefixes[prefixType]
 
-  console[consoleMethod](` ${prefix}`, message, suffix);
+    console[consoleMethod](` ${prefix}`, message, suffix)
 }
 
 export function error(message: string, options?: LogOptions) {
-  prefixedLog('error', message, options);
+    prefixedLog('error', message, options)
 }
 
 export function warn(message: string, options?: LogOptions) {
-  prefixedLog('warn', message, options);
+    prefixedLog('warn', message, options)
 }
 
 export function info(message: string, options?: LogOptions) {
-  prefixedLog('info', message, options);
+    prefixedLog('info', message, options)
 }
 
 export function event(message: string, options?: LogOptions) {
-  prefixedLog('event', message, options);
+    prefixedLog('event', message, options)
 }

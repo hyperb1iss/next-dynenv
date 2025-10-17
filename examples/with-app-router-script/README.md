@@ -1,6 +1,7 @@
 # Next.js App Router with Script Tag Example
 
-This example demonstrates the **script tag approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App Router.
+This example demonstrates the **script tag approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App
+Router.
 
 ## What This Example Demonstrates
 
@@ -13,33 +14,34 @@ This example demonstrates the **script tag approach** for using `@hyperb1iss/nex
 
 ## Architecture
 
-This approach uses a script tag injected into the `<head>` of your document to expose environment variables to the browser:
+This approach uses a script tag injected into the `<head>` of your document to expose environment variables to the
+browser:
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
-      </head>
-      <body>{children}</body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <head>
+                <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
+            </head>
+            <body>{children}</body>
+        </html>
+    )
 }
 ```
 
 Then access variables anywhere using the `env()` function:
 
 ```tsx
-'use client';
-import { env } from '@hyperb1iss/next-runtime-env';
+'use client'
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export default function ClientComponent() {
-  const apiUrl = env('NEXT_PUBLIC_API_URL');
-  return <div>API URL: {apiUrl}</div>;
+    const apiUrl = env('NEXT_PUBLIC_API_URL')
+    return <div>API URL: {apiUrl}</div>
 }
 ```
 
@@ -66,7 +68,8 @@ NEXT_PUBLIC_BAZ=baz-value
 BAR=bar-value
 ```
 
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are automatically exposed to the browser. Server-only variables (like `BAR`) are only accessible in server components, API routes, and middleware.
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are automatically exposed to the browser. Server-only variables (like
+> `BAR`) are only accessible in server components, API routes, and middleware.
 
 ## Running the Example
 
@@ -104,14 +107,16 @@ NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value pnpm start
 NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value yarn start
 ```
 
-This demonstrates the core benefit: **the same build artifact works in any environment** by injecting variables at runtime.
+This demonstrates the core benefit: **the same build artifact works in any environment** by injecting variables at
+runtime.
 
 ## What to Expect
 
 ### Available Routes
 
 - **[/](http://localhost:3000)** - Home page with navigation
-- **[/client-side](http://localhost:3000/client-side)** - Client component accessing `NEXT_PUBLIC_FOO` and `NEXT_PUBLIC_BAZ`
+- **[/client-side](http://localhost:3000/client-side)** - Client component accessing `NEXT_PUBLIC_FOO` and
+  `NEXT_PUBLIC_BAZ`
 - **[/server-side](http://localhost:3000/server-side)** - Server component accessing `BAR` and `BAZ`
 - **[/api/bar-baz](http://localhost:3000/api/bar-baz)** - API route accessing server-side environment variables
 

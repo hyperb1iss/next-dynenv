@@ -1,21 +1,21 @@
-'use client';
+'use client'
 
-import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+import { useEnvContext } from '@hyperb1iss/next-runtime-env'
 
-import styles from './page.module.css';
+import styles from './page.module.css'
 
 export default function ClientSide() {
-  const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext();
+    const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext()
 
-  return (
-    <main className={styles.main}>
-      <div className={styles.description}>
-        <p>
-          NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}
-          <br />
-          NEXT_PUBLIC_BAZ: {NEXT_PUBLIC_BAZ}
-        </p>
-      </div>
-    </main>
-  );
+    return (
+        <main className={styles.main}>
+            <div className={styles.description}>
+                <p>
+                    NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}
+                    <br />
+                    NEXT_PUBLIC_BAZ: {NEXT_PUBLIC_BAZ}
+                </p>
+            </div>
+        </main>
+    )
 }

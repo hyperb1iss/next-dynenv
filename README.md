@@ -4,7 +4,9 @@
 
 **Effortlessly populate your environment at runtime, not just at build time, with `@hyperb1iss/next-runtime-env`.**
 
-> **Fork Notice:** This package is a Next.js 15 & React 19 compatible fork of the original [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All credit for the original implementation goes to the original authors.
+> **Fork Notice:** This package is a Next.js 15 & React 19 compatible fork of the original
+> [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All credit for the original
+> implementation goes to the original authors.
 
 ## ✨ Highlights
 
@@ -16,11 +18,19 @@
 
 ## 🤔 Why `next-runtime-env`?
 
-In the modern software development landscape, the [Build once, deploy many](https://www.mikemcgarr.com/blog/build-once-deploy-many.html) philosophy is key. This principle, essential for easy deployment and testability, is a [cornerstone of continuous delivery](https://cloud.redhat.com/blog/build-once-deploy-anywhere) and is embraced by the [twelve-factor methodology](https://12factor.net). However, front-end development, particularly with Next.js, often lacks support for this - requiring separate builds for different environments. `next-runtime-env` bridges this gap in Next.js.
+In the modern software development landscape, the
+[Build once, deploy many](https://www.mikemcgarr.com/blog/build-once-deploy-many.html) philosophy is key. This
+principle, essential for easy deployment and testability, is a
+[cornerstone of continuous delivery](https://cloud.redhat.com/blog/build-once-deploy-anywhere) and is embraced by the
+[twelve-factor methodology](https://12factor.net). However, front-end development, particularly with Next.js, often
+lacks support for this - requiring separate builds for different environments. `next-runtime-env` bridges this gap in
+Next.js.
 
 ## 📦 How It Works
 
-`next-runtime-env` dynamically injects environment variables into your Next.js application at runtime. This approach adheres to the "build once, deploy many" principle, allowing the same build to be used across various environments without rebuilds.
+`next-runtime-env` dynamically injects environment variables into your Next.js application at runtime. This approach
+adheres to the "build once, deploy many" principle, allowing the same build to be used across various environments
+without rebuilds.
 
 ## 🔖 Version Guide
 
@@ -29,6 +39,7 @@ This fork starts at version **4.x** to clearly differentiate from the original p
 - **@hyperb1iss/next-runtime-env@4.x:** Next.js 15 & React 19 with modern async server components
 
 Original project versions (unmaintained):
+
 - **next-runtime-env@3.x:** Next.js 14 with advanced caching
 - **next-runtime-env@2.x:** Next.js 13 App Router
 - **next-runtime-env@1.x:** Next.js 12/13 Pages Router
@@ -51,24 +62,24 @@ In your root layout (`app/layout.tsx`), add the `PublicEnvScript` component:
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
-import type { ReactNode } from 'react';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import type { ReactNode } from 'react'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <head>
-        <PublicEnvScript />
-      </head>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <head>
+                <PublicEnvScript />
+            </head>
+            <body>{children}</body>
+        </html>
+    )
 }
 ```
 
-The `PublicEnvScript` component automatically exposes all environment variables prefixed with `NEXT_PUBLIC_` to the browser. For custom variable exposure, refer to the [Exposing Custom Environment Variables](docs/EXPOSING_CUSTOM_ENV.md) guide.
+The `PublicEnvScript` component automatically exposes all environment variables prefixed with `NEXT_PUBLIC_` to the
+browser. For custom variable exposure, refer to the [Exposing Custom Environment Variables](docs/EXPOSING_CUSTOM_ENV.md)
+guide.
 
 ### Step 2: Use Environment Variables
 
@@ -76,20 +87,20 @@ The `PublicEnvScript` component automatically exposes all environment variables 
 
 ```tsx
 // app/components/ClientComponent.tsx
-'use client';
+'use client'
 
-import { env } from '@hyperb1iss/next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export default function ClientComponent() {
-  const apiUrl = env('NEXT_PUBLIC_API_URL');
-  const debug = env('NEXT_PUBLIC_DEBUG_MODE');
+    const apiUrl = env('NEXT_PUBLIC_API_URL')
+    const debug = env('NEXT_PUBLIC_DEBUG_MODE')
 
-  return (
-    <div>
-      <p>API URL: {apiUrl}</p>
-      <p>Debug Mode: {debug}</p>
-    </div>
-  );
+    return (
+        <div>
+            <p>API URL: {apiUrl}</p>
+            <p>Debug Mode: {debug}</p>
+        </div>
+    )
 }
 ```
 
@@ -97,53 +108,56 @@ export default function ClientComponent() {
 
 ```tsx
 // app/components/ServerComponent.tsx
-import { env } from '@hyperb1iss/next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export default async function ServerComponent() {
-  // Server components in Next.js 15 can be async
-  const apiUrl = env('NEXT_PUBLIC_API_URL');
-  const secretKey = env('SECRET_API_KEY'); // Server-side only variables also work
+    // Server components in Next.js 15 can be async
+    const apiUrl = env('NEXT_PUBLIC_API_URL')
+    const secretKey = env('SECRET_API_KEY') // Server-side only variables also work
 
-  return (
-    <div>
-      <p>API URL: {apiUrl}</p>
-      {/* Never expose secret keys to the client */}
-    </div>
-  );
+    return (
+        <div>
+            <p>API URL: {apiUrl}</p>
+            {/* Never expose secret keys to the client */}
+        </div>
+    )
 }
 ```
 
-> **Note:** In Next.js 15, server components can be async by default. The `env()` function works seamlessly in both sync and async server components.
+> **Note:** In Next.js 15, server components can be async by default. The `env()` function works seamlessly in both sync
+> and async server components.
 
 #### In Middleware
 
 ```tsx
 // middleware.ts
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server'
+import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Access environment variables in middleware
-  const apiUrl = process.env.NEXT_PUBLIC_API_URL;
+    // Access environment variables in middleware
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL
 
-  // Your middleware logic here
-  return NextResponse.next();
+    // Your middleware logic here
+    return NextResponse.next()
 }
 
 export const config = {
-  matcher: '/api/:path*',
-};
+    matcher: '/api/:path*',
+}
 ```
 
 ## 🛠 Advanced Usage
 
 ### Exposing Non-Prefixed Variables
 
-Need to expose environment variables without the `NEXT_PUBLIC_` prefix? Check out the [Making Environment Variables Public](docs/MAKING_ENV_PUBLIC.md) guide.
+Need to expose environment variables without the `NEXT_PUBLIC_` prefix? Check out the
+[Making Environment Variables Public](docs/MAKING_ENV_PUBLIC.md) guide.
 
 ### Custom Variable Exposure
 
-For fine-grained control over which variables are exposed to the browser, see the [Exposing Custom Environment Variables](docs/EXPOSING_CUSTOM_ENV.md) guide.
+For fine-grained control over which variables are exposed to the browser, see the
+[Exposing Custom Environment Variables](docs/EXPOSING_CUSTOM_ENV.md) guide.
 
 ## 🚀 Deployment Guide
 
@@ -237,12 +251,12 @@ For static exports with runtime environment support:
 
 ```tsx
 // ❌ WRONG - Don't expose secrets
-const apiKey = env('SECRET_API_KEY'); // Will be undefined in browser
+const apiKey = env('SECRET_API_KEY') // Will be undefined in browser
 
 // ✅ CORRECT - Use secrets only server-side
 export async function getData() {
-  const apiKey = process.env.SECRET_API_KEY; // Server-side only
-  // ... fetch data
+    const apiKey = process.env.SECRET_API_KEY // Server-side only
+    // ... fetch data
 }
 ```
 
@@ -252,20 +266,20 @@ Validate required environment variables at build time:
 
 ```tsx
 // lib/env.ts
-import { env } from '@hyperb1iss/next-runtime-env';
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export function validateEnv() {
-  const required = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_APP_ID'];
+    const required = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_APP_ID']
 
-  for (const key of required) {
-    if (!env(key)) {
-      throw new Error(`Missing required environment variable: ${key}`);
+    for (const key of required) {
+        if (!env(key)) {
+            throw new Error(`Missing required environment variable: ${key}`)
+        }
     }
-  }
 }
 
 // Call in your app initialization
-validateEnv();
+validateEnv()
 ```
 
 ### Content Security Policy
@@ -276,23 +290,23 @@ If using CSP, ensure inline scripts are allowed for the `PublicEnvScript`:
 // next.config.js
 const ContentSecurityPolicy = `
   script-src 'self' 'unsafe-inline';
-`;
+`
 
 module.exports = {
-  async headers() {
-    return [
-      {
-        source: '/:path*',
-        headers: [
-          {
-            key: 'Content-Security-Policy',
-            value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim(),
-          },
-        ],
-      },
-    ];
-  },
-};
+    async headers() {
+        return [
+            {
+                source: '/:path*',
+                headers: [
+                    {
+                        key: 'Content-Security-Policy',
+                        value: ContentSecurityPolicy.replace(/\s{2,}/g, ' ').trim(),
+                    },
+                ],
+            },
+        ]
+    },
+}
 ```
 
 ## 🐛 Troubleshooting
@@ -302,6 +316,7 @@ module.exports = {
 **Problem:** Environment variables return `undefined` in client components.
 
 **Solutions:**
+
 1. Ensure variables have the `NEXT_PUBLIC_` prefix
 2. Verify `PublicEnvScript` is in your root layout's `<head>`
 3. Check that variables are set in your environment (`.env.local`, hosting platform, etc.)
@@ -312,6 +327,7 @@ module.exports = {
 **Problem:** Changed environment variables don't reflect in deployed application.
 
 **Solutions:**
+
 1. For Docker: Restart containers with new environment variables
 2. For Vercel/Netlify: Trigger a new deployment or redeploy
 3. Clear CDN cache if using one
@@ -324,10 +340,10 @@ module.exports = {
 **Solution:** The `env()` function returns `string | undefined`. Handle this explicitly:
 
 ```tsx
-const apiUrl = env('NEXT_PUBLIC_API_URL') ?? 'https://default-api.com';
+const apiUrl = env('NEXT_PUBLIC_API_URL') ?? 'https://default-api.com'
 
 // Or with type assertion if you're certain it exists
-const apiUrl = env('NEXT_PUBLIC_API_URL')!;
+const apiUrl = env('NEXT_PUBLIC_API_URL')!
 ```
 
 ### Build-Time vs Runtime Variables
@@ -335,6 +351,7 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!;
 **Problem:** Confusion about when variables are available.
 
 **Explanation:**
+
 - **Build-time:** Variables are baked into the bundle during `next build`
 - **Runtime:** Variables are injected when the application starts
 - `next-runtime-env` provides runtime access, allowing the same build to work in multiple environments
@@ -344,6 +361,7 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!;
 **Problem:** Different behavior between server and client.
 
 **Key Differences:**
+
 - **Server components/API routes:** Can access ALL environment variables via `process.env`
 - **Client components:** Can only access `NEXT_PUBLIC_*` variables via `env()`
 - **Middleware:** Uses standard `process.env` access
@@ -359,7 +377,8 @@ This fork is maintained by [Stefanie Jane (@hyperb1iss)](https://github.com/hype
 
 ## 🙏 Acknowledgments
 
-- **Original Project:** [next-runtime-env](https://github.com/expatfile/next-runtime-env) by [Expatfile.tax](https://expatfile.tax) - All credit for the original implementation and core concepts
+- **Original Project:** [next-runtime-env](https://github.com/expatfile/next-runtime-env) by
+  [Expatfile.tax](https://expatfile.tax) - All credit for the original implementation and core concepts
 - **Inspiration:** [react-env](https://github.com/andrewmclagan/react-env) project
 - **Context Provider:** Thanks to @andonirdgz for the innovative context provider idea
 

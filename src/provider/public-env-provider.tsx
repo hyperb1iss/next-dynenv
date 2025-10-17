@@ -1,13 +1,13 @@
-import { connection } from 'next/server';
-import { type FC, type PropsWithChildren } from 'react';
+import { connection } from 'next/server'
+import { type FC, type PropsWithChildren } from 'react'
 
-import { getPublicEnv } from '../helpers/get-public-env';
-import { EnvProvider } from './env-provider';
+import { getPublicEnv } from '../helpers/get-public-env'
+import { EnvProvider } from './env-provider'
 
 /**
  * Props for the {@link PublicEnvProvider} component.
  */
-type PublicEnvProviderProps = PropsWithChildren;
+type PublicEnvProviderProps = PropsWithChildren
 
 /**
  * Server component that provides public environment variables via React Context.
@@ -79,14 +79,12 @@ type PublicEnvProviderProps = PropsWithChildren;
  * @see {@link PublicEnvScript} for the window object-based alternative
  * @see {@link EnvProvider} for custom environment injection
  */
-export const PublicEnvProvider: FC<PublicEnvProviderProps> = async ({
-  children,
-}) => {
-  // Opt into dynamic rendering (Next.js 15+)
-  await connection();
+export const PublicEnvProvider: FC<PublicEnvProviderProps> = async ({ children }) => {
+    // Opt into dynamic rendering (Next.js 15+)
+    await connection()
 
-  // This value will be evaluated at runtime
-  const publicEnv = getPublicEnv();
+    // This value will be evaluated at runtime
+    const publicEnv = getPublicEnv()
 
-  return <EnvProvider env={publicEnv}>{children}</EnvProvider>;
-};
+    return <EnvProvider env={publicEnv}>{children}</EnvProvider>
+}

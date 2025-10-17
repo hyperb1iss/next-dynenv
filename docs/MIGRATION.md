@@ -4,7 +4,10 @@ This guide helps you migrate to `@hyperb1iss/next-runtime-env@4.x`, which suppor
 
 ## About This Fork
 
-> **Important:** `@hyperb1iss/next-runtime-env` is a fork of the original [expatfile/next-runtime-env](https://github.com/expatfile/next-runtime-env) project, which appears to be unmaintained. This fork starts at version **4.0.0** to clearly differentiate from the original project while maintaining API compatibility.
+> **Important:** `@hyperb1iss/next-runtime-env` is a fork of the original
+> [expatfile/next-runtime-env](https://github.com/expatfile/next-runtime-env) project, which appears to be unmaintained.
+> This fork starts at version **4.0.0** to clearly differentiate from the original project while maintaining API
+> compatibility.
 
 ### Version Timeline
 
@@ -20,20 +23,22 @@ If you're coming from the original `next-runtime-env` package (v3.x or earlier),
 The primary change is the package name. Update your `package.json`:
 
 **Before:**
+
 ```json
 {
-  "dependencies": {
-    "next-runtime-env": "^3.x.x"
-  }
+    "dependencies": {
+        "next-runtime-env": "^3.x.x"
+    }
 }
 ```
 
 **After:**
+
 ```json
 {
-  "dependencies": {
-    "@hyperb1iss/next-runtime-env": "^4.0.0"
-  }
+    "dependencies": {
+        "@hyperb1iss/next-runtime-env": "^4.0.0"
+    }
 }
 ```
 
@@ -42,15 +47,17 @@ The primary change is the package name. Update your `package.json`:
 Update all import statements in your codebase:
 
 **Before:**
+
 ```tsx
-import { PublicEnvScript } from 'next-runtime-env';
-import { env } from 'next-runtime-env';
+import { PublicEnvScript } from 'next-runtime-env'
+import { env } from 'next-runtime-env'
 ```
 
 **After:**
+
 ```tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
-import { env } from '@hyperb1iss/next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import { env } from '@hyperb1iss/next-runtime-env'
 ```
 
 ### Step 3: Update Next.js and React (if needed)
@@ -65,13 +72,15 @@ pnpm update next react react-dom && pnpm add @hyperb1iss/next-runtime-env
 
 ### Step 4: No Code Changes Required! 🎉
 
-The public API remains **100% compatible**. All components (`PublicEnvScript`, `PublicEnvProvider`) and utility functions (`env()`) work exactly as before.
+The public API remains **100% compatible**. All components (`PublicEnvScript`, `PublicEnvProvider`) and utility
+functions (`env()`) work exactly as before.
 
 ## Breaking Changes from v3.x to v4.x
 
 **Good news:** There are **no breaking API changes** between v3.x and v4.x!
 
 The migration from the original `next-runtime-env@3.x` to `@hyperb1iss/next-runtime-env@4.x` requires only:
+
 1. Changing the package name
 2. Updating import statements
 3. Upgrading to Next.js 15 and React 19 (if not already on these versions)
@@ -80,7 +89,8 @@ All existing code using the library will continue to work without modification.
 
 ## Upgrading to Next.js 15 (Additional Steps)
 
-If you're upgrading from Next.js 14 to Next.js 15 as part of this migration, you may need to update custom code that uses Next.js dynamic rendering APIs.
+If you're upgrading from Next.js 14 to Next.js 15 as part of this migration, you may need to update custom code that
+uses Next.js dynamic rendering APIs.
 
 ### Prerequisites
 
@@ -90,42 +100,46 @@ If you're upgrading from Next.js 14 to Next.js 15 as part of this migration, you
 
 ### Update Custom Dynamic Rendering (If Applicable)
 
-If you were using `unstable_noStore()` in **custom implementations** (not the library's built-in components), update to Next.js 15 stable APIs:
+If you were using `unstable_noStore()` in **custom implementations** (not the library's built-in components), update to
+Next.js 15 stable APIs:
 
 **Before (Next.js 14):**
+
 ```tsx
-import { unstable_noStore as noStore } from 'next/cache';
+import { unstable_noStore as noStore } from 'next/cache'
 
 export default function CustomLayout({ children }) {
-  noStore(); // Opt into dynamic rendering
+    noStore() // Opt into dynamic rendering
 
-  const customEnv = getCustomEnv();
-  return <div>{children}</div>;
+    const customEnv = getCustomEnv()
+    return <div>{children}</div>
 }
 ```
 
 **After (Next.js 15+):**
+
 ```tsx
-import { connection } from 'next/server';
+import { connection } from 'next/server'
 
 export default async function CustomLayout({ children }) {
-  // Opt into dynamic rendering (Next.js 15+)
-  await connection();
+    // Opt into dynamic rendering (Next.js 15+)
+    await connection()
 
-  const customEnv = getCustomEnv();
-  return <div>{children}</div>;
+    const customEnv = getCustomEnv()
+    return <div>{children}</div>
 }
 ```
 
 **Alternative approach using `headers()`:**
+
 ```tsx
-import { headers } from 'next/headers';
+import { headers } from 'next/headers'
 
 export function getCustomEnv() {
-  // Force dynamic rendering by accessing headers
-  headers();
+    // Force dynamic rendering by accessing headers
+    headers()
 
-  return process.env.CUSTOM_VAR;
+    return process.env.CUSTOM_VAR
 }
 ```
 
@@ -142,6 +156,7 @@ The library now uses Next.js 15's stable dynamic rendering APIs:
 **Issue: "Cannot find module 'next/server'"**
 
 Make sure you've upgraded to Next.js 15:
+
 ```bash
 npm list next
 ```
@@ -149,6 +164,7 @@ npm list next
 **Issue: Build errors about async components**
 
 Ensure you're using React 19:
+
 ```bash
 npm list react react-dom
 ```
@@ -156,11 +172,12 @@ npm list react react-dom
 **Issue: Environment variables not updating at runtime**
 
 Verify your Next.js config has `output: 'standalone'` if deploying in standalone mode:
+
 ```js
 // next.config.js
 module.exports = {
-  output: 'standalone',
-};
+    output: 'standalone',
+}
 ```
 
 ## Upgrading from v2.x (Original Project)
@@ -170,14 +187,16 @@ If you're upgrading from the original `next-runtime-env@2.x` (Next.js 13):
 1. Update to the new package: `@hyperb1iss/next-runtime-env@4.x`
 2. Follow the package name and import updates above
 3. Upgrade to Next.js 15 and React 19
-4. Review the [Next.js 15 upgrade guide](https://nextjs.org/docs/app/building-your-application/upgrading) for framework-specific breaking changes
+4. Review the [Next.js 15 upgrade guide](https://nextjs.org/docs/app/building-your-application/upgrading) for
+   framework-specific breaking changes
 5. Test your application thoroughly
 
 ## Upgrading from v1.x (Pages Router - Original Project)
 
 If you're still using the original `next-runtime-env@1.x` with the Pages Router:
 
-1. Consider migrating to the App Router first (see [Next.js migration guide](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration))
+1. Consider migrating to the App Router first (see
+   [Next.js migration guide](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration))
 2. Then follow the migration steps above to move to `@hyperb1iss/next-runtime-env@4.x`
 3. Alternative: Continue using `next-runtime-env@1.x` for Pages Router support (note: unmaintained)
 
@@ -185,17 +204,17 @@ If you're still using the original `next-runtime-env@1.x` with the Pages Router:
 
 ### This Fork (Maintained)
 
-| Package | Version | Next.js | React | Notes |
-|---------|---------|---------|-------|-------|
-| @hyperb1iss/next-runtime-env | 4.x | 15.x | 19.x | Next.js 15 & React 19 with async components |
+| Package                      | Version | Next.js | React | Notes                                       |
+| ---------------------------- | ------- | ------- | ----- | ------------------------------------------- |
+| @hyperb1iss/next-runtime-env | 4.x     | 15.x    | 19.x  | Next.js 15 & React 19 with async components |
 
 ### Original Project (Unmaintained)
 
-| Package | Version | Next.js | React | Notes |
-|---------|---------|---------|-------|-------|
-| next-runtime-env | 3.x | 14.x | 18.x | App Router with caching support |
-| next-runtime-env | 2.x | 13.x | 18.x | App Router |
-| next-runtime-env | 1.x | 12.x - 13.x | 17.x - 18.x | Pages Router only |
+| Package          | Version | Next.js     | React       | Notes                           |
+| ---------------- | ------- | ----------- | ----------- | ------------------------------- |
+| next-runtime-env | 3.x     | 14.x        | 18.x        | App Router with caching support |
+| next-runtime-env | 2.x     | 13.x        | 18.x        | App Router                      |
+| next-runtime-env | 1.x     | 12.x - 13.x | 17.x - 18.x | Pages Router only               |
 
 ## Quick Migration Checklist
 

@@ -2,16 +2,19 @@
 
 All notable changes to this project will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/), and this project adheres to
+[Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-> **Fork Notice:** This is the changelog for the Next.js 15 compatible fork maintained at [@hyperb1iss/next-runtime-env](https://github.com/hyperb1iss/next-runtime-env). For the original project history (versions 3.x and below), see the [original repository](https://github.com/expatfile/next-runtime-env).
+> **Fork Notice:** This is the changelog for the Next.js 15 compatible fork maintained at
+> [@hyperb1iss/next-runtime-env](https://github.com/hyperb1iss/next-runtime-env). For the original project history
+> (versions 3.x and below), see the [original repository](https://github.com/expatfile/next-runtime-env).
 
 ---
 
 ## [4.0.0] - 2025-10-16
 
-This major release brings full Next.js 15 and React 19 support with modern async server component patterns. This fork represents a comprehensive modernization of the package while maintaining backward compatibility with the core API.
+This major release brings full Next.js 15 and React 19 support with modern async server component patterns. This fork
+represents a comprehensive modernization of the package while maintaining backward compatibility with the core API.
 
 ### Added
 
@@ -25,7 +28,8 @@ This major release brings full Next.js 15 and React 19 support with modern async
 
 ### Changed
 
-- **Package Rebranding:** Renamed from `next-runtime-env` to `@hyperb1iss/next-runtime-env` to clearly differentiate the fork
+- **Package Rebranding:** Renamed from `next-runtime-env` to `@hyperb1iss/next-runtime-env` to clearly differentiate the
+  fork
 - **Async Server Components:** Updated all server components to use async patterns as required by Next.js 15
 - **Dependency Updates:** Comprehensive dependency updates for Next.js 15 and React 19 ecosystem compatibility
 - **Build Configuration:** Refined build process for modern Next.js applications
@@ -45,7 +49,8 @@ This major release brings full Next.js 15 and React 19 support with modern async
 
 ### Technical Details
 
-- **Dynamic Rendering Migration:** Replaced Next.js 14's `unstable_noStore()` with Next.js 15's stable `connection()` API for opt-in dynamic rendering
+- **Dynamic Rendering Migration:** Replaced Next.js 14's `unstable_noStore()` with Next.js 15's stable `connection()`
+  API for opt-in dynamic rendering
 - **Server Component Patterns:** All server components now properly implement async function signatures
 - **ESLint Modernization:** Migrated from legacy `.eslintrc` to ESLint 9 flat config (`eslint.config.mjs`)
 - **Type Safety:** Enhanced TypeScript configuration for stricter Next.js 15 type checking
@@ -62,7 +67,8 @@ This major release brings full Next.js 15 and React 19 support with modern async
 
 ## [3.x and below] - Original Project
 
-This fork begins at version 4.0.0. For the complete history of versions 3.x, 2.x, and 1.x, please refer to the [original next-runtime-env repository](https://github.com/expatfile/next-runtime-env).
+This fork begins at version 4.0.0. For the complete history of versions 3.x, 2.x, and 1.x, please refer to the
+[original next-runtime-env repository](https://github.com/expatfile/next-runtime-env).
 
 ### Original Project Version History
 
@@ -76,7 +82,8 @@ All credit for versions 1.x through 3.x goes to the original maintainers at [Exp
 
 ## Attribution
 
-This package is a fork of [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All credit for the original implementation, core concepts, and foundational work goes to the original authors.
+This package is a fork of [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All
+credit for the original implementation, core concepts, and foundational work goes to the original authors.
 
 **Fork Maintainer:** [Stefanie Jane (@hyperb1iss)](https://github.com/hyperb1iss)
 

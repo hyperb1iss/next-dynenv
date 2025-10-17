@@ -1,6 +1,7 @@
 # Next.js App Router with Context Provider Example
 
-This example demonstrates the **React Context approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App Router.
+This example demonstrates the **React Context approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App
+Router.
 
 ## What This Example Demonstrates
 
@@ -17,33 +18,33 @@ This approach uses React Context to provide environment variables to your compon
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
+import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
-  return (
-    <html lang="en">
-      <body>
-        <PublicEnvProvider>{children}</PublicEnvProvider>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <body>
+                <PublicEnvProvider>{children}</PublicEnvProvider>
+            </body>
+        </html>
+    )
 }
 ```
 
 Then access variables in client components using the `useEnvContext()` hook:
 
 ```tsx
-'use client';
-import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+'use client'
+import { useEnvContext } from '@hyperb1iss/next-runtime-env'
 
 export default function ClientComponent() {
-  const { NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_VERSION } = useEnvContext();
-  return (
-    <div>
-      <p>API URL: {NEXT_PUBLIC_API_URL}</p>
-      <p>Version: {NEXT_PUBLIC_APP_VERSION}</p>
-    </div>
-  );
+    const { NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_VERSION } = useEnvContext()
+    return (
+        <div>
+            <p>API URL: {NEXT_PUBLIC_API_URL}</p>
+            <p>Version: {NEXT_PUBLIC_APP_VERSION}</p>
+        </div>
+    )
 }
 ```
 
@@ -58,12 +59,14 @@ export default function ClientComponent() {
 ## When to Use Context vs Script
 
 **Use Context Provider when:**
+
 - You need to access multiple environment variables in a component
 - You prefer React patterns and hooks
 - You want type-safe variable access with destructuring
 - You're building a component library that needs env access
 
 **Use Script Tag when:**
+
 - You need CSP nonce support
 - You want the simplest possible setup
 - You prefer functional `env()` calls over hooks
@@ -92,7 +95,8 @@ NEXT_PUBLIC_BAZ=baz-value
 BAR=bar-value
 ```
 
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are automatically exposed to the browser. Server-only variables (like `BAR`) are only accessible in server components, API routes, and middleware.
+> **Note:** Variables prefixed with `NEXT_PUBLIC_` are automatically exposed to the browser. Server-only variables (like
+> `BAR`) are only accessible in server components, API routes, and middleware.
 
 ### 3. Configure Next.js (Optional)
 
@@ -101,11 +105,11 @@ The `next.config.js` includes configuration for the instrumentation hook:
 ```js
 // next.config.js
 module.exports = {
-  experimental: {
-    serverComponentsExternalPackages: ['next-runtime-env'],
-    instrumentationHook: true,
-  },
-};
+    experimental: {
+        serverComponentsExternalPackages: ['next-runtime-env'],
+        instrumentationHook: true,
+    },
+}
 ```
 
 ## Running the Example
@@ -144,7 +148,8 @@ NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value pnpm start
 NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value yarn start
 ```
 
-This demonstrates the core benefit: **the same build artifact works in any environment** by injecting variables at runtime.
+This demonstrates the core benefit: **the same build artifact works in any environment** by injecting variables at
+runtime.
 
 ## What to Expect
 
@@ -178,39 +183,39 @@ This demonstrates the core benefit: **the same build artifact works in any envir
 ### Context Provider Approach (This Example)
 
 ```tsx
-'use client';
-import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+'use client'
+import { useEnvContext } from '@hyperb1iss/next-runtime-env'
 
 export default function Component() {
-  // Destructure multiple variables at once
-  const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext();
+    // Destructure multiple variables at once
+    const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext()
 
-  return (
-    <div>
-      <p>Foo: {NEXT_PUBLIC_FOO}</p>
-      <p>Baz: {NEXT_PUBLIC_BAZ}</p>
-    </div>
-  );
+    return (
+        <div>
+            <p>Foo: {NEXT_PUBLIC_FOO}</p>
+            <p>Baz: {NEXT_PUBLIC_BAZ}</p>
+        </div>
+    )
 }
 ```
 
 ### Script Tag Approach
 
 ```tsx
-'use client';
-import { env } from '@hyperb1iss/next-runtime-env';
+'use client'
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export default function Component() {
-  // Call env() function for each variable
-  const foo = env('NEXT_PUBLIC_FOO');
-  const baz = env('NEXT_PUBLIC_BAZ');
+    // Call env() function for each variable
+    const foo = env('NEXT_PUBLIC_FOO')
+    const baz = env('NEXT_PUBLIC_BAZ')
 
-  return (
-    <div>
-      <p>Foo: {foo}</p>
-      <p>Baz: {baz}</p>
-    </div>
-  );
+    return (
+        <div>
+            <p>Foo: {foo}</p>
+            <p>Baz: {baz}</p>
+        </div>
+    )
 }
 ```
 

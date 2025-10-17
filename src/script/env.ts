@@ -1,7 +1,7 @@
-import { headers } from 'next/headers';
+import { headers } from 'next/headers'
 
-import { isBrowser } from '../helpers/is-browser';
-import { PUBLIC_ENV_KEY } from './constants';
+import { isBrowser } from '../helpers/is-browser'
+import { PUBLIC_ENV_KEY } from './constants'
 
 /**
  * Reads environment variables safely from both browser and server contexts.
@@ -55,19 +55,17 @@ import { PUBLIC_ENV_KEY } from './constants';
  * @see {@link useEnvContext} for React hook-based access in client components
  */
 export function env(key: string): string | undefined {
-  if (isBrowser()) {
-    if (!key.startsWith('NEXT_PUBLIC_')) {
-      throw new Error(
-        `Environment variable '${key}' is not public and cannot be accessed in the browser.`,
-      );
+    if (isBrowser()) {
+        if (!key.startsWith('NEXT_PUBLIC_')) {
+            throw new Error(`Environment variable '${key}' is not public and cannot be accessed in the browser.`)
+        }
+
+        return window[PUBLIC_ENV_KEY][key]
     }
 
-    return window[PUBLIC_ENV_KEY][key];
-  }
+    // Force dynamic rendering by accessing headers (Next.js 15+)
+    // This replaces the deprecated unstable_noStore() call
+    headers()
 
-  // Force dynamic rendering by accessing headers (Next.js 15+)
-  // This replaces the deprecated unstable_noStore() call
-  headers();
-
-  return process.env[key];
+    return process.env[key]
 }

@@ -1,10 +1,11 @@
 # Getting started 🚀
 
 - [Getting started 🚀](#getting-started-)
-  - [Using the script approach (recommend)](#using-the-script-approach-recommend)
-  - [Using the context approach](#using-the-context-approach)
+    - [Using the script approach (recommend)](#using-the-script-approach-recommend)
+    - [Using the context approach](#using-the-context-approach)
 
-We recommend using the script approach, because you can use the environment variables outside the React context. If you intend to stay withing the react context you can use the context approach.
+We recommend using the script approach, because you can use the environment variables outside the React context. If you
+intend to stay withing the react context you can use the context approach.
 
 ## Using the script approach (recommend)
 
@@ -22,47 +23,42 @@ pnpm install @hyperb1iss/next-runtime-env
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <head>
-        <PublicEnvScript />
-      </head>
-      <body>
-        {children}
-      </body>
-    </html>
-  );
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+            <head>
+                <PublicEnvScript />
+            </head>
+            <body>{children}</body>
+        </html>
+    )
 }
 ```
 
 1. Finally, use `env` utility to access the runtime environment variables any where in your app:
 
 ```tsx
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { env } from '@hyperb1iss/next-runtime-env';
+import { useEffect } from 'react'
+import { env } from '@hyperb1iss/next-runtime-env'
 
 export function MyComponent() {
-  const NEXT_PUBLIC_FOO = env('NEXT_PUBLIC_FOO');
-  const NEXT_PUBLIC_BAZ = env('NEXT_PUBLIC_BAZ');
+    const NEXT_PUBLIC_FOO = env('NEXT_PUBLIC_FOO')
+    const NEXT_PUBLIC_BAZ = env('NEXT_PUBLIC_BAZ')
 
-  useEffect(() => {
-    // some api call using NEXT_PUBLIC_BAZ
-  }, [NEXT_PUBLIC_BAZ]);
+    useEffect(() => {
+        // some api call using NEXT_PUBLIC_BAZ
+    }, [NEXT_PUBLIC_BAZ])
 
-  return <div>{NEXT_PUBLIC_FOO}</div>;
+    return <div>{NEXT_PUBLIC_FOO}</div>
 }
 ```
 
-That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your Next.js app.
+That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your
+Next.js app.
 
 ## Using the context approach
 
@@ -80,20 +76,16 @@ pnpm install @hyperb1iss/next-runtime-env
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
+import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env'
 
-export default async function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body>
-        <PublicEnvProvider>{children}</PublicEnvProvider>
-      </body>
-    </html>
-  );
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    return (
+        <html lang="en">
+            <body>
+                <PublicEnvProvider>{children}</PublicEnvProvider>
+            </body>
+        </html>
+    )
 }
 ```
 
@@ -102,20 +94,21 @@ export default async function RootLayout({
 3. Finally, use `useEnvContext` hook to access the runtime environment variables in your components:
 
 ```tsx
-'use client';
+'use client'
 
-import { useEffect } from 'react';
-import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+import { useEffect } from 'react'
+import { useEnvContext } from '@hyperb1iss/next-runtime-env'
 
 export function MyComponent() {
-  const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext();
+    const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext()
 
-  useEffect(() => {
-    // some api call using NEXT_PUBLIC_BAZ
-  }, [NEXT_PUBLIC_BAZ]);
+    useEffect(() => {
+        // some api call using NEXT_PUBLIC_BAZ
+    }, [NEXT_PUBLIC_BAZ])
 
-  return <div>{NEXT_PUBLIC_FOO}</div>;
+    return <div>{NEXT_PUBLIC_FOO}</div>
 }
 ```
 
-That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your Next.js app.
+That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your
+Next.js app.

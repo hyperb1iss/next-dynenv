@@ -1,33 +1,33 @@
-'use client';
+'use client'
 
-import { type FC, type PropsWithChildren } from 'react';
+import { type FC, type PropsWithChildren } from 'react'
 
-import { type ProcessEnv } from '../typings/process-env';
-import { EnvContext } from './env-context';
+import { type ProcessEnv } from '../typings/process-env'
+import { EnvContext } from './env-context'
 
 /**
  * Props for the {@link EnvProvider} component.
  */
 type EnvProviderProps = PropsWithChildren<{
-  /**
-   * Custom environment variables object to provide to child components.
-   *
-   * This object will be made available through the {@link useEnvContext} hook
-   * to all descendant components.
-   *
-   * @example
-   * ```tsx
-   * const customEnv = {
-   *   NEXT_PUBLIC_API_URL: process.env.API_URL,
-   *   NEXT_PUBLIC_APP_NAME: 'My App',
-   * };
-   * <EnvProvider env={customEnv}>
-   *   <App />
-   * </EnvProvider>
-   * ```
-   */
-  env: ProcessEnv;
-}>;
+    /**
+     * Custom environment variables object to provide to child components.
+     *
+     * This object will be made available through the {@link useEnvContext} hook
+     * to all descendant components.
+     *
+     * @example
+     * ```tsx
+     * const customEnv = {
+     *   NEXT_PUBLIC_API_URL: process.env.API_URL,
+     *   NEXT_PUBLIC_APP_NAME: 'My App',
+     * };
+     * <EnvProvider env={customEnv}>
+     *   <App />
+     * </EnvProvider>
+     * ```
+     */
+    env: ProcessEnv
+}>
 
 /**
  * Client component that provides custom environment variables via React Context.
@@ -90,5 +90,5 @@ type EnvProviderProps = PropsWithChildren<{
  * @see {@link useEnvContext} for consuming the provided environment
  */
 export const EnvProvider: FC<EnvProviderProps> = ({ children, env }) => {
-  return <EnvContext.Provider value={env}>{children}</EnvContext.Provider>;
-};
+    return <EnvContext.Provider value={env}>{children}</EnvContext.Provider>
+}

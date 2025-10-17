@@ -1,8 +1,8 @@
-'use client';
+'use client'
 
-import { useContext } from 'react';
+import { useContext } from 'react'
 
-import { EnvContext } from './env-context';
+import { EnvContext } from './env-context'
 
 /**
  * React hook for accessing environment variables from the nearest EnvProvider.
@@ -87,13 +87,11 @@ import { EnvContext } from './env-context';
  * @see {@link env} for direct function-based access (works on server and client)
  */
 export const useEnvContext = () => {
-  const context = useContext(EnvContext);
+    const context = useContext(EnvContext)
 
-  if (!context) {
-    throw new Error(
-      'useEnvContext must be used within a EnvProvider or PublicEnvProvider',
-    );
-  }
+    if (!context) {
+        throw new Error('useEnvContext must be used within a EnvProvider or PublicEnvProvider')
+    }
 
-  return context;
-};
+    return context
+}

@@ -1,3 +1,3 @@
 export type NonceConfig = {
-  headerKey: string;
-};
+    headerKey: string
+}
