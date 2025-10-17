@@ -148,8 +148,11 @@ export const EnvScript: FC<EnvScriptProps> = ({
             const headerStore = headers()
             const maybeHeaders = headerStore as unknown as Awaited<ReturnType<typeof headers>>
 
-            if (maybeHeaders && typeof (maybeHeaders as { get?: (key: string) => string | undefined }).get === 'function') {
-                nonceString = maybeHeaders.get!(nonce.headerKey) ?? undefined
+            if (
+                maybeHeaders &&
+                typeof (maybeHeaders as { get?: (key: string) => string | undefined }).get === 'function'
+            ) {
+                nonceString = maybeHeaders.get?.(nonce.headerKey) ?? undefined
             }
         } catch (error) {
             if (error instanceof Error && error.message.includes('outside a request scope')) {

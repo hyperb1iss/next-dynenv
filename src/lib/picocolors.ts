@@ -30,7 +30,7 @@ const replaceClose = (str: string, close: string, replace: string, index: number
 const formatter =
     (open: string, close: string, replace = open) =>
     (input: string) => {
-        const string = '' + input
+        const string = `${input}`
         const index = string.indexOf(close, open.length)
         return ~index ? open + replaceClose(string, close, replace, index) + close : open + string + close
     }

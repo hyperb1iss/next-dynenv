@@ -65,6 +65,7 @@ const TEST_APP_DIR = join(process.cwd(), 'test-app')
 
 async function main() {
     let serverProcess = null
+    let exitCode = 0
 
     try {
         // Step 1: Install dependencies
@@ -114,13 +115,49 @@ async function main() {
             throw new Error('❌ Server-side: Build-time value found (should be runtime!)')
         } else {
             console.log('⚠️  Server-side: Could not find test value in HTML')
-            console.log('    HTML snippet:', homePage.body.slice(0, 200))
+
+            // Try to find what value is actually there
+            const serverValueMatch = homePage.body.match(/data-testid="server-value">([^<]*)</)
+            if (serverValueMatch) {
+                console.log(`    Found value: "${serverValueMatch[1]}"`)
+                console.log(`    Expected: "${RUNTIME_VALUE}"`)
+            } else {
+                console.log('    data-testid="server-value" element not found at all')
+            }
+
+            console.log('    HTML snippet:', homePage.body.slice(0, 500))
+            throw new Error('❌ Server-side: Runtime value not found in HTML')
         }
 
-        // Check window.__ENV injection
-        if (!homePage.body.includes(`window['__ENV'] = {"NEXT_PUBLIC_TEST_VAR":"${RUNTIME_VALUE}"}`)) {
+        // Check window.__ENV injection (with or without escaped quotes)
+        const expectedScript = `window['__ENV'] = {"NEXT_PUBLIC_TEST_VAR":"${RUNTIME_VALUE}"}`
+        const expectedScriptEscaped = `window['__ENV'] = {\\"NEXT_PUBLIC_TEST_VAR\\":\\"${RUNTIME_VALUE}\\"}`
+
+        if (!homePage.body.includes(expectedScript) && !homePage.body.includes(expectedScriptEscaped)) {
+            console.log('\n⚠️  Client-side: window.__ENV script not found in HTML')
+            console.log('    Expected (unescaped):', expectedScript)
+            console.log('    Expected (escaped):', expectedScriptEscaped)
+
+            // Try to find any __ENV references
+            const envMatch = homePage.body.match(/window\['__ENV'\][^}]*}/g)
+            if (envMatch) {
+                console.log('    Found:', envMatch[0])
+            } else {
+                console.log('    No __ENV script found at all')
+                // Show script tags in the HTML
+                const scriptMatches = homePage.body.match(/<script[^>]*>.*?<\/script>/gs)
+                if (scriptMatches) {
+                    console.log(`    Found ${scriptMatches.length} script tag(s):`)
+                    for (const script of scriptMatches.slice(0, 3)) {
+                        console.log('    -', script.slice(0, 100).replace(/\n/g, ' '))
+                    }
+                }
+            }
+
             throw new Error('❌ Client-side: window.__ENV script not found in HTML')
         }
+
+        console.log('✅ Client-side: window.__ENV script found!')
 
         // Step 5: Test context provider page
         console.log('\n🧪 Testing context mode (/context)...')
@@ -143,14 +180,25 @@ async function main() {
         console.log('   ✓ Standalone mode working correctly')
     } catch (error) {
         console.error('\n💥 Integration test failed:', error.message)
-        process.exit(1)
+        exitCode = 1
     } finally {
-        // Cleanup
-        if (serverProcess) {
+        // Cleanup: Ensure server process is killed
+        if (serverProcess && !serverProcess.killed) {
             console.log('\n🧹 Shutting down server...')
-            serverProcess.kill()
+            serverProcess.kill('SIGTERM')
+
+            // Give it a moment to shut down gracefully
+            await setTimeout(1000)
+
+            // Force kill if still running
+            if (!serverProcess.killed) {
+                console.log('⚠️  Forcing server shutdown...')
+                serverProcess.kill('SIGKILL')
+            }
         }
     }
+
+    process.exit(exitCode)
 }
 
 main()

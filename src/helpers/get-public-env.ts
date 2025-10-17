@@ -6,13 +6,10 @@ import { ProcessEnv } from '../typings/process-env'
 export function getPublicEnv() {
     const publicEnv = Object.keys(process.env)
         .filter((key) => /^NEXT_PUBLIC_/i.test(key))
-        .reduce(
-            (env, key) => ({
-                ...env,
-                [key]: process.env[key],
-            }),
-            {} as ProcessEnv,
-        )
+        .reduce((env, key) => {
+            env[key] = process.env[key]
+            return env
+        }, {} as ProcessEnv)
 
     return publicEnv
 }
