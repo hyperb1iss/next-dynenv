@@ -373,15 +373,17 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!
 **Key Differences:**
 
 - **Server-side contexts** (server components, API routes, middleware):
-  - Can access ALL environment variables via `env()` or `process.env`
-  - Both private and public (`NEXT_PUBLIC_*`) variables are available
+
+    - Can access ALL environment variables via `env()` or `process.env`
+    - Both private and public (`NEXT_PUBLIC_*`) variables are available
 
 - **Client-side contexts** (client components, browser):
-  - Can only access `NEXT_PUBLIC_*` variables via `env()`
-  - Private variables are not available for security reasons
-  - Attempting to access private variables throws an error
+    - Can only access `NEXT_PUBLIC_*` variables via `env()`
+    - Private variables are not available for security reasons
+    - Attempting to access private variables throws an error
 
-**Recommendation:** Use `env()` everywhere for consistency. It works in all contexts and provides better error messages when misused
+**Recommendation:** Use `env()` everywhere for consistency. It works in all contexts and provides better error messages
+when misused
 
 ## 📚 Additional Resources
 
