@@ -1,168 +1,168 @@
 name: 🚀 Release
 
 on:
-    push:
-        branches: [main, development]
-    workflow_dispatch:
+  push:
+    branches: [main, development]
+  workflow_dispatch:
 
 permissions:
-    contents: write
-    issues: write
-    pull-requests: write
-    id-token: write
+  contents: write
+  issues: write
+  pull-requests: write
+  id-token: write
 
 env:
-    NODE_VERSION: '22'
+  NODE_VERSION: '22'
 
 jobs:
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # 🚀 Release & Publish
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    release:
-        name: 🚀 Release & Publish
-        runs-on: ubuntu-latest
-        timeout-minutes: 15
-        outputs:
-            released: ${{ steps.semantic.outputs.new_release_published }}
-            version: ${{ steps.semantic.outputs.new_release_version }}
-            channel: ${{ steps.semantic.outputs.new_release_channel }}
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🚀 Release & Publish
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  release:
+    name: 🚀 Release & Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    outputs:
+      released: ${{ steps.semantic.outputs.new_release_published }}
+      version: ${{ steps.semantic.outputs.new_release_version }}
+      channel: ${{ steps.semantic.outputs.new_release_channel }}
 
-        steps:
-            - name: 📥 Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  persist-credentials: false
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
 
-            - name: 📦 Setup pnpm
-              uses: pnpm/action-setup@v4
-              with:
-                  version: 10
+      - name: 📦 Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
-            - name: 🔧 Setup Node.js
-              uses: actions/setup-node@v4
-              with:
-                  node-version: ${{ env.NODE_VERSION }}
-                  cache: 'pnpm'
-                  registry-url: 'https://registry.npmjs.org'
+      - name: 🔧 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          registry-url: 'https://registry.npmjs.org'
 
-            - name: 📚 Install dependencies
-              run: pnpm install --frozen-lockfile
+      - name: 📚 Install dependencies
+        run: pnpm install --frozen-lockfile
 
-            - name: 🏗️ Build package
-              run: pnpm build
+      - name: 🏗️ Build package
+        run: pnpm build
 
-            - name: 🔍 Verify package contents
-              run: |
-                  echo "### 📦 Package Contents" >> $GITHUB_STEP_SUMMARY
-                  echo '```' >> $GITHUB_STEP_SUMMARY
-                  ls -lah build/ >> $GITHUB_STEP_SUMMARY
-                  echo '```' >> $GITHUB_STEP_SUMMARY
+      - name: 🔍 Verify package contents
+        run: |
+          echo "### 📦 Package Contents" >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          ls -lah build/ >> $GITHUB_STEP_SUMMARY
+          echo '```' >> $GITHUB_STEP_SUMMARY
 
-            - name: 🚀 Semantic Release
-              id: semantic
-              env:
-                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-                  NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-                  GIT_AUTHOR_NAME: 'github-actions[bot]'
-                  GIT_AUTHOR_EMAIL: 'github-actions[bot]@users.noreply.github.com'
-                  GIT_COMMITTER_NAME: 'github-actions[bot]'
-                  GIT_COMMITTER_EMAIL: 'github-actions[bot]@users.noreply.github.com'
-              run: pnpm semantic-release
+      - name: 🚀 Semantic Release
+        id: semantic
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+          GIT_AUTHOR_NAME: 'github-actions[bot]'
+          GIT_AUTHOR_EMAIL: 'github-actions[bot]@users.noreply.github.com'
+          GIT_COMMITTER_NAME: 'github-actions[bot]'
+          GIT_COMMITTER_EMAIL: 'github-actions[bot]@users.noreply.github.com'
+        run: pnpm semantic-release
 
-            - name: 📊 Release Summary
-              if: steps.semantic.outputs.new_release_published == 'true'
-              run: |
-                  echo "### 🎉 Release Published!" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "**Version:** \`${{ steps.semantic.outputs.new_release_version }}\`" >> $GITHUB_STEP_SUMMARY
-                  echo "**Channel:** \`${{ steps.semantic.outputs.new_release_channel }}\`" >> $GITHUB_STEP_SUMMARY
-                  echo "**Git Tag:** \`${{ steps.semantic.outputs.new_release_git_tag }}\`" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "📦 [View on npm](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${{ steps.semantic.outputs.new_release_version }})" >> $GITHUB_STEP_SUMMARY
-                  echo "📝 [View Release Notes](https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic.outputs.new_release_git_tag }})" >> $GITHUB_STEP_SUMMARY
+      - name: 📊 Release Summary
+        if: steps.semantic.outputs.new_release_published == 'true'
+        run: |
+          echo "### 🎉 Release Published!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** \`${{ steps.semantic.outputs.new_release_version }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Channel:** \`${{ steps.semantic.outputs.new_release_channel }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Git Tag:** \`${{ steps.semantic.outputs.new_release_git_tag }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "📦 [View on npm](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${{ steps.semantic.outputs.new_release_version }})" >> $GITHUB_STEP_SUMMARY
+          echo "📝 [View Release Notes](https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic.outputs.new_release_git_tag }})" >> $GITHUB_STEP_SUMMARY
 
-            - name: 📭 No Release
-              if: steps.semantic.outputs.new_release_published != 'true'
-              run: |
-                  echo "### ℹ️ No Release Published" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "No releaseable changes detected in this commit." >> $GITHUB_STEP_SUMMARY
+      - name: 📭 No Release
+        if: steps.semantic.outputs.new_release_published != 'true'
+        run: |
+          echo "### ℹ️ No Release Published" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "No releaseable changes detected in this commit." >> $GITHUB_STEP_SUMMARY
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # 🔀 Back-merge (main → development)
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    back-merge:
-        name: 🔀 Back-merge
-        runs-on: ubuntu-latest
-        needs: release
-        if: github.ref == 'refs/heads/main' && needs.release.outputs.released == 'true'
-        timeout-minutes: 5
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 🔀 Back-merge (main → development)
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  back-merge:
+    name: 🔀 Back-merge
+    runs-on: ubuntu-latest
+    needs: release
+    if: github.ref == 'refs/heads/main' && needs.release.outputs.released == 'true'
+    timeout-minutes: 5
 
-        steps:
-            - name: 📥 Checkout
-              uses: actions/checkout@v4
-              with:
-                  fetch-depth: 0
-                  token: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - name: 📥 Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
 
-            - name: 🔧 Configure Git
-              run: |
-                  git config user.name "github-actions[bot]"
-                  git config user.email "github-actions[bot]@users.noreply.github.com"
+      - name: 🔧 Configure Git
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
 
-            - name: 🔀 Merge main into development
-              run: |
-                  git fetch origin main development
-                  git checkout development
-                  git pull origin development
+      - name: 🔀 Merge main into development
+        run: |
+          git fetch origin main development
+          git checkout development
+          git pull origin development
 
-                  # Try merge with auto-commit
-                  if git merge origin/main --no-ff -m "ci: 🔀 back-merge main into development [skip ci]"; then
-                    git push origin development
-                    echo "### ✅ Back-merge Successful" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "Successfully merged main into development" >> $GITHUB_STEP_SUMMARY
-                  else
-                    echo "### ⚠️ Merge Conflict Detected" >> $GITHUB_STEP_SUMMARY
-                    echo "" >> $GITHUB_STEP_SUMMARY
-                    echo "Automatic back-merge failed due to conflicts." >> $GITHUB_STEP_SUMMARY
-                    echo "Please manually merge main into development." >> $GITHUB_STEP_SUMMARY
-                    git merge --abort
-                    exit 1
-                  fi
+          # Try merge with auto-commit
+          if git merge origin/main --no-ff -m "ci: 🔀 back-merge main into development [skip ci]"; then
+            git push origin development
+            echo "### ✅ Back-merge Successful" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Successfully merged main into development" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### ⚠️ Merge Conflict Detected" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Automatic back-merge failed due to conflicts." >> $GITHUB_STEP_SUMMARY
+            echo "Please manually merge main into development." >> $GITHUB_STEP_SUMMARY
+            git merge --abort
+            exit 1
+          fi
 
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    # 📢 Notification
-    # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-    notify:
-        name: 📢 Notify
-        runs-on: ubuntu-latest
-        needs: [release, back-merge]
-        if: always() && needs.release.outputs.released == 'true'
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  # 📢 Notification
+  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+  notify:
+    name: 📢 Notify
+    runs-on: ubuntu-latest
+    needs: [release, back-merge]
+    if: always() && needs.release.outputs.released == 'true'
 
-        steps:
-            - name: 📢 Success Notification
-              if: needs.back-merge.result == 'success' || needs.back-merge.result == 'skipped'
-              run: |
-                  echo "### 🎉 Release Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "**Version:** v${{ needs.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-                  echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Package published to npm" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
-                  if [ "${{ needs.back-merge.result }}" == "success" ]; then
-                    echo "✅ Development branch updated" >> $GITHUB_STEP_SUMMARY
-                  fi
+    steps:
+      - name: 📢 Success Notification
+        if: needs.back-merge.result == 'success' || needs.back-merge.result == 'skipped'
+        run: |
+          echo "### 🎉 Release Pipeline Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ needs.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Package published to npm" >> $GITHUB_STEP_SUMMARY
+          echo "✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
+          if [ "${{ needs.back-merge.result }}" == "success" ]; then
+            echo "✅ Development branch updated" >> $GITHUB_STEP_SUMMARY
+          fi
 
-            - name: ⚠️ Partial Success
-              if: needs.back-merge.result == 'failure'
-              run: |
-                  echo "### ⚠️ Release Published with Warnings" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "**Version:** v${{ needs.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
-                  echo "" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ Package published to npm" >> $GITHUB_STEP_SUMMARY
-                  echo "✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
-                  echo "⚠️ Back-merge failed - manual intervention required" >> $GITHUB_STEP_SUMMARY
+      - name: ⚠️ Partial Success
+        if: needs.back-merge.result == 'failure'
+        run: |
+          echo "### ⚠️ Release Published with Warnings" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** v${{ needs.release.outputs.version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ Package published to npm" >> $GITHUB_STEP_SUMMARY
+          echo "✅ GitHub release created" >> $GITHUB_STEP_SUMMARY
+          echo "⚠️ Back-merge failed - manual intervention required" >> $GITHUB_STEP_SUMMARY

@@ -1,99 +1,99 @@
 branches:
-    - name: 1.x
-      range: 1.x
-      channel: 1.x
-    - name: 2.x
-      range: 2.x
-      channel: 2.x
-    - main
-    - name: development
-      prerelease: alpha
-      channel: alpha
+  - name: 1.x
+    range: 1.x
+    channel: 1.x
+  - name: 2.x
+    range: 2.x
+    channel: 2.x
+  - main
+  - name: development
+    prerelease: alpha
+    channel: alpha
 
 plugins:
-    # Analyze commits using conventional commits
-    - - '@semantic-release/commit-analyzer'
-      - preset: angular
-        releaseRules:
-            - scope: no-release
-              release: false
-            - type: build
-              release: patch
-            - type: chore
-              release: patch
-            - type: ci
-              release: false
-            - type: docs
-              release: false
-            - type: style
-              release: patch
-            - type: refactor
-              release: patch
-            - type: test
-              release: patch
+  # Analyze commits using conventional commits
+  - - '@semantic-release/commit-analyzer'
+    - preset: angular
+      releaseRules:
+        - scope: no-release
+          release: false
+        - type: build
+          release: patch
+        - type: chore
+          release: patch
+        - type: ci
+          release: false
+        - type: docs
+          release: false
+        - type: style
+          release: patch
+        - type: refactor
+          release: patch
+        - type: test
+          release: patch
 
-    # Generate beautiful release notes
-    - - '@semantic-release/release-notes-generator'
-      - preset: angular
-        writerOpts:
-            groupBy: 'type'
-            commitGroupsSort: 'title'
-            commitsSort: ['scope', 'subject']
-        presetConfig:
-            types:
-                - type: feat
-                  section: '✨ Features'
-                  hidden: false
-                - type: fix
-                  section: '🐛 Bug Fixes'
-                  hidden: false
-                - type: perf
-                  section: '⚡ Performance Improvements'
-                  hidden: false
-                - type: revert
-                  section: '⏪ Reverts'
-                  hidden: false
-                - type: docs
-                  section: '📚 Documentation'
-                  hidden: false
-                - type: style
-                  section: '💄 Styles'
-                  hidden: false
-                - type: chore
-                  section: '🔧 Maintenance'
-                  hidden: false
-                - type: refactor
-                  section: '♻️ Code Refactoring'
-                  hidden: false
-                - type: test
-                  section: '✅ Tests'
-                  hidden: false
-                - type: build
-                  section: '🏗️ Build System'
-                  hidden: false
-                - type: ci
-                  section: '👷 CI/CD'
-                  hidden: true
+  # Generate beautiful release notes
+  - - '@semantic-release/release-notes-generator'
+    - preset: angular
+      writerOpts:
+        groupBy: 'type'
+        commitGroupsSort: 'title'
+        commitsSort: ['scope', 'subject']
+      presetConfig:
+        types:
+          - type: feat
+            section: '✨ Features'
+            hidden: false
+          - type: fix
+            section: '🐛 Bug Fixes'
+            hidden: false
+          - type: perf
+            section: '⚡ Performance Improvements'
+            hidden: false
+          - type: revert
+            section: '⏪ Reverts'
+            hidden: false
+          - type: docs
+            section: '📚 Documentation'
+            hidden: false
+          - type: style
+            section: '💄 Styles'
+            hidden: false
+          - type: chore
+            section: '🔧 Maintenance'
+            hidden: false
+          - type: refactor
+            section: '♻️ Code Refactoring'
+            hidden: false
+          - type: test
+            section: '✅ Tests'
+            hidden: false
+          - type: build
+            section: '🏗️ Build System'
+            hidden: false
+          - type: ci
+            section: '👷 CI/CD'
+            hidden: true
 
-    # Publish to npm
-    - - '@semantic-release/npm'
+  # Publish to npm
+  - - '@semantic-release/npm'
 
-    # Create GitHub release with assets
-    - - '@semantic-release/github'
-      - assets:
-            - path: build/**/*
-              label: Build artifacts
-        successComment: |
-            ### 🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version}
+  # Create GitHub release with assets
+  - - '@semantic-release/github'
+    - assets:
+        - path: build/**/*
+          label: Build artifacts
+      successComment: |
+        ### 🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version}
 
-            The release is available on:
-            - 📦 [npm package (@latest dist-tag)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${nextRelease.version})
-            - 📝 [GitHub release](${releases[0].url})
+        The release is available on:
+        - 📦 [npm package (@latest dist-tag)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${nextRelease.version})
+        - 📝 [GitHub release](${releases[0].url})
 
-            Your **${issue.pull_request ? 'pull request' : 'issue'}** is in ${nextRelease.channel ? `**${nextRelease.channel}** channel` : '**production**'}!
+        Your **${issue.pull_request ? 'pull request' : 'issue'}** is in ${nextRelease.channel ? `**${nextRelease.channel}** channel` : '**production**'}!
 
-            ---
-            <sub>🤖 Generated by [semantic-release](https://github.com/semantic-release/semantic-release)</sub>
-        failComment: false
-        releasedLabels:
-            - released<%= nextRelease.channel ? `-${nextRelease.channel}` : '' %>
+        ---
+        <sub>🤖 Generated by [semantic-release](https://github.com/semantic-release/semantic-release)</sub>
+      failComment: false
+      releasedLabels:
+        - released
