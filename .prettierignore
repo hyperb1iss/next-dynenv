@@ -1,0 +1,27 @@
+# Dependencies
+node_modules
+pnpm-lock.yaml
+package-lock.json
+yarn.lock
+
+# Build outputs
+build
+dist
+.next
+out
+coverage
+
+# TypeScript (handled by Biome)
+*.ts
+*.tsx
+
+# JavaScript (handled by Biome)
+*.js
+*.jsx
+*.mjs
+*.cjs
+
+# Only run Prettier on:
+# - Markdown files (*.md, *.mdx)
+# - YAML files (*.yml, *.yaml)
+# - JSON files (*.json)
