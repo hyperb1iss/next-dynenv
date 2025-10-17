@@ -131,14 +131,20 @@ export default async function ServerComponent() {
 
 ```tsx
 // middleware.ts
+import { env } from '@hyperb1iss/next-runtime-env'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-    // Access environment variables in middleware
-    const apiUrl = process.env.NEXT_PUBLIC_API_URL
+    // env() works in middleware too!
+    const apiUrl = env('NEXT_PUBLIC_API_URL')
+    const featureFlag = env('NEXT_PUBLIC_ENABLE_FEATURE')
 
     // Your middleware logic here
+    if (featureFlag === 'true') {
+        // Feature-specific logic
+    }
+
     return NextResponse.next()
 }
 
@@ -146,6 +152,9 @@ export const config = {
     matcher: '/api/:path*',
 }
 ```
+
+> **Note:** The `env()` function works in all Next.js contexts - server components, client components, API routes, and
+> middleware. It's safe to use everywhere and provides a consistent API across your application.
 
 ## 🛠 Advanced Usage
 
@@ -250,13 +259,14 @@ For static exports with runtime environment support:
 **Critical:** Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Never expose sensitive data:
 
 ```tsx
-// ❌ WRONG - Don't expose secrets
-const apiKey = env('SECRET_API_KEY') // Will be undefined in browser
+// ❌ WRONG - Don't try to access secrets in client components
+'use client'
+const apiKey = env('SECRET_API_KEY') // Throws error in browser!
 
 // ✅ CORRECT - Use secrets only server-side
 export async function getData() {
-    const apiKey = process.env.SECRET_API_KEY // Server-side only
-    // ... fetch data
+    const apiKey = env('SECRET_API_KEY') // Works in server components/API routes
+    // ... fetch data securely
 }
 ```
 
@@ -362,9 +372,16 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!
 
 **Key Differences:**
 
-- **Server components/API routes:** Can access ALL environment variables via `process.env`
-- **Client components:** Can only access `NEXT_PUBLIC_*` variables via `env()`
-- **Middleware:** Uses standard `process.env` access
+- **Server-side contexts** (server components, API routes, middleware):
+  - Can access ALL environment variables via `env()` or `process.env`
+  - Both private and public (`NEXT_PUBLIC_*`) variables are available
+
+- **Client-side contexts** (client components, browser):
+  - Can only access `NEXT_PUBLIC_*` variables via `env()`
+  - Private variables are not available for security reasons
+  - Attempting to access private variables throws an error
+
+**Recommendation:** Use `env()` everywhere for consistency. It works in all contexts and provides better error messages when misused
 
 ## 📚 Additional Resources
 
