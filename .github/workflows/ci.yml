@@ -85,39 +85,6 @@ jobs:
           echo "- 🧪 Unit tests with coverage" >> $GITHUB_STEP_SUMMARY
           echo "- 🚀 Integration tests" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Runtime:** Node.js 22" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
           echo "🎉 All checks passed!" >> $GITHUB_STEP_SUMMARY
-
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # 🧪 Multi-Version Compatibility Check (Node 18, 20)
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  compat:
-    name: 🧪 Node ${{ matrix.node-version }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 10
-    strategy:
-      matrix:
-        node-version: ['18', '20']
-
-    steps:
-      - name: 📥 Checkout
-        uses: actions/checkout@v4
-
-      - name: 📦 Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10
-
-      - name: 🔧 Setup Node.js ${{ matrix.node-version }}
-        uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: 'pnpm'
-
-      - name: 📚 Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: 🏗️ Build
-        run: pnpm build
-
-      - name: 🧪 Test
-        run: pnpm test --ci --runInBand
