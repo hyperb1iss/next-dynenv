@@ -1,8 +1,22 @@
-[![npm version][npm-img]][npm-url] [![GitHub][github-img]][github-url] [![License][license-img]][license-url]
-
 # 🌐 Next.js Runtime Environment Configuration
 
-**Effortlessly populate your environment at runtime, not just at build time, with `@hyperb1iss/next-runtime-env`.**
+<div align="center">
+
+[![Next.js](https://img.shields.io/badge/Next.js%2015-e135ff.svg?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React%2019-80ffea.svg?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-ff79c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
+
+[![npm version](https://img.shields.io/npm/v/@hyperb1iss/next-runtime-env?style=for-the-badge&logo=npm&logoColor=white&color=50fa7b)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env)
+[![CI](https://img.shields.io/github/actions/workflow/status/hyperb1iss/next-runtime-env/ci.yml?branch=development&style=for-the-badge&logo=github&logoColor=white&label=CI)](https://github.com/hyperb1iss/next-runtime-env/actions)
+[![Downloads](https://img.shields.io/npm/dm/@hyperb1iss/next-runtime-env?style=for-the-badge&logo=npm&logoColor=white&color=ffb86c)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env)
+
+**Effortlessly populate your environment at runtime, not just at build time.**
+
+[⚡ Installation](#-installation) • [🚀 Getting Started](#-getting-started) • [🛠 Advanced Usage](#-advanced-usage) •
+[🚀 Deployment](#-deployment-guide)
+
+</div>
 
 > **Fork Notice:** This package is a Next.js 15 & React 19 compatible fork of the original
 > [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All credit for the original
@@ -403,12 +417,8 @@ This fork is maintained by [Stefanie Jane (@hyperb1iss)](https://github.com/hype
 
 ---
 
-[npm-img]: https://img.shields.io/npm/v/@hyperb1iss/next-runtime-env
-[npm-url]: https://www.npmjs.com/package/@hyperb1iss/next-runtime-env
-[github-img]: https://img.shields.io/github/stars/hyperb1iss/next-runtime-env?style=social
-[github-url]: https://github.com/hyperb1iss/next-runtime-env
-[license-img]: https://img.shields.io/npm/l/@hyperb1iss/next-runtime-env
-[license-url]: https://github.com/hyperb1iss/next-runtime-env/blob/main/LICENSE.md
-[build-once-deploy-many-link]: https://www.mikemcgarr.com/blog/build-once-deploy-many.html
-[fundamental-principle-link]: https://cloud.redhat.com/blog/build-once-deploy-anywhere
-[twelve-factor-link]: https://12factor.net
+<div align="center">
+
+If you find this useful, [buy me a Monster Ultra Violet ⚡](https://ko-fi.com/hyperb1iss)
+
+</div>
