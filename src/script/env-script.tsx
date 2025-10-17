@@ -1,5 +1,4 @@
-// XXX: Blocked by https://github.com/vercel/next.js/pull/58129
-// import { headers } from 'next/headers';
+import { headers } from 'next/headers'
 import Script, { type ScriptProps } from 'next/script'
 import { type FC } from 'react'
 
@@ -144,14 +143,22 @@ export const EnvScript: FC<EnvScriptProps> = ({
     nextScriptProps = { strategy: 'beforeInteractive' },
 }) => {
     let nonceString: string | undefined
+    if (typeof nonce === 'object' && nonce !== null) {
+        try {
+            const headerStore = headers()
+            const maybeHeaders = headerStore as unknown as Awaited<ReturnType<typeof headers>>
 
-    // XXX: Blocked by https://github.com/vercel/next.js/pull/58129
-    // if (typeof nonce === 'object' && nonce !== null) {
-    //   // It's strongly recommended to set a nonce on your script tags.
-    //   nonceString = headers().get(nonce.headerKey) ?? undefined;
-    // }
-
-    if (typeof nonce === 'string') {
+            if (maybeHeaders && typeof (maybeHeaders as { get?: (key: string) => string | undefined }).get === 'function') {
+                nonceString = maybeHeaders.get!(nonce.headerKey) ?? undefined
+            }
+        } catch (error) {
+            if (error instanceof Error && error.message.includes('outside a request scope')) {
+                nonceString = undefined
+            } else {
+                throw error
+            }
+        }
+    } else if (typeof nonce === 'string') {
         nonceString = nonce
     }
 

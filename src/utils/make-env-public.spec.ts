@@ -18,6 +18,7 @@ describe('makeEnvPublic()', () => {
         delete process.env.NEXT_PUBLIC_FOO
         delete process.env.NEXT_PUBLIC_BAR
         delete process.env.NEXT_PUBLIC_BAZ
+        delete process.env.NEXT_PUBLIC_NEXT_PUBLIC_FOO
     })
 
     it('should prefix an env var with NEXT_PUBLIC_', () => {
@@ -76,6 +77,7 @@ describe('makeEnvPublic()', () => {
         makeEnvPublic('NEXT_PUBLIC_FOO')
 
         expect(warnMock).toHaveBeenCalledWith(`Environment variable 'NEXT_PUBLIC_FOO' is already public`, undefined)
+        expect(process.env.NEXT_PUBLIC_NEXT_PUBLIC_FOO).toBeUndefined()
     })
 
     it('should not log anything when logLevel is set to silent', () => {

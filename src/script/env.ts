@@ -65,7 +65,15 @@ export function env(key: string): string | undefined {
 
     // Force dynamic rendering by accessing headers (Next.js 15+)
     // This replaces the deprecated unstable_noStore() call
-    headers()
+    try {
+        headers()
+    } catch (error) {
+        if (error instanceof Error && error.message.includes('outside a request scope')) {
+            // Ignore when called outside a Next.js request (CLI scripts, tests, etc.)
+        } else {
+            throw error
+        }
+    }
 
     return process.env[key]
 }

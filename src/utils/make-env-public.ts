@@ -23,6 +23,7 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
     // Check if key is already public.
     if (/^NEXT_PUBLIC_/i.test(key)) {
         warn(`Environment variable '${key}' is already public`, options)
+        return
     }
 
     const prefixedKey = `NEXT_PUBLIC_${key}`
@@ -116,6 +117,8 @@ export function makeEnvPublic(key: string | string[], options?: MakeEnvPublicOpt
     if (typeof key === 'string') {
         prefixKey(key, options)
     } else {
-        key.forEach((value) => prefixKey(value, options))
+        for (const value of key) {
+            prefixKey(value, options)
+        }
     }
 }

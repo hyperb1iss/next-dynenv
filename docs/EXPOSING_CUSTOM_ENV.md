@@ -1,12 +1,12 @@
 # Exposing custom environment variables 🛠
 
 - [Exposing custom environment variables 🛠](#exposing-custom-environment-variables-)
-    - [Using the script approach (recommend)](#using-the-script-approach-recommend)
+    - [Using the script approach (recommended)](#using-the-script-approach-recommended)
         - [Example](#example)
     - [Using the context approach](#using-the-context-approach)
         - [Example](#example-1)
 
-## Using the script approach (recommend)
+## Using the script approach (recommended)
 
 You might not only want to expose environment variables that are prefixed with `NEXT_PUBLIC_`. In this case you can use
 the `EnvScript` to expose custom environment variables to the browser.
@@ -17,7 +17,7 @@ the `EnvScript` to expose custom environment variables to the browser.
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
 import { connection } from 'next/server'
-import { EnvScript } from 'next-runtime-env'
+import { EnvScript } from '@hyperb1iss/next-runtime-env'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // Opt into dynamic rendering (Next.js 15+)
@@ -53,7 +53,7 @@ the `EnvProvider` to expose custom environment variables to the context.
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
 import { connection } from 'next/server'
-import { EnvProvider } from 'next-runtime-env'
+import { EnvProvider } from '@hyperb1iss/next-runtime-env'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // Opt into dynamic rendering (Next.js 15+)

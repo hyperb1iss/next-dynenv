@@ -1,5 +1,6 @@
 import { env } from '@hyperb1iss/next-runtime-env'
-import React from 'react'
+
+import ClientEnvReader from './client-env-reader'
 
 export default function HomePage() {
     const serverValue = env('NEXT_PUBLIC_TEST_VAR')
@@ -20,22 +21,5 @@ export default function HomePage() {
                 <ClientEnvReader />
             </section>
         </main>
-    )
-}
-
-function ClientEnvReader() {
-    'use client'
-
-    const [clientValue, setClientValue] = React.useState<string>('loading...')
-
-    React.useEffect(() => {
-        const value = (window as any).__ENV?.NEXT_PUBLIC_TEST_VAR || 'undefined'
-        setClientValue(value)
-    }, [])
-
-    return (
-        <p>
-            Client rendered value: <strong data-testid="client-value">{clientValue}</strong>
-        </p>
     )
 }

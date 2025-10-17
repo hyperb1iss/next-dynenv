@@ -4,15 +4,19 @@ import { render } from '@testing-library/react'
 
 import { EnvScript } from './env-script'
 
+const { headers } = jest.requireMock('next/headers') as { headers: jest.Mock }
+
 jest.mock('next/script', () => // eslint-disable-next-line @typescript-eslint/no-explicit-any
     ({ children, ...props }: any) => <script {...props}>{children}</script>)
 
 beforeEach(() => {
     process.env = {}
+    headers.mockImplementation(() => new Headers())
 })
 
 afterEach(() => {
     process.env = {}
+    headers.mockReset()
 })
 
 describe('EnvScript', () => {
@@ -79,5 +83,35 @@ describe('EnvScript', () => {
         expect(document.querySelector('script')).not.toHaveAttribute('id', id)
     })
 
-    it.todo('should get the nonce from the headers when the headerKey is provided')
+    it('should get the nonce from the headers when the headerKey is provided', () => {
+        headers.mockImplementation(() => new Headers({ 'x-nonce': 'test-nonce-xyz' }))
+        const env = { NODE_ENV: 'test' }
+
+        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+
+        expect(headers).toHaveBeenCalled()
+        expect(document.querySelector('script')).toHaveAttribute('nonce', 'test-nonce-xyz')
+    })
+
+    it('should fall back gracefully when headers throws outside a request scope', () => {
+        headers.mockImplementation(() => {
+            throw new Error(
+                '`headers` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context',
+            )
+        })
+        const env = { NODE_ENV: 'test' }
+
+        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+
+        expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+    })
+
+    it('should skip nonce when headers returns a promise', () => {
+        headers.mockImplementation(() => Promise.resolve(new Headers({ 'x-nonce': 'test-nonce-xyz' })))
+        const env = { NODE_ENV: 'test' }
+
+        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+
+        expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+    })
 })

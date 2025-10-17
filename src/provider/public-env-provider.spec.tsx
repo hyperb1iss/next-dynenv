@@ -28,11 +28,7 @@ describe('PublicEnvProvider', () => {
         const SomeClientComponent = () => {
             const { NEXT_PUBLIC_FOO } = useEnvContext()
 
-            return (
-                <>
-                    <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
-                </>
-            )
+            return <p>NEXT_PUBLIC_FOO: {NEXT_PUBLIC_FOO}</p>
         }
 
         const Component = await PublicEnvProvider({
@@ -53,11 +49,7 @@ describe('PublicEnvProvider', () => {
         const SomeClientComponent = () => {
             const { BAR } = useEnvContext()
 
-            return (
-                <>
-                    <p>BAR: {BAR}</p>
-                </>
-            )
+            return <p>BAR: {BAR}</p>
         }
 
         const Component = await PublicEnvProvider({
