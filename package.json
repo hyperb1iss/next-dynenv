@@ -7,6 +7,7 @@
         "lint": "biome check . && prettier --check \"**/*.{md,mdx,yml,yaml}\"",
         "lint:fix": "biome check --write . && prettier --write \"**/*.{md,mdx,yml,yaml}\"",
         "lint:all": "biome check --write --unsafe . && prettier --write \"**/*.{md,mdx,yml,yaml}\"",
+        "typecheck": "tsc --noEmit",
         "test": "jest",
         "test:coverage": "pnpm test -- --coverage",
         "test:watch": "pnpm test -- --maxWorkers=50% --watchAll",

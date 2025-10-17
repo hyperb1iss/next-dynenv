@@ -50,6 +50,9 @@ jobs:
       - name: 💎 Lint & format check
         run: pnpm lint
 
+      - name: 🔍 Type check
+        run: pnpm typecheck
+
       # ─────────────────────────────────────────────────────────────────
       # Build & Test
       # ─────────────────────────────────────────────────────────────────
@@ -81,6 +84,7 @@ jobs:
           echo "**Checks Run:**" >> $GITHUB_STEP_SUMMARY
           echo "- 🔒 Security audit" >> $GITHUB_STEP_SUMMARY
           echo "- 💎 Linting & formatting" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔍 Type checking" >> $GITHUB_STEP_SUMMARY
           echo "- 🏗️ TypeScript build" >> $GITHUB_STEP_SUMMARY
           echo "- 🧪 Unit tests with coverage" >> $GITHUB_STEP_SUMMARY
           echo "- 🚀 Integration tests" >> $GITHUB_STEP_SUMMARY
