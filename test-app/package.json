@@ -1,17 +1,17 @@
 {
-  "name": "next-runtime-env-test-app",
-  "version": "1.0.0",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "dev": "next dev",
-    "build": "next build",
-    "start": "node .next/standalone/test-app/server.js"
-  },
-  "dependencies": {
-    "next": "15.5.5",
-    "react": "19.2.0",
-    "react-dom": "19.2.0",
-    "@hyperb1iss/next-runtime-env": "file:.."
-  }
+    "name": "next-runtime-env-test-app",
+    "version": "1.0.0",
+    "private": true,
+    "type": "module",
+    "scripts": {
+        "dev": "next dev",
+        "build": "next build",
+        "start": "node .next/standalone/test-app/server.js"
+    },
+    "dependencies": {
+        "next": "15.5.5",
+        "react": "19.2.0",
+        "react-dom": "19.2.0",
+        "@hyperb1iss/next-runtime-env": "file:.."
+    }
 }

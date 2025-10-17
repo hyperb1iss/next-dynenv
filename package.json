@@ -1,61 +1,61 @@
 {
-  "name": "@hyperb1iss/next-runtime-env",
-  "version": "4.0.0",
-  "description": "Next.js Runtime Environment Configuration - Populates your environment at runtime rather than build time.",
-  "main": "build/index.js",
-  "scripts": {
-    "lint": "biome check . && prettier --check \"**/*.{md,mdx,json,yml,yaml}\"",
-    "lint:fix": "biome check --write . && prettier --write \"**/*.{md,mdx,json,yml,yaml}\"",
-    "lint:all": "biome check --write --unsafe . && prettier --write \"**/*.{md,mdx,json,yml,yaml}\"",
-    "test": "jest",
-    "test:coverage": "pnpm test -- --coverage",
-    "test:watch": "pnpm test -- --maxWorkers=50% --watchAll",
-    "test:integration": "node test-app/integration-test.mjs",
-    "build": "tsc -p .",
-    "build:watch": "pnpm build --watch",
-    "audit-ci": "audit-ci",
-    "semantic-release": "semantic-release"
-  },
-  "keywords": [
-    "nextjs",
-    "runtime",
-    "env",
-    "runtime env",
-    "next-runtime-env"
-  ],
-  "author": "Stefanie Jane <hyperb1iss@gmail.com> (Forked from Expatfile.tax LLC)",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/hyperb1iss/next-runtime-env.git"
-  },
-  "bugs": {
-    "url": "https://github.com/hyperb1iss/next-runtime-env/issues"
-  },
-  "homepage": "https://github.com/hyperb1iss/next-runtime-env#readme",
-  "dependencies": {
-    "next": "^15",
-    "react": "^19"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^2.2.6",
-    "@testing-library/jest-dom": "^6.6.3",
-    "@testing-library/react": "^16.3.0",
-    "@types/jest": "^29.5.14",
-    "@types/node": "^24.7.2",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.2",
-    "audit-ci": "^7.1.0",
-    "jest": "^30.2.0",
-    "jest-environment-jsdom": "^30.2.0",
-    "prettier": "^3.5.3",
-    "react-dom": "19.2.0",
-    "semantic-release": "^24.2.3",
-    "ts-jest": "^29.4.5",
-    "typescript": "^5.9.3"
-  },
-  "peerDependencies": {
-    "next": "^15",
-    "react": "^19"
-  }
+    "name": "@hyperb1iss/next-runtime-env",
+    "version": "4.0.0",
+    "description": "Next.js Runtime Environment Configuration - Populates your environment at runtime rather than build time.",
+    "main": "build/index.js",
+    "scripts": {
+        "lint": "biome check . && prettier --check \"**/*.{md,mdx,yml,yaml}\"",
+        "lint:fix": "biome check --write . && prettier --write \"**/*.{md,mdx,yml,yaml}\"",
+        "lint:all": "biome check --write --unsafe . && prettier --write \"**/*.{md,mdx,yml,yaml}\"",
+        "test": "jest",
+        "test:coverage": "pnpm test -- --coverage",
+        "test:watch": "pnpm test -- --maxWorkers=50% --watchAll",
+        "test:integration": "node test-app/integration-test.mjs",
+        "build": "tsc -p .",
+        "build:watch": "pnpm build --watch",
+        "audit-ci": "audit-ci",
+        "semantic-release": "semantic-release"
+    },
+    "keywords": [
+        "nextjs",
+        "runtime",
+        "env",
+        "runtime env",
+        "next-runtime-env"
+    ],
+    "author": "Stefanie Jane <hyperb1iss@gmail.com> (Forked from Expatfile.tax LLC)",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/hyperb1iss/next-runtime-env.git"
+    },
+    "bugs": {
+        "url": "https://github.com/hyperb1iss/next-runtime-env/issues"
+    },
+    "homepage": "https://github.com/hyperb1iss/next-runtime-env#readme",
+    "dependencies": {
+        "next": "^15",
+        "react": "^19"
+    },
+    "devDependencies": {
+        "@biomejs/biome": "^2.2.6",
+        "@testing-library/jest-dom": "^6.6.3",
+        "@testing-library/react": "^16.3.0",
+        "@types/jest": "^29.5.14",
+        "@types/node": "^24.7.2",
+        "@types/react": "^19.2.2",
+        "@types/react-dom": "^19.2.2",
+        "audit-ci": "^7.1.0",
+        "jest": "^30.2.0",
+        "jest-environment-jsdom": "^30.2.0",
+        "prettier": "^3.5.3",
+        "react-dom": "19.2.0",
+        "semantic-release": "^24.2.3",
+        "ts-jest": "^29.4.5",
+        "typescript": "^5.9.3"
+    },
+    "peerDependencies": {
+        "next": "^15",
+        "react": "^19"
+    }
 }
