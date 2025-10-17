@@ -32,7 +32,7 @@ export default async function RootLayout({
       <head>
         <EnvScript
           env={{
-            NEXT_PUBLIC_: process.env.NEXT_PUBLIC_FOO,
+            NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
             BAR: process.env.BAR,
             BAZ: process.env.BAZ,
             notAnEnvVar: 'not-an-env-var',
@@ -73,7 +73,7 @@ export default async function RootLayout({
       <body>
         <EnvProvider
           env={{
-            NEXT_PUBLIC_: process.env.NEXT_PUBLIC_FOO,
+            NEXT_PUBLIC_FOO: process.env.NEXT_PUBLIC_FOO,
             BAR: process.env.BAR,
             BAZ: process.env.BAZ,
             notAnEnvVar: 'not-an-env-var',

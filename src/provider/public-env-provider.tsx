@@ -4,21 +4,80 @@ import { type FC, type PropsWithChildren } from 'react';
 import { getPublicEnv } from '../helpers/get-public-env';
 import { EnvProvider } from './env-provider';
 
+/**
+ * Props for the {@link PublicEnvProvider} component.
+ */
 type PublicEnvProviderProps = PropsWithChildren;
 
 /**
- * Provides the public environment variables to the application. This component
- * disables Next.js' caching mechanism to ensure that the environment
- * variables are always up-to-date.
+ * Server component that provides public environment variables via React Context.
  *
- * This component should be used in a server component.
+ * This async component automatically reads all `NEXT_PUBLIC_*` environment variables
+ * at runtime and makes them available to client components through the {@link useEnvContext}
+ * hook. It opts into Next.js dynamic rendering to ensure variables are always fresh.
  *
- * Usage:
- * ```ts
- * <PublicEnvProvider>
- *  <App />
- * </PublicEnvProvider>
+ * **Important:** This is an async server component that uses Next.js 15's `connection()`
+ * API to disable static optimization. It must be used in server-rendered contexts and
+ * wraps client components that need environment access.
+ *
+ * This is an alternative to {@link PublicEnvScript} that uses React Context instead of
+ * a global window object. Choose based on your architecture:
+ * - Use `PublicEnvScript` for direct window object access
+ * - Use `PublicEnvProvider` for React Context-based access
+ *
+ * @param props - Component props including children to wrap
+ * @returns A React Context provider with public environment variables
+ *
+ * @example
+ * Basic usage in app layout:
+ * ```tsx
+ * // app/layout.tsx
+ * import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
+ *
+ * export default function RootLayout({ children }) {
+ *   return (
+ *     <html>
+ *       <body>
+ *         <PublicEnvProvider>
+ *           {children}
+ *         </PublicEnvProvider>
+ *       </body>
+ *     </html>
+ *   );
+ * }
  * ```
+ *
+ * @example
+ * Accessing values in client components:
+ * ```tsx
+ * 'use client';
+ * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ *
+ * export function MyComponent() {
+ *   const env = useEnvContext();
+ *   return <div>API URL: {env.NEXT_PUBLIC_API_URL}</div>;
+ * }
+ * ```
+ *
+ * @example
+ * Combining with other providers:
+ * ```tsx
+ * export default function RootLayout({ children }) {
+ *   return (
+ *     <PublicEnvProvider>
+ *       <ThemeProvider>
+ *         <AuthProvider>
+ *           {children}
+ *         </AuthProvider>
+ *       </ThemeProvider>
+ *     </PublicEnvProvider>
+ *   );
+ * }
+ * ```
+ *
+ * @see {@link useEnvContext} for accessing the environment in client components
+ * @see {@link PublicEnvScript} for the window object-based alternative
+ * @see {@link EnvProvider} for custom environment injection
  */
 export const PublicEnvProvider: FC<PublicEnvProviderProps> = async ({
   children,

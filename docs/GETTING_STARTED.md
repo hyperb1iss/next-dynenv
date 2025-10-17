@@ -11,18 +11,18 @@ We recommend using the script approach, because you can use the environment vari
 1. First, install the package into your project:
 
 ```bash
-npm install next-runtime-env
+npm install @hyperb1iss/next-runtime-env
 # or
-yarn add next-runtime-env
+yarn add @hyperb1iss/next-runtime-env
 # or
-pnpm install next-runtime-env
+pnpm install @hyperb1iss/next-runtime-env
 ```
 
 1. Then add the script to your head in the root layout:
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvScript } from 'next-runtime-env';
+import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
 
 export default function RootLayout({
   children,
@@ -45,7 +45,10 @@ export default function RootLayout({
 1. Finally, use `env` utility to access the runtime environment variables any where in your app:
 
 ```tsx
-import { env } from 'next-runtime-env';
+'use client';
+
+import { useEffect } from 'react';
+import { env } from '@hyperb1iss/next-runtime-env';
 
 export function MyComponent() {
   const NEXT_PUBLIC_FOO = env('NEXT_PUBLIC_FOO');
@@ -59,27 +62,27 @@ export function MyComponent() {
 }
 ```
 
-That's it! You can now use the next-runtime-env package to access runtime environment variables in your Next.js app.
+That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your Next.js app.
 
 ## Using the context approach
 
 1. First, install the package into your project:
 
 ```bash
-npm install next-runtime-env
+npm install @hyperb1iss/next-runtime-env
 # or
-yarn add next-runtime-env
+yarn add @hyperb1iss/next-runtime-env
 # or
-pnpm install next-runtime-env
+pnpm install @hyperb1iss/next-runtime-env
 ```
 
 2. Then wrap your component with RuntimeEnvProvider, for example in the root layout:
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvProvider } from 'next-runtime-env';
+import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode;
@@ -94,12 +97,15 @@ export default function RootLayout({
 }
 ```
 
-> Keep in mind that the RuntimeEnvProvider must be added in a Server Component.
+> **Note:** `PublicEnvProvider` is an async Server Component in Next.js 15+, so your layout must be `async`.
 
 3. Finally, use `useEnvContext` hook to access the runtime environment variables in your components:
 
 ```tsx
-import { useEnvContext } from 'next-runtime-env';
+'use client';
+
+import { useEffect } from 'react';
+import { useEnvContext } from '@hyperb1iss/next-runtime-env';
 
 export function MyComponent() {
   const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext();
@@ -112,4 +118,4 @@ export function MyComponent() {
 }
 ```
 
-That's it! You can now use the next-runtime-env package to access runtime environment variables in your Next.js app.
+That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your Next.js app.
