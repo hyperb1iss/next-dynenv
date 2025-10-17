@@ -2,7 +2,7 @@ name: 🚀 Release
 
 on:
   push:
-    branches: [main, development]
+    branches: [main]
   workflow_dispatch:
 
 permissions:
