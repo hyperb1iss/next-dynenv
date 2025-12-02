@@ -1,7 +1,6 @@
 # Next.js App Router with Script Tag Example
 
-This example demonstrates the **script tag approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App
-Router.
+This example demonstrates the **script tag approach** for using `next-dynenv` with Next.js 15 App Router.
 
 ## What This Example Demonstrates
 
@@ -19,7 +18,7 @@ browser:
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvScript } from 'next-dynenv'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
@@ -37,7 +36,7 @@ Then access variables anywhere using the `env()` function:
 
 ```tsx
 'use client'
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export default function ClientComponent() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')

@@ -8,7 +8,7 @@ import { env } from './env'
  *
  * @example
  * ```ts
- * import { envParsers } from '@hyperb1iss/next-runtime-env';
+ * import { envParsers } from 'next-dynenv';
  *
  * const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG');
  * const port = envParsers.number('NEXT_PUBLIC_PORT', 3000);

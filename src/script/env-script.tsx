@@ -100,7 +100,7 @@ type EnvScriptProps = {
  * @example
  * Basic usage with custom environment:
  * ```tsx
- * import { EnvScript } from '@hyperb1iss/next-runtime-env';
+ * import { EnvScript } from 'next-dynenv';
  *
  * export default function Layout() {
  *   const customEnv = {

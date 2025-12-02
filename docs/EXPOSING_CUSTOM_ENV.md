@@ -17,7 +17,7 @@ the `EnvScript` to expose custom environment variables to the browser.
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
 import { connection } from 'next/server'
-import { EnvScript } from '@hyperb1iss/next-runtime-env'
+import { EnvScript } from 'next-dynenv'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // Opt into dynamic rendering (Next.js 15+)
@@ -53,7 +53,7 @@ the `EnvProvider` to expose custom environment variables to the context.
 // app/layout.tsx
 // This is as of Next.js 15+, but you could also use other dynamic functions
 import { connection } from 'next/server'
-import { EnvProvider } from '@hyperb1iss/next-runtime-env'
+import { EnvProvider } from 'next-dynenv'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     // Opt into dynamic rendering (Next.js 15+)

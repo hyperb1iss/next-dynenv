@@ -1,7 +1,6 @@
 # Next.js App Router with Context Provider Example
 
-This example demonstrates the **React Context approach** for using `@hyperb1iss/next-runtime-env` with Next.js 15 App
-Router.
+This example demonstrates the **React Context approach** for using `next-dynenv` with Next.js 15 App Router.
 
 ## What This Example Demonstrates
 
@@ -18,7 +17,7 @@ This approach uses React Context to provide environment variables to your compon
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvProvider } from 'next-dynenv'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
     return (
@@ -35,7 +34,7 @@ Then access variables in client components using the `useEnvContext()` hook:
 
 ```tsx
 'use client'
-import { useEnvContext } from '@hyperb1iss/next-runtime-env'
+import { useEnvContext } from 'next-dynenv'
 
 export default function ClientComponent() {
     const { NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_VERSION } = useEnvContext()
@@ -106,7 +105,7 @@ The `next.config.js` includes configuration for the instrumentation hook:
 // next.config.js
 module.exports = {
     experimental: {
-        serverComponentsExternalPackages: ['next-runtime-env'],
+        serverComponentsExternalPackages: ['next-dynenv'],
         instrumentationHook: true,
     },
 }
@@ -184,7 +183,7 @@ runtime.
 
 ```tsx
 'use client'
-import { useEnvContext } from '@hyperb1iss/next-runtime-env'
+import { useEnvContext } from 'next-dynenv'
 
 export default function Component() {
     // Destructure multiple variables at once
@@ -203,7 +202,7 @@ export default function Component() {
 
 ```tsx
 'use client'
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export default function Component() {
     // Call env() function for each variable

@@ -1,10 +1,10 @@
 # Migration Guide (v4.x)
 
-This guide helps you migrate to `@hyperb1iss/next-runtime-env@4.x`, which supports Next.js 15 and React 19.
+This guide helps you migrate to `next-dynenv@4.x`, which supports Next.js 15 and React 19.
 
 ## About This Fork
 
-> **Important:** `@hyperb1iss/next-runtime-env` is a fork of the original
+> **Important:** `next-dynenv` is a fork of the original
 > [expatfile/next-runtime-env](https://github.com/expatfile/next-runtime-env) project, which appears to be unmaintained.
 > This fork starts at version **4.0.0** to clearly differentiate from the original project while maintaining API
 > compatibility.
@@ -37,7 +37,7 @@ The primary change is the package name. Update your `package.json`:
 ```json
 {
     "dependencies": {
-        "@hyperb1iss/next-runtime-env": "^4.0.0"
+        "next-dynenv": "^4.0.0"
     }
 }
 ```
@@ -56,8 +56,8 @@ import { env } from 'next-runtime-env'
 **After:**
 
 ```tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
-import { env } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvScript } from 'next-dynenv'
+import { env } from 'next-dynenv'
 ```
 
 ### Step 3: Update Next.js and React (if needed)
@@ -65,9 +65,9 @@ import { env } from '@hyperb1iss/next-runtime-env'
 If you're still on Next.js 14, upgrade to Next.js 15:
 
 ```bash
-npm install next@latest react@latest react-dom@latest @hyperb1iss/next-runtime-env@latest
+npm install next@latest react@latest react-dom@latest next-dynenv@latest
 # or
-pnpm update next react react-dom && pnpm add @hyperb1iss/next-runtime-env
+pnpm update next react react-dom && pnpm add next-dynenv
 ```
 
 ### Step 4: No Code Changes Required! 🎉
@@ -79,7 +79,7 @@ functions (`env()`) work exactly as before.
 
 **Good news:** There are **no breaking API changes** between v3.x and v4.x!
 
-The migration from the original `next-runtime-env@3.x` to `@hyperb1iss/next-runtime-env@4.x` requires only:
+The migration from the original `next-runtime-env@3.x` to `next-dynenv@4.x` requires only:
 
 1. Changing the package name
 2. Updating import statements
@@ -96,7 +96,7 @@ v4.x adds several new features while maintaining backwards compatibility:
 The `env()` function now accepts an optional default value:
 
 ```tsx
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 const apiUrl = env('NEXT_PUBLIC_API_URL', 'https://api.default.com')
 ```
@@ -106,7 +106,7 @@ const apiUrl = env('NEXT_PUBLIC_API_URL', 'https://api.default.com')
 Use `requireEnv()` for variables that must be defined:
 
 ```tsx
-import { requireEnv } from '@hyperb1iss/next-runtime-env'
+import { requireEnv } from 'next-dynenv'
 
 // Throws if undefined
 const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
@@ -117,7 +117,7 @@ const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
 Convert environment strings to typed values:
 
 ```tsx
-import { envParsers } from '@hyperb1iss/next-runtime-env'
+import { envParsers } from 'next-dynenv'
 
 const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
 const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
@@ -229,7 +229,7 @@ module.exports = {
 
 If you're upgrading from the original `next-runtime-env@2.x` (Next.js 13):
 
-1. Update to the new package: `@hyperb1iss/next-runtime-env@4.x`
+1. Update to the new package: `next-dynenv@4.x`
 2. Follow the package name and import updates above
 3. Upgrade to Next.js 15 and React 19
 4. Review the [Next.js 15 upgrade guide](https://nextjs.org/docs/app/building-your-application/upgrading) for
@@ -242,16 +242,16 @@ If you're still using the original `next-runtime-env@1.x` with the Pages Router:
 
 1. Consider migrating to the App Router first (see
    [Next.js migration guide](https://nextjs.org/docs/app/building-your-application/upgrading/app-router-migration))
-2. Then follow the migration steps above to move to `@hyperb1iss/next-runtime-env@4.x`
+2. Then follow the migration steps above to move to `next-dynenv@4.x`
 3. Alternative: Continue using `next-runtime-env@1.x` for Pages Router support (note: unmaintained)
 
 ## Version Compatibility Matrix
 
 ### This Fork (Maintained)
 
-| Package                      | Version | Next.js    | React | Notes                                          |
-| ---------------------------- | ------- | ---------- | ----- | ---------------------------------------------- |
-| @hyperb1iss/next-runtime-env | 4.x     | 15.x, 16.x | 19.x  | Next.js 15/16 & React 19 with async components |
+| Package     | Version | Next.js    | React | Notes                                          |
+| ----------- | ------- | ---------- | ----- | ---------------------------------------------- |
+| next-dynenv | 4.x     | 15.x, 16.x | 19.x  | Next.js 15/16 & React 19 with async components |
 
 ### Original Project (Unmaintained)
 
@@ -265,9 +265,9 @@ If you're still using the original `next-runtime-env@1.x` with the Pages Router:
 
 Use this checklist for a smooth migration from the original `next-runtime-env`:
 
-- [ ] Install `@hyperb1iss/next-runtime-env@4.x`
+- [ ] Install `next-dynenv@4.x`
 - [ ] Remove old `next-runtime-env` package
-- [ ] Update all imports to use `@hyperb1iss/next-runtime-env`
+- [ ] Update all imports to use `next-dynenv`
 - [ ] Upgrade to Next.js 15 and React 19 (if not already)
 - [ ] Update any custom `unstable_noStore()` usage to Next.js 15 APIs
 - [ ] Test environment variable loading in development

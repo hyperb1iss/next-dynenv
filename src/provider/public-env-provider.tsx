@@ -32,7 +32,7 @@ type PublicEnvProviderProps = PropsWithChildren
  * Basic usage in app layout:
  * ```tsx
  * // app/layout.tsx
- * import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env';
+ * import { PublicEnvProvider } from 'next-dynenv';
  *
  * export default function RootLayout({ children }) {
  *   return (
@@ -51,7 +51,7 @@ type PublicEnvProviderProps = PropsWithChildren
  * Accessing values in client components:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function MyComponent() {
  *   const env = useEnvContext();

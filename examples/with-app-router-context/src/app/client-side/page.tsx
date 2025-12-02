@@ -1,6 +1,6 @@
 'use client'
 
-import { useEnvContext } from '@hyperb1iss/next-runtime-env'
+import { useEnvContext } from 'next-dynenv'
 
 import styles from './page.module.css'
 

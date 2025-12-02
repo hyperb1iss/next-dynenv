@@ -58,7 +58,7 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * Making a single variable public:
  * ```ts
  * // next.config.js or instrumentation.ts
- * import { makeEnvPublic } from '@hyperb1iss/next-runtime-env';
+ * import { makeEnvPublic } from 'next-dynenv';
  *
  * // Make API_URL available as NEXT_PUBLIC_API_URL
  * makeEnvPublic('API_URL');
@@ -67,7 +67,7 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * @example
  * Making multiple variables public:
  * ```ts
- * import { makeEnvPublic } from '@hyperb1iss/next-runtime-env';
+ * import { makeEnvPublic } from 'next-dynenv';
  *
  * makeEnvPublic(['API_URL', 'APP_NAME', 'FEATURE_FLAG']);
  * // Creates: NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_NAME, NEXT_PUBLIC_FEATURE_FLAG
@@ -76,7 +76,7 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * @example
  * Controlling log output:
  * ```ts
- * import { makeEnvPublic } from '@hyperb1iss/next-runtime-env';
+ * import { makeEnvPublic } from 'next-dynenv';
  *
  * // Disable all logging
  * makeEnvPublic('API_URL', { logLevel: 'silent' });
@@ -91,7 +91,7 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * Using in next.config.js:
  * ```js
  * // next.config.js
- * const { makeEnvPublic } = require('@hyperb1iss/next-runtime-env');
+ * const { makeEnvPublic } = require('next-dynenv');
  *
  * // Make variables public before Next.js processes them
  * makeEnvPublic(['DATABASE_URL', 'API_KEY']);

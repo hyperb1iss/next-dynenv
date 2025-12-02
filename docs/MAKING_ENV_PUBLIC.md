@@ -8,7 +8,7 @@ them with `NEXT_PUBLIC_`.) In this case you can use the `makeEnvPublic` utility 
 ```ts
 // next.config.js
 
-const { makeEnvPublic } = require('@hyperb1iss/next-runtime-env')
+const { makeEnvPublic } = require('next-dynenv')
 
 // Given that `FOO` is declared as a regular env var, not a public one. This
 // will make it public and available as `NEXT_PUBLIC_FOO`.

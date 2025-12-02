@@ -28,7 +28,7 @@ import { PUBLIC_ENV_KEY } from './constants'
  * @example
  * Reading public variables (works on both client and server):
  * ```ts
- * import { env } from '@hyperb1iss/next-runtime-env';
+ * import { env } from 'next-dynenv';
  *
  * const apiUrl = env('NEXT_PUBLIC_API_URL');
  * const appName = env('NEXT_PUBLIC_APP_NAME');
@@ -96,7 +96,7 @@ export function env(key: string, defaultValue?: string): string | undefined {
  *
  * @example
  * ```ts
- * import { requireEnv } from '@hyperb1iss/next-runtime-env';
+ * import { requireEnv } from 'next-dynenv';
  *
  * // Throws immediately if NEXT_PUBLIC_API_URL is not defined
  * const apiUrl = requireEnv('NEXT_PUBLIC_API_URL');

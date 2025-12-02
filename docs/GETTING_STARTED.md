@@ -12,18 +12,18 @@ intend to stay withing the react context you can use the context approach.
 1. First, install the package into your project:
 
 ```bash
-npm install @hyperb1iss/next-runtime-env
+npm install next-dynenv
 # or
-yarn add @hyperb1iss/next-runtime-env
+yarn add next-dynenv
 # or
-pnpm install @hyperb1iss/next-runtime-env
+pnpm install next-dynenv
 ```
 
 1. Then add the script to your head in the root layout:
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvScript } from 'next-dynenv'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -43,7 +43,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 'use client'
 
 import { useEffect } from 'react'
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export function MyComponent() {
     const NEXT_PUBLIC_FOO = env('NEXT_PUBLIC_FOO')
@@ -57,26 +57,25 @@ export function MyComponent() {
 }
 ```
 
-That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your
-Next.js app.
+That's it! You can now use the `next-dynenv` package to access runtime environment variables in your Next.js app.
 
 ## Using the context approach
 
 1. First, install the package into your project:
 
 ```bash
-npm install @hyperb1iss/next-runtime-env
+npm install next-dynenv
 # or
-yarn add @hyperb1iss/next-runtime-env
+yarn add next-dynenv
 # or
-pnpm install @hyperb1iss/next-runtime-env
+pnpm install next-dynenv
 ```
 
 2. Then wrap your component with RuntimeEnvProvider, for example in the root layout:
 
 ```tsx
 // src/app/layout.tsx
-import { PublicEnvProvider } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvProvider } from 'next-dynenv'
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
     return (
@@ -97,7 +96,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 'use client'
 
 import { useEffect } from 'react'
-import { useEnvContext } from '@hyperb1iss/next-runtime-env'
+import { useEnvContext } from 'next-dynenv'
 
 export function MyComponent() {
     const { NEXT_PUBLIC_FOO, NEXT_PUBLIC_BAZ } = useEnvContext()
@@ -110,5 +109,4 @@ export function MyComponent() {
 }
 ```
 
-That's it! You can now use the `@hyperb1iss/next-runtime-env` package to access runtime environment variables in your
-Next.js app.
+That's it! You can now use the `next-dynenv` package to access runtime environment variables in your Next.js app.

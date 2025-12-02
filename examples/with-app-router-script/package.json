@@ -9,7 +9,7 @@
         "lint": "next lint"
     },
     "dependencies": {
-        "@hyperb1iss/next-runtime-env": "link:../..",
+        "next-dynenv": "link:../..",
         "@types/node": "24.7.2",
         "@types/react": "19.2.2",
         "@types/react-dom": "19.2.2",

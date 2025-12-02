@@ -1,7 +1,7 @@
 {
-    "name": "@hyperb1iss/next-runtime-env",
+    "name": "next-dynenv",
     "version": "4.0.0",
-    "description": "Next.js Runtime Environment Configuration - Populates your environment at runtime rather than build time.",
+    "description": "Dynamic runtime environment variables for Next.js - populate your environment at runtime, not build time.",
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "exports": {
@@ -29,10 +29,16 @@
     },
     "keywords": [
         "nextjs",
+        "next.js",
         "runtime",
+        "environment",
         "env",
-        "runtime env",
-        "next-runtime-env"
+        "dynamic",
+        "runtime-env",
+        "next-dynenv",
+        "docker",
+        "kubernetes",
+        "twelve-factor"
     ],
     "author": "Stefanie Jane <hyperb1iss@gmail.com> (Forked from Expatfile.tax LLC)",
     "license": "MIT",

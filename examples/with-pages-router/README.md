@@ -1,7 +1,6 @@
 # Next.js Pages Router Support
 
-`@hyperb1iss/next-runtime-env` version 4.x is designed for **Next.js 15 with App Router only** and does not support the
-Pages Router.
+`next-dynenv` version 4.x is designed for **Next.js 15 with App Router only** and does not support the Pages Router.
 
 ## Why No Pages Router Support?
 
@@ -114,5 +113,5 @@ For questions or issues:
 
 ---
 
-**Recommendation:** If you're starting a new project or can migrate, use the App Router with
-`@hyperb1iss/next-runtime-env@4.x` for the best experience and ongoing support.
+**Recommendation:** If you're starting a new project or can migrate, use the App Router with `next-dynenv@4.x` for the
+best experience and ongoing support.

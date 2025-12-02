@@ -1,4 +1,4 @@
-import { makeEnvPublic } from '@hyperb1iss/next-runtime-env'
+import { makeEnvPublic } from 'next-dynenv'
 
 export function register() {
     // Here you can define all the environment variables that should be exposed to

@@ -74,7 +74,7 @@ type PublicEnvScriptProps = {
  * Basic usage in app layout:
  * ```tsx
  * // app/layout.tsx
- * import { PublicEnvScript } from '@hyperb1iss/next-runtime-env';
+ * import { PublicEnvScript } from 'next-dynenv';
  *
  * export default function RootLayout({ children }) {
  *   return (

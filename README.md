@@ -1,4 +1,4 @@
-# 🌐 Next.js Runtime Environment Configuration
+# 🌐 next-dynenv
 
 <div align="center">
 
@@ -7,9 +7,9 @@
 [![TypeScript](https://img.shields.io/badge/TypeScript-ff79c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
 
-[![npm version](https://img.shields.io/npm/v/@hyperb1iss/next-runtime-env?style=for-the-badge&logo=npm&logoColor=white&color=50fa7b)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env)
+[![npm version](https://img.shields.io/npm/v/next-dynenv?style=for-the-badge&logo=npm&logoColor=white&color=50fa7b)](https://www.npmjs.com/package/next-dynenv)
 [![CI](https://img.shields.io/github/actions/workflow/status/hyperb1iss/next-runtime-env/ci.yml?branch=development&style=for-the-badge&logo=github&logoColor=white&label=CI)](https://github.com/hyperb1iss/next-runtime-env/actions)
-[![Downloads](https://img.shields.io/npm/dm/@hyperb1iss/next-runtime-env?style=for-the-badge&logo=npm&logoColor=white&color=ffb86c)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env)
+[![Downloads](https://img.shields.io/npm/dm/next-dynenv?style=for-the-badge&logo=npm&logoColor=white&color=ffb86c)](https://www.npmjs.com/package/next-dynenv)
 
 **Effortlessly populate your environment at runtime, not just at build time.**
 
@@ -18,9 +18,8 @@
 
 </div>
 
-> **Fork Notice:** This package is a Next.js 15 & React 19 compatible fork of the original
-> [next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC. All credit for the original
-> implementation goes to the original authors.
+**Dynamic runtime environment variables for Next.js.** This package is a Next.js 15/16 & React 19 compatible fork of
+[next-runtime-env](https://github.com/expatfile/next-runtime-env) by Expatfile.tax LLC.
 
 ## ✨ Highlights
 
@@ -32,27 +31,24 @@
 - **Secure by Default:** XSS protection via JSON escaping, immutable runtime values with `Object.freeze`
 - **Zero Config:** Works out of the box with sensible defaults
 
-## 🤔 Why `next-runtime-env`?
+## 🤔 Why `next-dynenv`?
 
 In the modern software development landscape, the
 [Build once, deploy many](https://www.mikemcgarr.com/blog/build-once-deploy-many.html) philosophy is key. This
 principle, essential for easy deployment and testability, is a
 [cornerstone of continuous delivery](https://cloud.redhat.com/blog/build-once-deploy-anywhere) and is embraced by the
 [twelve-factor methodology](https://12factor.net). However, front-end development, particularly with Next.js, often
-lacks support for this - requiring separate builds for different environments. `next-runtime-env` bridges this gap in
-Next.js.
+lacks support for this - requiring separate builds for different environments. `next-dynenv` bridges this gap.
 
 ## 📦 How It Works
 
-`next-runtime-env` dynamically injects environment variables into your Next.js application at runtime. This approach
-adheres to the "build once, deploy many" principle, allowing the same build to be used across various environments
-without rebuilds.
+`next-dynenv` dynamically injects environment variables into your Next.js application at runtime. This approach adheres
+to the "build once, deploy many" principle, allowing the same build to be used across various environments without
+rebuilds.
 
 ## 🔖 Version Guide
 
-This fork starts at version **4.x** to clearly differentiate from the original project:
-
-- **@hyperb1iss/next-runtime-env@4.x:** Next.js 15 & React 19 with modern async server components
+- **next-dynenv@4.x:** Next.js 15/16 & React 19 with modern async server components
 
 Original project versions (unmaintained):
 
@@ -63,11 +59,11 @@ Original project versions (unmaintained):
 ## 📦 Installation
 
 ```bash
-npm install @hyperb1iss/next-runtime-env
+npm install next-dynenv
 # or
-pnpm add @hyperb1iss/next-runtime-env
+pnpm add next-dynenv
 # or
-yarn add @hyperb1iss/next-runtime-env
+yarn add next-dynenv
 ```
 
 ## 🚀 Getting Started
@@ -78,7 +74,7 @@ In your root layout (`app/layout.tsx`), add the `PublicEnvScript` component:
 
 ```tsx
 // app/layout.tsx
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvScript } from 'next-dynenv'
 import type { ReactNode } from 'react'
 
 export default function RootLayout({ children }: { children: ReactNode }) {
@@ -105,7 +101,7 @@ guide.
 // app/components/ClientComponent.tsx
 'use client'
 
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export default function ClientComponent() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')
@@ -124,7 +120,7 @@ export default function ClientComponent() {
 
 ```tsx
 // app/components/ServerComponent.tsx
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export default async function ServerComponent() {
     // Server components in Next.js 15 can be async
@@ -147,7 +143,7 @@ export default async function ServerComponent() {
 
 ```tsx
 // middleware.ts
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
@@ -177,7 +173,7 @@ export const config = {
 The `env()` function accepts an optional default value:
 
 ```tsx
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 // Returns 'https://api.default.com' if NEXT_PUBLIC_API_URL is undefined
 const apiUrl = env('NEXT_PUBLIC_API_URL', 'https://api.default.com')
@@ -191,7 +187,7 @@ const timeout = env('NEXT_PUBLIC_TIMEOUT', '5000')
 Use `requireEnv()` when a variable must be defined:
 
 ```tsx
-import { requireEnv } from '@hyperb1iss/next-runtime-env'
+import { requireEnv } from 'next-dynenv'
 
 // Throws descriptive error if NEXT_PUBLIC_API_URL is undefined
 const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
@@ -203,7 +199,7 @@ const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
 Use `envParsers` to convert environment strings to typed values:
 
 ```tsx
-import { envParsers } from '@hyperb1iss/next-runtime-env'
+import { envParsers } from 'next-dynenv'
 
 // Boolean - recognizes 'true', '1', 'yes', 'on' (case-insensitive)
 const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG') // false by default
@@ -307,7 +303,7 @@ docker run -p 3000:3000 \
 
 1. Add environment variables in your Vercel project settings
 2. Set different values for Preview, Development, and Production environments
-3. Deploy your application - `next-runtime-env` will automatically use the runtime values
+3. Deploy your application - `next-dynenv` will automatically use the runtime values
 
 ```bash
 vercel env add NEXT_PUBLIC_API_URL production
@@ -336,7 +332,7 @@ For static exports with runtime environment support:
 
 1. Build your application: `npm run build`
 2. Set environment variables on your hosting platform
-3. The variables will be available at runtime through `next-runtime-env`
+3. The variables will be available at runtime through `next-dynenv`
 
 ## 🔒 Security Considerations
 
@@ -372,12 +368,12 @@ Use `requireEnv()` for required variables, or validate multiple at once:
 
 ```tsx
 // Using requireEnv() - throws if undefined
-import { requireEnv } from '@hyperb1iss/next-runtime-env'
+import { requireEnv } from 'next-dynenv'
 
 const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
 
 // Validating multiple variables
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 export function validateEnv() {
     const required = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_APP_ID']
@@ -462,7 +458,7 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!
 
 - **Build-time:** Variables are baked into the bundle during `next build`
 - **Runtime:** Variables are injected when the application starts
-- `next-runtime-env` provides runtime access, allowing the same build to work in multiple environments
+- `next-dynenv` provides runtime access, allowing the same build to work in multiple environments
 
 ### Server vs Client Environment Access
 

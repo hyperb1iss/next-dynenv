@@ -23,7 +23,7 @@ import { EnvContext } from './env-context'
  * Basic usage in a client component:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function ApiClient() {
  *   const env = useEnvContext();
@@ -37,7 +37,7 @@ import { EnvContext } from './env-context'
  * Destructuring specific variables:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function FeatureFlag() {
  *   const { NEXT_PUBLIC_FEATURE_X, NEXT_PUBLIC_FEATURE_Y } = useEnvContext();
@@ -55,7 +55,7 @@ import { EnvContext } from './env-context'
  * With error handling:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function SafeComponent() {
  *   try {
@@ -71,7 +71,7 @@ import { EnvContext } from './env-context'
  * Using with default values:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function ConfigurableComponent() {
  *   const env = useEnvContext();

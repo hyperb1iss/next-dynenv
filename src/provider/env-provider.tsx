@@ -52,7 +52,7 @@ type EnvProviderProps = PropsWithChildren<{
  * Basic usage with custom environment:
  * ```tsx
  * 'use client';
- * import { EnvProvider } from '@hyperb1iss/next-runtime-env';
+ * import { EnvProvider } from 'next-dynenv';
  *
  * export function CustomProvider({ children }) {
  *   const env = {
@@ -78,7 +78,7 @@ type EnvProviderProps = PropsWithChildren<{
  * Accessing provided values:
  * ```tsx
  * 'use client';
- * import { useEnvContext } from '@hyperb1iss/next-runtime-env';
+ * import { useEnvContext } from 'next-dynenv';
  *
  * export function MyComponent() {
  *   const { NEXT_PUBLIC_API_URL } = useEnvContext();
