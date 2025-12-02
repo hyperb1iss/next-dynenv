@@ -207,4 +207,56 @@ describe('envParsers', () => {
             expect(envParsers.url('NEXT_PUBLIC_API_URL')).toBe('https://api.example.com')
         })
     })
+
+    describe('enum()', () => {
+        const environments = ['development', 'staging', 'production'] as const
+
+        it('should return valid enum value', () => {
+            process.env.NEXT_PUBLIC_ENV = 'production'
+            expect(envParsers.enum('NEXT_PUBLIC_ENV', environments)).toBe('production')
+        })
+
+        it('should return default when undefined', () => {
+            expect(envParsers.enum('NEXT_PUBLIC_MISSING', environments, 'development')).toBe('development')
+        })
+
+        it('should throw when undefined with no default', () => {
+            expect(() => envParsers.enum('NEXT_PUBLIC_MISSING', environments)).toThrow(
+                "Required environment variable 'NEXT_PUBLIC_MISSING' is not defined",
+            )
+        })
+
+        it('should throw for invalid enum value', () => {
+            process.env.NEXT_PUBLIC_ENV = 'invalid'
+            expect(() => envParsers.enum('NEXT_PUBLIC_ENV', environments)).toThrow(
+                "Environment variable 'NEXT_PUBLIC_ENV' has invalid value: 'invalid'",
+            )
+        })
+
+        it('should list allowed values in error message', () => {
+            process.env.NEXT_PUBLIC_ENV = 'invalid'
+            expect(() => envParsers.enum('NEXT_PUBLIC_ENV', environments)).toThrow(
+                "Expected one of: 'development', 'staging', 'production'",
+            )
+        })
+
+        it('should work with two-value enums', () => {
+            const booleanLike = ['enabled', 'disabled'] as const
+            process.env.NEXT_PUBLIC_FEATURE = 'enabled'
+            expect(envParsers.enum('NEXT_PUBLIC_FEATURE', booleanLike)).toBe('enabled')
+        })
+
+        it('should work in browser context', () => {
+            mockWindow({ NEXT_PUBLIC_ENV: 'staging' })
+            expect(envParsers.enum('NEXT_PUBLIC_ENV', environments)).toBe('staging')
+        })
+
+        it('should be type-safe with generic', () => {
+            type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+            const levels: readonly LogLevel[] = ['debug', 'info', 'warn', 'error']
+            process.env.NEXT_PUBLIC_LOG_LEVEL = 'warn'
+            const result: LogLevel = envParsers.enum<LogLevel>('NEXT_PUBLIC_LOG_LEVEL', levels)
+            expect(result).toBe('warn')
+        })
+    })
 })

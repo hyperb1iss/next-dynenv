@@ -87,6 +87,51 @@ The migration from the original `next-runtime-env@3.x` to `@hyperb1iss/next-runt
 
 All existing code using the library will continue to work without modification.
 
+## New Features in v4.x
+
+v4.x adds several new features while maintaining backwards compatibility:
+
+### Default Values
+
+The `env()` function now accepts an optional default value:
+
+```tsx
+import { env } from '@hyperb1iss/next-runtime-env'
+
+const apiUrl = env('NEXT_PUBLIC_API_URL', 'https://api.default.com')
+```
+
+### Required Environment Variables
+
+Use `requireEnv()` for variables that must be defined:
+
+```tsx
+import { requireEnv } from '@hyperb1iss/next-runtime-env'
+
+// Throws if undefined
+const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
+```
+
+### Type-Safe Parsers
+
+Convert environment strings to typed values:
+
+```tsx
+import { envParsers } from '@hyperb1iss/next-runtime-env'
+
+const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
+const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
+const features = envParsers.array('NEXT_PUBLIC_FEATURES')
+const config = envParsers.json<Config>('NEXT_PUBLIC_CONFIG')
+const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
+const appEnv = envParsers.enum('NEXT_PUBLIC_ENV', ['development', 'staging', 'production'])
+```
+
+### Enhanced Security
+
+- **XSS Protection:** All injected values are JSON-escaped
+- **Immutability:** Runtime values are wrapped with `Object.freeze()`
+
 ## Upgrading to Next.js 15 (Additional Steps)
 
 If you're upgrading from Next.js 14 to Next.js 15 as part of this migration, you may need to update custom code that
@@ -145,11 +190,11 @@ export function getCustomEnv() {
 
 ### What Changed Under the Hood
 
-The library now uses Next.js 15's stable dynamic rendering APIs:
+The library now uses Next.js 15/16's stable dynamic rendering APIs:
 
-- `PublicEnvScript` and `PublicEnvProvider` use `await connection()`
-- The `env()` utility uses `headers()` to force dynamic rendering
-- All components are now async server components (React handles this automatically)
+- `PublicEnvScript` and `EnvScript` use `headers()` for nonce retrieval (when configured)
+- The `env()` utility reads from `process.env` (server) or `window.__ENV` (client) directly
+- Script injection includes XSS protection and `Object.freeze()` for immutability
 
 ### Troubleshooting
 
@@ -204,9 +249,9 @@ If you're still using the original `next-runtime-env@1.x` with the Pages Router:
 
 ### This Fork (Maintained)
 
-| Package                      | Version | Next.js | React | Notes                                       |
-| ---------------------------- | ------- | ------- | ----- | ------------------------------------------- |
-| @hyperb1iss/next-runtime-env | 4.x     | 15.x    | 19.x  | Next.js 15 & React 19 with async components |
+| Package                      | Version | Next.js    | React | Notes                                          |
+| ---------------------------- | ------- | ---------- | ----- | ---------------------------------------------- |
+| @hyperb1iss/next-runtime-env | 4.x     | 15.x, 16.x | 19.x  | Next.js 15/16 & React 19 with async components |
 
 ### Original Project (Unmaintained)
 

@@ -2,7 +2,7 @@
 
 <div align="center">
 
-[![Next.js](https://img.shields.io/badge/Next.js%2015-e135ff.svg?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
+[![Next.js](https://img.shields.io/badge/Next.js%2015%20%7C%2016-e135ff.svg?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React%2019-80ffea.svg?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-ff79c6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
 [![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
@@ -25,9 +25,11 @@
 ## ✨ Highlights
 
 - **Isomorphic Design:** Works seamlessly on both server and browser, and even in middleware
-- **Next.js 15 & React 19 Ready:** Fully compatible with the latest Next.js features including async server components
+- **Next.js 15/16 & React 19 Ready:** Fully compatible with the latest Next.js features including async server
+  components
 - **`.env` Friendly:** Use `.env` files during development, just like standard Next.js
-- **Type-Safe:** Full TypeScript support for environment variables
+- **Type-Safe Parsers:** Convert environment strings to booleans, numbers, arrays, JSON, URLs, and enums
+- **Secure by Default:** XSS protection via JSON escaping, immutable runtime values with `Object.freeze`
 - **Zero Config:** Works out of the box with sensible defaults
 
 ## 🤔 Why `next-runtime-env`?
@@ -170,6 +172,76 @@ export const config = {
 > **Note:** The `env()` function works in all Next.js contexts - server components, client components, API routes, and
 > middleware. It's safe to use everywhere and provides a consistent API across your application.
 
+### Default Values
+
+The `env()` function accepts an optional default value:
+
+```tsx
+import { env } from '@hyperb1iss/next-runtime-env'
+
+// Returns 'https://api.default.com' if NEXT_PUBLIC_API_URL is undefined
+const apiUrl = env('NEXT_PUBLIC_API_URL', 'https://api.default.com')
+
+// Default values work in all contexts (client, server, middleware)
+const timeout = env('NEXT_PUBLIC_TIMEOUT', '5000')
+```
+
+### Required Environment Variables
+
+Use `requireEnv()` when a variable must be defined:
+
+```tsx
+import { requireEnv } from '@hyperb1iss/next-runtime-env'
+
+// Throws descriptive error if NEXT_PUBLIC_API_URL is undefined
+const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
+// Error: "Required environment variable 'NEXT_PUBLIC_API_URL' is not defined."
+```
+
+### Type-Safe Parsers
+
+Use `envParsers` to convert environment strings to typed values:
+
+```tsx
+import { envParsers } from '@hyperb1iss/next-runtime-env'
+
+// Boolean - recognizes 'true', '1', 'yes', 'on' (case-insensitive)
+const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG') // false by default
+const enabled = envParsers.boolean('NEXT_PUBLIC_FEATURE', true) // custom default
+
+// Number - integers and floats
+const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
+const ratio = envParsers.number('NEXT_PUBLIC_RATIO', 1.0)
+
+// Array - comma-separated values (trims whitespace, filters empty)
+const features = envParsers.array('NEXT_PUBLIC_FEATURES')
+// 'auth, payments, analytics' → ['auth', 'payments', 'analytics']
+
+// JSON - parse complex objects
+interface Config {
+    api: string
+    timeout: number
+}
+const config = envParsers.json<Config>('NEXT_PUBLIC_CONFIG')
+
+// URL - validates and returns URL string
+const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
+const cdn = envParsers.url('NEXT_PUBLIC_CDN', 'https://cdn.default.com')
+
+// Enum - restrict to allowed values with type safety
+type Environment = 'development' | 'staging' | 'production'
+const appEnv = envParsers.enum<Environment>(
+    'NEXT_PUBLIC_ENV',
+    ['development', 'staging', 'production'],
+    'development', // default value
+)
+
+type LogLevel = 'debug' | 'info' | 'warn' | 'error'
+const logLevel = envParsers.enum<LogLevel>('NEXT_PUBLIC_LOG_LEVEL', ['debug', 'info', 'warn', 'error'])
+```
+
+All parsers work isomorphically (server and client) and provide clear error messages for invalid values.
+
 ## 🛠 Advanced Usage
 
 ### Exposing Non-Prefixed Variables
@@ -268,6 +340,16 @@ For static exports with runtime environment support:
 
 ## 🔒 Security Considerations
 
+### Built-in Security Features
+
+This library includes multiple layers of security by default:
+
+- **XSS Protection:** All environment values are JSON-escaped before injection, preventing script injection attacks
+- **Immutable Runtime Values:** Environment values are wrapped with `Object.freeze()`, preventing modification after
+  initialization
+- **Strict Prefix Enforcement:** Only `NEXT_PUBLIC_*` variables are exposed to the browser; accessing private variables
+  throws an error
+
 ### Never Expose Secrets to the Browser
 
 **Critical:** Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Never expose sensitive data:
@@ -286,10 +368,15 @@ export async function getData() {
 
 ### Environment Variable Validation
 
-Validate required environment variables at build time:
+Use `requireEnv()` for required variables, or validate multiple at once:
 
 ```tsx
-// lib/env.ts
+// Using requireEnv() - throws if undefined
+import { requireEnv } from '@hyperb1iss/next-runtime-env'
+
+const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
+
+// Validating multiple variables
 import { env } from '@hyperb1iss/next-runtime-env'
 
 export function validateEnv() {
@@ -301,9 +388,6 @@ export function validateEnv() {
         }
     }
 }
-
-// Call in your app initialization
-validateEnv()
 ```
 
 ### Content Security Policy

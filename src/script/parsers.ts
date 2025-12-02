@@ -194,4 +194,58 @@ export const envParsers = {
             )
         }
     },
+
+    /**
+     * Parses an environment variable as one of a set of allowed values.
+     *
+     * Provides type-safe enum-like validation for environment variables
+     * that should only contain specific string values.
+     *
+     * @param key - The environment variable name
+     * @param allowedValues - Array of valid string values
+     * @param defaultValue - Default value if undefined (must be in allowedValues)
+     * @returns The validated enum value
+     *
+     * @throws {Error} If the value is not in the allowed values list
+     * @throws {Error} If the value is undefined and no default is provided
+     *
+     * @example
+     * ```ts
+     * // NEXT_PUBLIC_ENV=production
+     * type Environment = 'development' | 'staging' | 'production';
+     * const appEnv = envParsers.enum<Environment>(
+     *   'NEXT_PUBLIC_ENV',
+     *   ['development', 'staging', 'production'],
+     *   'development'
+     * );
+     *
+     * // NEXT_PUBLIC_LOG_LEVEL=debug
+     * type LogLevel = 'debug' | 'info' | 'warn' | 'error';
+     * const logLevel = envParsers.enum<LogLevel>(
+     *   'NEXT_PUBLIC_LOG_LEVEL',
+     *   ['debug', 'info', 'warn', 'error']
+     * );
+     * ```
+     */
+    enum<T extends string>(key: string, allowedValues: readonly T[], defaultValue?: T): T {
+        const value = env(key)
+        if (value === undefined) {
+            if (defaultValue === undefined) {
+                throw new Error(
+                    `Required environment variable '${key}' is not defined.\n` +
+                        `Expected one of: ${allowedValues.map((v) => `'${v}'`).join(', ')}.`,
+                )
+            }
+            return defaultValue
+        }
+
+        if (!allowedValues.includes(value as T)) {
+            throw new Error(
+                `Environment variable '${key}' has invalid value: '${value}'.\n` +
+                    `Expected one of: ${allowedValues.map((v) => `'${v}'`).join(', ')}.`,
+            )
+        }
+
+        return value as T
+    },
 } as const
