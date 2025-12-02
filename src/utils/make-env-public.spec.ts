@@ -1,16 +1,17 @@
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { makeEnvPublic } from './make-env-public'
 
-const warnMock = jest.fn()
-const eventMock = jest.fn()
+const warnMock = vi.fn()
+const eventMock = vi.fn()
 
-jest.mock('../helpers/log', () => ({
+vi.mock('../helpers/log', () => ({
     warn: (...args: unknown[]) => warnMock(...args),
     event: (...args: unknown[]) => eventMock(...args),
 }))
 
 describe('makeEnvPublic()', () => {
     afterEach(() => {
-        jest.clearAllMocks()
+        vi.clearAllMocks()
 
         delete process.env.FOO
         delete process.env.BAR

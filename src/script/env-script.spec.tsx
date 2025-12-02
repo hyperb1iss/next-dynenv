@@ -1,23 +1,28 @@
-import '@testing-library/jest-dom'
-
 import { render, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { escapeJsonForHtml } from '../helpers/escape-json-for-html'
 import { EnvScript } from './env-script'
 
-const { headers } = jest.requireMock('next/headers') as { headers: jest.Mock }
+const headersMock = vi.hoisted(() => vi.fn(() => Promise.resolve(new Headers())))
 
-jest.mock('next/script', () => // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ children, ...props }: any) => <script {...props}>{children}</script>)
+vi.mock('next/headers', () => ({
+    headers: headersMock,
+}))
+
+vi.mock('next/script', () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    default: ({ children, ...props }: any) => <script {...props}>{children}</script>,
+}))
 
 beforeEach(() => {
     process.env = {}
-    headers.mockImplementation(() => Promise.resolve(new Headers()))
+    headersMock.mockImplementation(() => Promise.resolve(new Headers()))
 })
 
 afterEach(() => {
     process.env = {}
-    headers.mockReset()
+    headersMock.mockReset()
 })
 
 describe('EnvScript', () => {
@@ -100,20 +105,20 @@ describe('EnvScript', () => {
     })
 
     it('should get the nonce from the headers when the headerKey is provided', async () => {
-        headers.mockImplementation(() => Promise.resolve(new Headers({ 'x-nonce': 'test-nonce-xyz' })))
+        headersMock.mockImplementation(() => Promise.resolve(new Headers({ 'x-nonce': 'test-nonce-xyz' })))
         const env = { NODE_ENV: 'test' }
 
         const Component = await EnvScript({ env, nonce: { headerKey: 'x-nonce' } })
         render(Component)
 
-        expect(headers).toHaveBeenCalled()
+        expect(headersMock).toHaveBeenCalled()
         await waitFor(() => {
             expect(document.querySelector('script')).toHaveAttribute('nonce', 'test-nonce-xyz')
         })
     })
 
     it('should fall back gracefully when headers throws outside a request scope', async () => {
-        headers.mockImplementation(() => {
+        headersMock.mockImplementation(() => {
             throw new Error(
                 '`headers` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context',
             )

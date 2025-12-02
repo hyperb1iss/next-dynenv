@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, it } from 'vitest'
 import { env, requireEnv } from './env'
 
 declare global {

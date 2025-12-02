@@ -1,6 +1,5 @@
-import '@testing-library/jest-dom'
-
 import { render } from '@testing-library/react'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { EnvProvider } from './env-provider'
 import { useEnvContext } from './use-env-context'

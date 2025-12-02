@@ -1,6 +1,5 @@
-import '@testing-library/jest-dom'
-
 import { render, waitFor } from '@testing-library/react'
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from 'vitest'
 
 import { PublicEnvProvider } from './public-env-provider'
 import { useEnvContext } from './use-env-context'

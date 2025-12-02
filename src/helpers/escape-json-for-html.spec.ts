@@ -1,3 +1,4 @@
+import { describe, expect, it } from 'vitest'
 import { escapeJsonForHtml } from './escape-json-for-html'
 
 describe('escapeJsonForHtml', () => {

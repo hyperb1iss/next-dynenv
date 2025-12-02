@@ -1,13 +1,14 @@
+import { afterAll, beforeAll, describe, expect, it, vi } from 'vitest'
 import { error, event, info, prefixes, warn } from './log'
 
-const logSpy = jest.spyOn(console, 'log')
-const warnSpy = jest.spyOn(console, 'warn')
-const errorSpy = jest.spyOn(console, 'error')
+const logSpy = vi.spyOn(console, 'log')
+const warnSpy = vi.spyOn(console, 'warn')
+const errorSpy = vi.spyOn(console, 'error')
 
 beforeAll(() => {
-    logSpy.mockImplementation()
-    warnSpy.mockImplementation()
-    errorSpy.mockImplementation()
+    logSpy.mockImplementation(() => {})
+    warnSpy.mockImplementation(() => {})
+    errorSpy.mockImplementation(() => {})
 })
 
 afterAll(() => {

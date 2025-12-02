@@ -1,3 +1,4 @@
+import { afterEach, describe, expect, it } from 'vitest'
 import { envParsers } from './parsers'
 
 declare global {

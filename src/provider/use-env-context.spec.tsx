@@ -1,17 +1,16 @@
-import '@testing-library/jest-dom'
-
 import { render } from '@testing-library/react'
+import { afterAll, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { ProcessEnv } from '../typings/process-env'
 import { EnvProvider } from './env-provider'
 import { useEnvContext } from './use-env-context'
 
-const errorSpy = jest.spyOn(console, 'error')
+const errorSpy = vi.spyOn(console, 'error')
 
 let processEnv: NodeJS.ProcessEnv
 
 beforeAll(() => {
-    errorSpy.mockImplementation()
+    errorSpy.mockImplementation(() => {})
 
     processEnv = process.env
 })

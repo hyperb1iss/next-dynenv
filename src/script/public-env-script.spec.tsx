@@ -1,14 +1,15 @@
-import '@testing-library/jest-dom'
-
 import { render, waitFor } from '@testing-library/react'
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 
 import { PublicEnvScript } from './public-env-script'
 
-jest.mock('next/script', () => // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    ({ children, ...props }: any) => <script {...props}>{children}</script>)
+vi.mock('next/script', () => ({
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    default: ({ children, ...props }: any) => <script {...props}>{children}</script>,
+}))
 
 // Mock EnvScript as a sync component since we can't render async components in jsdom
-jest.mock('./env-script', () => ({
+vi.mock('./env-script', () => ({
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     EnvScript: ({ env, nonce }: any) => {
         const innerHTML = {
