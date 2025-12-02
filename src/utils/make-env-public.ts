@@ -20,8 +20,8 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
         return
     }
 
-    // Check if key is already public.
-    if (/^NEXT_PUBLIC_/i.test(key)) {
+    // Check if key is already public (case-sensitive check for NEXT_PUBLIC_ prefix)
+    if (key.startsWith('NEXT_PUBLIC_')) {
         warn(`Environment variable '${key}' is already public`, options)
         return
     }

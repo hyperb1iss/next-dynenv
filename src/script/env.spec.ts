@@ -1,6 +1,4 @@
-import { env } from './env'
-
-const { headers } = jest.requireMock('next/headers') as { headers: jest.Mock }
+import { env, requireEnv } from './env'
 
 declare global {
     var mockWindow: (envVars: Record<string, string>) => void
@@ -8,13 +6,9 @@ declare global {
 }
 
 describe('env()', () => {
-    beforeEach(() => {
-        headers.mockImplementation(() => new Headers())
-    })
-
     afterEach(() => {
         delete process.env.FOO
-        headers.mockReset()
+        delete process.env.NEXT_PUBLIC_FOO
         unmockWindow()
     })
 
@@ -43,28 +37,54 @@ describe('env()', () => {
     it('should throw when trying to access a non public variable in the browser', () => {
         mockWindow({ NEXT_PUBLIC_FOO: 'foo' })
 
-        expect(() => env('BAM_BAM')).toThrow(
-            "Environment variable 'BAM_BAM' is not public and cannot be accessed in the browser.",
-        )
+        expect(() => env('BAM_BAM')).toThrow("Environment variable 'BAM_BAM' is not public")
     })
 
-    it('should not throw when headers() is called outside a request scope', () => {
-        headers.mockImplementation(() => {
-            throw new Error(
-                '`headers` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context',
-            )
-        })
+    it('should return default value when variable is undefined on server', () => {
+        expect(env('MISSING_VAR', 'default-value')).toEqual('default-value')
+    })
 
+    it('should return default value when variable is undefined in browser', () => {
+        mockWindow({ NEXT_PUBLIC_FOO: 'foo' })
+
+        expect(env('NEXT_PUBLIC_MISSING', 'default-value')).toEqual('default-value')
+    })
+
+    it('should return actual value over default when variable exists', () => {
+        process.env.FOO = 'actual-value'
+
+        expect(env('FOO', 'default-value')).toEqual('actual-value')
+    })
+})
+
+describe('requireEnv()', () => {
+    afterEach(() => {
+        delete process.env.FOO
+        delete process.env.NEXT_PUBLIC_FOO
+        unmockWindow()
+    })
+
+    it('should return value when variable exists on server', () => {
         process.env.FOO = 'foo'
 
-        expect(env('FOO')).toEqual('foo')
+        expect(requireEnv('FOO')).toEqual('foo')
     })
 
-    it('should rethrow unexpected errors from headers()', () => {
-        headers.mockImplementation(() => {
-            throw new Error('boom')
-        })
+    it('should return value when variable exists in browser', () => {
+        mockWindow({ NEXT_PUBLIC_FOO: 'foo' })
 
-        expect(() => env('FOO')).toThrow('boom')
+        expect(requireEnv('NEXT_PUBLIC_FOO')).toEqual('foo')
+    })
+
+    it('should throw when variable is undefined on server', () => {
+        expect(() => requireEnv('MISSING_VAR')).toThrow("Required environment variable 'MISSING_VAR' is not defined.")
+    })
+
+    it('should throw when variable is undefined in browser', () => {
+        mockWindow({ NEXT_PUBLIC_FOO: 'foo' })
+
+        expect(() => requireEnv('NEXT_PUBLIC_MISSING')).toThrow(
+            "Required environment variable 'NEXT_PUBLIC_MISSING' is not defined.",
+        )
     })
 })

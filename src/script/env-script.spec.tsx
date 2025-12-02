@@ -1,7 +1,8 @@
 import '@testing-library/jest-dom'
 
-import { render } from '@testing-library/react'
+import { render, waitFor } from '@testing-library/react'
 
+import { escapeJsonForHtml } from '../helpers/escape-json-for-html'
 import { EnvScript } from './env-script'
 
 const { headers } = jest.requireMock('next/headers') as { headers: jest.Mock }
@@ -11,7 +12,7 @@ jest.mock('next/script', () => // eslint-disable-next-line @typescript-eslint/no
 
 beforeEach(() => {
     process.env = {}
-    headers.mockImplementation(() => new Headers())
+    headers.mockImplementation(() => Promise.resolve(new Headers()))
 })
 
 afterEach(() => {
@@ -20,80 +21,98 @@ afterEach(() => {
 })
 
 describe('EnvScript', () => {
-    it('should set the env in the script', () => {
+    it('should set the env in the script with Object.freeze', async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
 
-        render(<EnvScript env={env} />)
+        const Component = await EnvScript({ env })
+        render(Component)
 
-        expect(document.querySelector('script')?.textContent).toBe(`window['__ENV'] = ${JSON.stringify(env)}`)
+        await waitFor(() => {
+            expect(document.querySelector('script')?.textContent).toBe(
+                `window['__ENV'] = Object.freeze(${escapeJsonForHtml(env)})`,
+            )
+        })
     })
 
-    it("should set a nonce when it's available", () => {
+    it("should set a nonce when it's available", async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
         const nonce = 'test-nonce-xyz'
 
-        render(<EnvScript env={env} nonce={nonce} />)
+        const Component = await EnvScript({ env, nonce })
+        render(Component)
 
-        expect(document.querySelector('script')).toHaveAttribute('nonce', nonce)
+        await waitFor(() => {
+            expect(document.querySelector('script')).toHaveAttribute('nonce', nonce)
+        })
     })
 
-    it("should not set a nonce when it's not available", () => {
+    it("should not set a nonce when it's not available", async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
 
-        render(<EnvScript env={env} />)
+        const Component = await EnvScript({ env })
+        render(Component)
 
-        expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+        await waitFor(() => {
+            expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+        })
     })
 
-    it('should accept Next.js Script tag props', () => {
+    it('should accept Next.js Script tag props', async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
         const nonce = 'test-nonce-xyz'
         const id = 'text-id-abc'
 
-        render(
-            <EnvScript
-                env={env}
-                nextScriptProps={{
-                    strategy: 'afterInteractive',
-                    id,
-                }}
-                nonce={nonce}
-            />,
-        )
+        const Component = await EnvScript({
+            env,
+            nextScriptProps: {
+                strategy: 'afterInteractive',
+                id,
+            },
+            nonce,
+        })
+        render(Component)
 
-        expect(document.querySelector('script')).toHaveAttribute('nonce', nonce)
-        expect(document.querySelector('script')).toHaveAttribute('id', id)
-        expect(document.querySelector('script')?.textContent).toBe(`window['__ENV'] = ${JSON.stringify(env)}`)
+        await waitFor(() => {
+            expect(document.querySelector('script')).toHaveAttribute('nonce', nonce)
+            expect(document.querySelector('script')).toHaveAttribute('id', id)
+            expect(document.querySelector('script')?.textContent).toBe(
+                `window['__ENV'] = Object.freeze(${escapeJsonForHtml(env)})`,
+            )
+        })
     })
 
-    it('should not have Next.js Script props when a regular script tag is used', () => {
+    it('should not have Next.js Script props when a regular script tag is used', async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
         const id = 'text-id-abc'
 
-        render(
-            <EnvScript
-                disableNextScript={true}
-                env={env}
-                nextScriptProps={{
-                    id,
-                }}
-            />,
-        )
+        const Component = await EnvScript({
+            disableNextScript: true,
+            env,
+            nextScriptProps: {
+                id,
+            },
+        })
+        render(Component)
 
-        expect(document.querySelector('script')).not.toHaveAttribute('id', id)
+        await waitFor(() => {
+            expect(document.querySelector('script')).not.toHaveAttribute('id', id)
+        })
     })
 
-    it('should get the nonce from the headers when the headerKey is provided', () => {
-        headers.mockImplementation(() => new Headers({ 'x-nonce': 'test-nonce-xyz' }))
+    it('should get the nonce from the headers when the headerKey is provided', async () => {
+        headers.mockImplementation(() => Promise.resolve(new Headers({ 'x-nonce': 'test-nonce-xyz' })))
         const env = { NODE_ENV: 'test' }
 
-        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+        const Component = await EnvScript({ env, nonce: { headerKey: 'x-nonce' } })
+        render(Component)
 
         expect(headers).toHaveBeenCalled()
-        expect(document.querySelector('script')).toHaveAttribute('nonce', 'test-nonce-xyz')
+        await waitFor(() => {
+            expect(document.querySelector('script')).toHaveAttribute('nonce', 'test-nonce-xyz')
+        })
     })
 
-    it('should fall back gracefully when headers throws outside a request scope', () => {
+    it('should fall back gracefully when headers throws outside a request scope', async () => {
         headers.mockImplementation(() => {
             throw new Error(
                 '`headers` was called outside a request scope. Read more: https://nextjs.org/docs/messages/next-dynamic-api-wrong-context',
@@ -101,17 +120,24 @@ describe('EnvScript', () => {
         })
         const env = { NODE_ENV: 'test' }
 
-        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+        const Component = await EnvScript({ env, nonce: { headerKey: 'x-nonce' } })
+        render(Component)
 
-        expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+        await waitFor(() => {
+            expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+        })
     })
 
-    it('should skip nonce when headers returns a promise', () => {
-        headers.mockImplementation(() => Promise.resolve(new Headers({ 'x-nonce': 'test-nonce-xyz' })))
-        const env = { NODE_ENV: 'test' }
+    it('should escape HTML special characters in env values', async () => {
+        const env = { NEXT_PUBLIC_XSS: '</script><script>alert(1)</script>' }
 
-        render(<EnvScript env={env} nonce={{ headerKey: 'x-nonce' }} />)
+        const Component = await EnvScript({ env })
+        render(Component)
 
-        expect(document.querySelector('script')).not.toHaveAttribute('nonce')
+        await waitFor(() => {
+            const content = document.querySelector('script')?.textContent
+            expect(content).toContain('\\u003c/script\\u003e')
+            expect(content).not.toContain('</script><script>')
+        })
     })
 })

@@ -2,6 +2,7 @@ import { headers } from 'next/headers'
 import Script, { type ScriptProps } from 'next/script'
 import { type FC } from 'react'
 
+import { escapeJsonForHtml } from '../helpers/escape-json-for-html'
 import { type NonceConfig } from '../typings/nonce'
 import { type ProcessEnv } from '../typings/process-env'
 import { PUBLIC_ENV_KEY } from './constants'
@@ -136,7 +137,7 @@ type EnvScriptProps = {
  *
  * @see {@link PublicEnvScript} for automatic NEXT_PUBLIC_* variable injection
  */
-export const EnvScript: FC<EnvScriptProps> = ({
+export const EnvScript: FC<EnvScriptProps> = async ({
     env,
     nonce,
     disableNextScript = false,
@@ -145,28 +146,33 @@ export const EnvScript: FC<EnvScriptProps> = ({
     let nonceString: string | undefined
     if (typeof nonce === 'object' && nonce !== null) {
         try {
-            const headerStore = headers()
-            const maybeHeaders = headerStore as unknown as Awaited<ReturnType<typeof headers>>
+            // Next.js 16+ requires async headers() call
+            const headerStore = await headers()
 
-            if (
-                maybeHeaders &&
-                typeof (maybeHeaders as { get?: (key: string) => string | undefined }).get === 'function'
-            ) {
-                nonceString = maybeHeaders.get?.(nonce.headerKey) ?? undefined
+            if (headerStore && typeof headerStore.get === 'function') {
+                nonceString = headerStore.get(nonce.headerKey) ?? undefined
             }
         } catch (error) {
-            if (error instanceof Error && error.message.includes('outside a request scope')) {
-                nonceString = undefined
-            } else {
+            // Handle cases where headers() is called outside a request scope
+            // (e.g., during static generation, CLI scripts, or tests)
+            const isOutsideRequestScope =
+                error instanceof Error &&
+                (error.message.includes('outside a request scope') ||
+                    error.message.includes('was called outside a request scope') ||
+                    error.message.includes('Dynamic server usage'))
+
+            if (!isOutsideRequestScope) {
                 throw error
             }
+            nonceString = undefined
         }
     } else if (typeof nonce === 'string') {
         nonceString = nonce
     }
 
+    // Security: Escape JSON to prevent XSS via script injection, and freeze to prevent tampering
     const innerHTML = {
-        __html: `window['${PUBLIC_ENV_KEY}'] = ${JSON.stringify(env)}`,
+        __html: `window['${PUBLIC_ENV_KEY}'] = Object.freeze(${escapeJsonForHtml(env)})`,
     }
 
     // You can opt to use a regular "<script>" tag instead of Next.js' Script Component.
