@@ -8,7 +8,7 @@
 [![License](https://img.shields.io/badge/License-MIT-f1fa8c?style=for-the-badge&logo=opensourceinitiative&logoColor=white)](https://opensource.org/licenses/MIT)
 
 [![npm version](https://img.shields.io/npm/v/next-dynenv?style=for-the-badge&logo=npm&logoColor=white&color=50fa7b)](https://www.npmjs.com/package/next-dynenv)
-[![CI](https://img.shields.io/github/actions/workflow/status/hyperb1iss/next-runtime-env/ci.yml?branch=development&style=for-the-badge&logo=github&logoColor=white&label=CI)](https://github.com/hyperb1iss/next-runtime-env/actions)
+[![CI](https://img.shields.io/github/actions/workflow/status/hyperb1iss/next-dynenv/ci.yml?branch=development&style=for-the-badge&logo=github&logoColor=white&label=CI)](https://github.com/hyperb1iss/next-dynenv/actions)
 [![Downloads](https://img.shields.io/npm/dm/next-dynenv?style=for-the-badge&logo=npm&logoColor=white&color=ffb86c)](https://www.npmjs.com/package/next-dynenv)
 
 **Effortlessly populate your environment at runtime, not just at build time.**

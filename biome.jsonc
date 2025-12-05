@@ -161,6 +161,18 @@
     "overrides": [
         {
             // ────────────────────────────────────────────────────────────────
+            // → VitePress Theme (skip linting - uses non-standard CSS)
+            // ────────────────────────────────────────────────────────────────
+            "includes": ["docs/.vitepress/theme/**"],
+            "linter": {
+                "enabled": false
+            },
+            "formatter": {
+                "enabled": false
+            }
+        },
+        {
+            // ────────────────────────────────────────────────────────────────
             // → JSON Configuration Files
             // ────────────────────────────────────────────────────────────────
             "includes": ["**/.vscode/*.json", "**/tsconfig*.json"],

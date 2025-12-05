@@ -8,7 +8,7 @@ import { setTimeout } from 'node:timers/promises'
 const BUILD_TIME_VALUE = 'build-time-value'
 const RUNTIME_VALUE = 'runtime-value'
 
-console.log('🧪 Starting integration test for next-runtime-env\n')
+console.log('🧪 Starting integration test for next-dynenv\n')
 
 // Helper to run shell commands
 function runCommand(command, args, options = {}) {

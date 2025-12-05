@@ -26,7 +26,7 @@ export const prefixLevels = {
     event: 10,
 } as const satisfies Record<keyof typeof prefixes | 'silent', number>
 
-const suffix = '(next-runtime-env)'
+const suffix = '(next-dynenv)'
 
 const LOGGING_METHOD = {
     log: 'log',

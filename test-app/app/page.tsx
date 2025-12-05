@@ -1,4 +1,4 @@
-import { env } from '@hyperb1iss/next-runtime-env'
+import { env } from 'next-dynenv'
 
 import ClientEnvReader from './client-env-reader'
 

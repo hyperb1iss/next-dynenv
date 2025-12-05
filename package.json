@@ -44,12 +44,12 @@
     "license": "MIT",
     "repository": {
         "type": "git",
-        "url": "https://github.com/hyperb1iss/next-runtime-env.git"
+        "url": "https://github.com/hyperb1iss/next-dynenv.git"
     },
     "bugs": {
-        "url": "https://github.com/hyperb1iss/next-runtime-env/issues"
+        "url": "https://github.com/hyperb1iss/next-dynenv/issues"
     },
-    "homepage": "https://github.com/hyperb1iss/next-runtime-env#readme",
+    "homepage": "https://github.com/hyperb1iss/next-dynenv#readme",
     "dependencies": {
         "next": "^15",
         "react": "^19"

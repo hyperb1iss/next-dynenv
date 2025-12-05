@@ -1,5 +1,5 @@
 {
-    "name": "next-runtime-env-test-app",
+    "name": "next-dynenv-test-app",
     "version": "1.0.0",
     "private": true,
     "type": "module",
@@ -12,6 +12,6 @@
         "next": "15.5.5",
         "react": "19.2.0",
         "react-dom": "19.2.0",
-        "@hyperb1iss/next-runtime-env": "file:.."
+        "next-dynenv": "file:.."
     }
 }

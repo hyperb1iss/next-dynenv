@@ -79,7 +79,7 @@ jobs:
           echo "**Channel:** \`${{ steps.semantic.outputs.new_release_channel }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**Git Tag:** \`${{ steps.semantic.outputs.new_release_git_tag }}\`" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "📦 [View on npm](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${{ steps.semantic.outputs.new_release_version }})" >> $GITHUB_STEP_SUMMARY
+          echo "📦 [View on npm](https://www.npmjs.com/package/next-dynenv/v/${{ steps.semantic.outputs.new_release_version }})" >> $GITHUB_STEP_SUMMARY
           echo "📝 [View Release Notes](https://github.com/${{ github.repository }}/releases/tag/${{ steps.semantic.outputs.new_release_git_tag }})" >> $GITHUB_STEP_SUMMARY
 
       - name: 📭 No Release

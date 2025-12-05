@@ -108,7 +108,7 @@ export default function Page() {
 
 For questions or issues:
 
-- **App Router (this package):** [GitHub Issues](https://github.com/hyperb1iss/next-runtime-env/issues)
+- **App Router (this package):** [GitHub Issues](https://github.com/hyperb1iss/next-dynenv/issues)
 - **Pages Router (original):** [Original Repository](https://github.com/expatfile/next-runtime-env)
 
 ---

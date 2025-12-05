@@ -6,8 +6,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 > **Fork Notice:** This is the changelog for the Next.js 15 compatible fork maintained at
-> [@hyperb1iss/next-runtime-env](https://github.com/hyperb1iss/next-runtime-env). For the original project history
-> (versions 3.x and below), see the [original repository](https://github.com/expatfile/next-runtime-env).
+> [next-dynenv](https://github.com/hyperb1iss/next-dynenv). For the original project history (versions 3.x and below),
+> see the [original repository](https://github.com/expatfile/next-runtime-env).
 
 ---
 
@@ -60,7 +60,7 @@ represents a comprehensive modernization of the package while maintaining backwa
 
 - **Minimum Requirements:** Requires Next.js 15+ and React 19+ (use `next-runtime-env@3.x` for Next.js 14)
 - **Server Components:** All server-side usage must now use async/await patterns
-- **Package Name:** New scoped package name `@hyperb1iss/next-runtime-env` (migration required)
+- **Package Name:** New package name `next-dynenv` (migration required)
 - **Node.js Version:** Updated minimum Node.js version requirements per Next.js 15 specifications
 
 ---
@@ -89,4 +89,4 @@ credit for the original implementation, core concepts, and foundational work goe
 
 **Original Authors:** [Expatfile.tax LLC](https://expatfile.tax)
 
-[4.0.0]: https://github.com/hyperb1iss/next-runtime-env/releases/tag/v4.0.0
+[4.0.0]: https://github.com/hyperb1iss/next-dynenv/releases/tag/v4.0.0

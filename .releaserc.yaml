@@ -87,7 +87,7 @@ plugins:
         ### 🎉 This ${issue.pull_request ? 'PR is included' : 'issue has been resolved'} in version ${nextRelease.version}
 
         The release is available on:
-        - 📦 [npm package (@latest dist-tag)](https://www.npmjs.com/package/@hyperb1iss/next-runtime-env/v/${nextRelease.version})
+        - 📦 [npm package (@latest dist-tag)](https://www.npmjs.com/package/next-dynenv/v/${nextRelease.version})
         - 📝 [GitHub release](${releases[0].url})
 
         Your **${issue.pull_request ? 'pull request' : 'issue'}** is in ${nextRelease.channel ? `**${nextRelease.channel}** channel` : '**production**'}!

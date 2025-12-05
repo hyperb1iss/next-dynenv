@@ -35,7 +35,7 @@ describe('error', () => {
     it('should log an error message', () => {
         error('foo')
 
-        expect(errorSpy).toHaveBeenCalledWith(` ${prefixes.error}`, 'foo', '(next-runtime-env)')
+        expect(errorSpy).toHaveBeenCalledWith(` ${prefixes.error}`, 'foo', '(next-dynenv)')
     })
 })
 
@@ -43,7 +43,7 @@ describe('warn', () => {
     it('should log a warning message', () => {
         warn('foo')
 
-        expect(warnSpy).toHaveBeenCalledWith(` ${prefixes.warn}`, 'foo', '(next-runtime-env)')
+        expect(warnSpy).toHaveBeenCalledWith(` ${prefixes.warn}`, 'foo', '(next-dynenv)')
     })
 })
 
@@ -51,7 +51,7 @@ describe('info', () => {
     it('should log an info message', () => {
         info('foo')
 
-        expect(logSpy).toHaveBeenCalledWith(` ${prefixes.info}`, 'foo', '(next-runtime-env)')
+        expect(logSpy).toHaveBeenCalledWith(` ${prefixes.info}`, 'foo', '(next-dynenv)')
     })
 })
 
@@ -59,6 +59,6 @@ describe('event', () => {
     it('should log an event message', () => {
         event('foo')
 
-        expect(logSpy).toHaveBeenCalledWith(` ${prefixes.event}`, 'foo', '(next-runtime-env)')
+        expect(logSpy).toHaveBeenCalledWith(` ${prefixes.event}`, 'foo', '(next-dynenv)')
     })
 })

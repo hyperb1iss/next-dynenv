@@ -1,4 +1,4 @@
-import { PublicEnvScript } from '@hyperb1iss/next-runtime-env'
+import { PublicEnvScript } from 'next-dynenv'
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
     return (
