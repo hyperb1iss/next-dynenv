@@ -129,9 +129,9 @@ async function main() {
             throw new Error('❌ Server-side: Runtime value not found in HTML')
         }
 
-        // Check window.__ENV injection (with or without escaped quotes)
-        const expectedScript = `window['__ENV'] = {"NEXT_PUBLIC_TEST_VAR":"${RUNTIME_VALUE}"}`
-        const expectedScriptEscaped = `window['__ENV'] = {\\"NEXT_PUBLIC_TEST_VAR\\":\\"${RUNTIME_VALUE}\\"}`
+        // Check window.__ENV injection (with Object.freeze wrapper)
+        const expectedScript = `window['__ENV'] = Object.freeze({"NEXT_PUBLIC_TEST_VAR":"${RUNTIME_VALUE}"`
+        const expectedScriptEscaped = `window['__ENV'] = Object.freeze({\\"NEXT_PUBLIC_TEST_VAR\\":\\"${RUNTIME_VALUE}\\"`
 
         if (!homePage.body.includes(expectedScript) && !homePage.body.includes(expectedScriptEscaped)) {
             console.log('\n⚠️  Client-side: window.__ENV script not found in HTML')

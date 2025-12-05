@@ -1,4 +1,4 @@
-name: 🔬 CI
+name: CI
 
 on:
   pull_request:
@@ -8,67 +8,166 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ${{ github.workflow }}-${{ github.ref }}
+  group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 env:
-  NODE_VERSION_MAIN: '22'
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10'
 
 jobs:
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  # 🔬 Main CI Pipeline
-  # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  ci:
-    name: 🔬 CI Pipeline
+  # ════════════════════════════════════════════════════════════════════
+  # Quality Checks (parallel)
+  # ════════════════════════════════════════════════════════════════════
+  lint:
+    name: Lint & Format
     runs-on: ubuntu-latest
-    timeout-minutes: 15
-
+    timeout-minutes: 10
     steps:
-      - name: 📥 Checkout
+      - name: Checkout
         uses: actions/checkout@v4
 
-      - name: 📦 Setup pnpm
+      - name: Setup pnpm
         uses: pnpm/action-setup@v4
         with:
-          version: 10
+          version: ${{ env.PNPM_VERSION }}
 
-      - name: 🔧 Setup Node.js
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: ${{ env.NODE_VERSION_MAIN }}
+          node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
 
-      - name: 📚 Install dependencies
+      - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      # ─────────────────────────────────────────────────────────────────
-      # Security & Quality Checks
-      # ─────────────────────────────────────────────────────────────────
-      - name: 🔒 Security audit
-        run: pnpm audit-ci --config .audit-ci.json
+      - name: Biome check
+        run: pnpm biome check .
 
-      - name: 💎 Lint & format check
-        run: pnpm lint
+      - name: Prettier check
+        run: pnpm prettier --check "**/*.{md,mdx,yml,yaml}"
 
-      - name: 🔍 Type check
+  typecheck:
+    name: Type Check
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
         run: pnpm typecheck
 
-      # ─────────────────────────────────────────────────────────────────
-      # Build & Test
-      # ─────────────────────────────────────────────────────────────────
-      - name: 🏗️ Build TypeScript
+  security:
+    name: Security Audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Security audit
+        run: pnpm audit-ci --config .audit-ci.json
+
+  # ════════════════════════════════════════════════════════════════════
+  # Build & Test
+  # ════════════════════════════════════════════════════════════════════
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build package
         run: pnpm build
 
-      - name: 🧪 Run unit tests
-        run: pnpm test --ci --runInBand --coverage
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: build
+          path: build/
+          retention-days: 1
 
-      - name: 🚀 Run integration tests
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    needs: build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: build
+          path: build/
+
+      - name: Run unit tests
+        run: pnpm test:coverage
+
+      - name: Run integration tests
         run: pnpm test:integration
 
-      # ─────────────────────────────────────────────────────────────────
-      # Coverage & Summary
-      # ─────────────────────────────────────────────────────────────────
-      - name: 📊 Upload coverage
+      - name: Upload coverage
         uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
@@ -76,19 +175,69 @@ jobs:
           flags: unittests
           fail_ci_if_error: false
 
-      - name: ✅ CI Summary
+  # ════════════════════════════════════════════════════════════════════
+  # Docs Build Verification
+  # ════════════════════════════════════════════════════════════════════
+  docs:
+    name: Docs Build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: docs/pnpm-lock.yaml
+
+      - name: Install docs dependencies
+        working-directory: docs
+        run: pnpm install --frozen-lockfile
+
+      - name: Build docs
+        working-directory: docs
+        run: pnpm build
+
+  # ════════════════════════════════════════════════════════════════════
+  # Status Check (branch protection)
+  # ════════════════════════════════════════════════════════════════════
+  status:
+    name: CI Status
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, security, build, test, docs]
+    if: always()
+    steps:
+      - name: Check status
+        run: |
+          if [ "${{ needs.lint.result }}" != "success" ] || \
+             [ "${{ needs.typecheck.result }}" != "success" ] || \
+             [ "${{ needs.security.result }}" != "success" ] || \
+             [ "${{ needs.build.result }}" != "success" ] || \
+             [ "${{ needs.test.result }}" != "success" ] || \
+             [ "${{ needs.docs.result }}" != "success" ]; then
+            echo "::error::One or more jobs failed"
+            exit 1
+          fi
+          echo "All checks passed!"
+
+      - name: Summary
         if: always()
         run: |
-          echo "### ✅ CI Pipeline Complete" >> $GITHUB_STEP_SUMMARY
+          echo "## CI Results" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Checks Run:**" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔒 Security audit" >> $GITHUB_STEP_SUMMARY
-          echo "- 💎 Linting & formatting" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔍 Type checking" >> $GITHUB_STEP_SUMMARY
-          echo "- 🏗️ TypeScript build" >> $GITHUB_STEP_SUMMARY
-          echo "- 🧪 Unit tests with coverage" >> $GITHUB_STEP_SUMMARY
-          echo "- 🚀 Integration tests" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Runtime:** Node.js 22" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "🎉 All checks passed!" >> $GITHUB_STEP_SUMMARY
+          echo "| Check | Status |" >> $GITHUB_STEP_SUMMARY
+          echo "|-------|--------|" >> $GITHUB_STEP_SUMMARY
+          echo "| Lint & Format | ${{ needs.lint.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Type Check | ${{ needs.typecheck.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Security Audit | ${{ needs.security.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Build | ${{ needs.build.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Test | ${{ needs.test.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY
+          echo "| Docs | ${{ needs.docs.result == 'success' && '●' || '○' }} |" >> $GITHUB_STEP_SUMMARY

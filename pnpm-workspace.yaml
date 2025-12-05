@@ -1,0 +1,7 @@
+packages:
+  - '.'
+  - 'docs'
+  - 'test-app'
+
+ignoredBuiltDependencies:
+  - esbuild
