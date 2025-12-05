@@ -2,14 +2,32 @@ import { defineConfig } from 'vitepress'
 
 export default defineConfig({
     title: 'next-dynenv',
-    description: 'Dynamic runtime environment variables for Next.js',
+    description: 'Runtime environment variables for Next.js. Build once, deploy anywhere.',
     base: '/next-dynenv/',
 
     head: [
         ['meta', { name: 'theme-color', content: '#e135ff' }],
         ['meta', { property: 'og:type', content: 'website' }],
-        ['meta', { property: 'og:title', content: 'next-dynenv Documentation' }],
-        ['meta', { property: 'og:description', content: 'Dynamic runtime environment variables for Next.js' }],
+        ['meta', { property: 'og:title', content: 'next-dynenv - Runtime Environment Variables for Next.js' }],
+        [
+            'meta',
+            {
+                property: 'og:description',
+                content:
+                    'Build once, deploy anywhere. Change your Next.js environment without rebuilding. Docker, Kubernetes, and CI/CD friendly.',
+            },
+        ],
+        ['meta', { property: 'og:image', content: 'https://hyperb1iss.github.io/next-dynenv/og-image.png' }],
+        ['meta', { name: 'twitter:card', content: 'summary_large_image' }],
+        ['meta', { name: 'twitter:title', content: 'next-dynenv - Runtime Environment Variables for Next.js' }],
+        [
+            'meta',
+            {
+                name: 'twitter:description',
+                content: 'Build once, deploy anywhere. Change your Next.js environment without rebuilding.',
+            },
+        ],
+        ['link', { rel: 'icon', type: 'image/svg+xml', href: '/next-dynenv/favicon.svg' }],
     ],
 
     themeConfig: {

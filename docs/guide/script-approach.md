@@ -1,11 +1,12 @@
 # Script Approach
 
-The recommended approach using `PublicEnvScript` for injecting environment variables.
+The recommended way to use next-dynenv: simple, powerful, and compatible with everything.
 
 ## Overview
 
-The script approach injects environment variables via a `<script>` tag that sets a global `window.__ENV` object. This is
-the recommended approach for most applications.
+The script approach injects a `<script>` tag that sets `window.__ENV` with your environment variables. This is the
+recommended approach for most applications because it works everywhere—inside React, outside React, with vanilla JS,
+with third-party tools like Sentry.
 
 ## Basic Setup
 
@@ -67,28 +68,31 @@ export default function ServerComponent() {
 
 ### In Vanilla JavaScript
 
-Since values are on `window.__ENV`, you can access them without React:
+Since values live on `window.__ENV`, you can access them outside React:
 
 ```js
-// Any JavaScript file
+// Any JavaScript file (even non-React code)
 const apiUrl = window.__ENV?.NEXT_PUBLIC_API_URL
 
-// Or use the env function if available
+// Or import the env function
 import { env } from 'next-dynenv'
 const apiUrl = env('NEXT_PUBLIC_API_URL')
 ```
+
+::: tip Works Everywhere This is why the script approach is recommended—it works with any JavaScript code, not just
+React components. :::
 
 ## Component Props
 
 ### `nonce`
 
-For Content Security Policy compliance:
+For Content Security Policy compliance, pass a nonce:
 
 ```tsx
 // Direct nonce value
 <PublicEnvScript nonce="random-nonce-value" />
 
-// Or from headers
+// Or fetch from headers automatically
 <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
 ```
 
@@ -97,11 +101,12 @@ For Content Security Policy compliance:
 Use a regular `<script>` tag instead of Next.js `<Script>`:
 
 ```tsx
-// Required for Sentry compatibility
+// Use when timing matters (e.g., Sentry integration)
 <PublicEnvScript disableNextScript={true} />
 ```
 
-This is useful when tools like Sentry need the environment variables to be available before their initialization runs.
+::: info When to Use This Some tools (like Sentry) need environment variables available before Next.js `<Script>`
+components run. Set `disableNextScript={true}` to use a blocking `<script>` tag instead. :::
 
 ### `nextScriptProps`
 
@@ -205,10 +210,10 @@ Sentry.init({
 
 Use the script approach when:
 
-- You need environment access outside React components
-- You're integrating with third-party tools (Sentry, analytics)
-- You want the simplest setup
-- You're using vanilla JavaScript alongside React
+- **Default choice** - It's the recommended approach for most apps
+- **Third-party tools** - Integrating with Sentry, analytics, or other libraries
+- **Non-React code** - You have vanilla JavaScript that needs environment access
+- **Simplicity** - You want one import that works everywhere
 
 ## Next Steps
 

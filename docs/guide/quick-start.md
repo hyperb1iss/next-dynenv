@@ -1,10 +1,10 @@
 # Quick Start
 
-Get runtime environment variables working in 2 minutes.
+Get runtime environment variables working in under 2 minutes.
 
 ## Step 1: Add the Script Component
 
-In your root layout (`app/layout.tsx`), add the `PublicEnvScript` component:
+Drop `PublicEnvScript` into your root layout:
 
 ```tsx
 // app/layout.tsx
@@ -22,26 +22,27 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-This automatically exposes all `NEXT_PUBLIC_*` environment variables to the browser at runtime.
+::: tip What This Does This component automatically exposes all `NEXT_PUBLIC_*` environment variables to the browser at
+runtime. No configuration needed. :::
 
 ## Step 2: Use Environment Variables
 
 ### In Client Components
 
 ```tsx
-// app/components/ClientComponent.tsx
+// app/components/ApiStatus.tsx
 'use client'
 
 import { env } from 'next-dynenv'
 
-export function ClientComponent() {
+export function ApiStatus() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')
-    const debug = env('NEXT_PUBLIC_DEBUG_MODE')
+    const debug = env('NEXT_PUBLIC_DEBUG_MODE', 'false')
 
     return (
         <div>
-            <p>API URL: {apiUrl}</p>
-            <p>Debug Mode: {debug}</p>
+            <p>API: {apiUrl}</p>
+            <p>Debug: {debug}</p>
         </div>
     )
 }
@@ -50,22 +51,25 @@ export function ClientComponent() {
 ### In Server Components
 
 ```tsx
-// app/components/ServerComponent.tsx
+// app/components/DataFetcher.tsx
 import { env } from 'next-dynenv'
 
-export default function ServerComponent() {
+export default async function DataFetcher() {
+    // Access both public and private variables
     const apiUrl = env('NEXT_PUBLIC_API_URL')
-    // Server-side only variables also work
     const secretKey = env('SECRET_API_KEY')
 
-    return (
-        <div>
-            <p>API URL: {apiUrl}</p>
-            {/* Never expose secret keys to the client */}
-        </div>
-    )
+    // Use secretKey for server-side API calls
+    const data = await fetch(apiUrl, {
+        headers: { Authorization: `Bearer ${secretKey}` },
+    })
+
+    return <div>{/* Render data */}</div>
 }
 ```
+
+::: warning Server-Side Only Private environment variables (without `NEXT_PUBLIC_` prefix) only work in server
+components, API routes, and middleware. Attempting to access them in client components will throw an error. :::
 
 ### In Middleware
 
@@ -76,39 +80,69 @@ import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
 
 export function middleware(request: NextRequest) {
-    const featureFlag = env('NEXT_PUBLIC_ENABLE_FEATURE')
+    const featureEnabled = env('NEXT_PUBLIC_ENABLE_FEATURE', 'false')
 
-    if (featureFlag === 'true') {
-        // Feature-specific logic
+    if (featureEnabled === 'true') {
+        return NextResponse.next()
     }
 
-    return NextResponse.next()
+    return NextResponse.redirect(new URL('/coming-soon', request.url))
 }
 ```
 
 ## Step 3: Set Environment Variables
 
-Create a `.env.local` file for development:
+Create `.env.local` for development:
 
 ```bash
+# Public variables (exposed to browser)
 NEXT_PUBLIC_API_URL=http://localhost:8080
 NEXT_PUBLIC_DEBUG_MODE=true
+
+# Private variables (server-side only)
 SECRET_API_KEY=your-secret-key
+DATABASE_URL=postgresql://localhost:5432/mydb
 ```
 
-For production, set environment variables on your hosting platform or pass them at runtime:
+For production, set variables at runtime:
 
-```bash
-# Docker
-docker run -e NEXT_PUBLIC_API_URL=https://api.prod.com your-app
+::: code-group
 
-# Shell
-NEXT_PUBLIC_API_URL=https://api.prod.com npm start
+```bash [Docker]
+docker run \
+  -e NEXT_PUBLIC_API_URL=https://api.prod.com \
+  -e SECRET_API_KEY=prod-secret \
+  your-app
 ```
+
+```bash [Shell]
+NEXT_PUBLIC_API_URL=https://api.prod.com \
+SECRET_API_KEY=prod-secret \
+npm start
+```
+
+```bash [Vercel]
+# Set in Vercel dashboard under Environment Variables
+# Or use Vercel CLI
+vercel env add NEXT_PUBLIC_API_URL
+```
+
+:::
 
 ## That's It!
 
-Your environment variables are now available at runtime. Change them without rebuilding your app.
+You're done. Your environment variables are now dynamic—change them at runtime without rebuilding.
+
+::: tip Pro Tip Use [type-safe parsers](/api/parsers) to convert environment strings to proper types:
+
+```tsx
+import { envParsers } from 'next-dynenv'
+
+const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
+const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
+```
+
+:::
 
 ## Next Steps
 

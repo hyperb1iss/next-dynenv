@@ -1,16 +1,18 @@
 # Docker Deployment
 
-Deploy a single Docker image across all environments.
+Build one Docker image, deploy it everywhere—the way containers were meant to be used.
 
 ## The Goal
 
-Build once, deploy anywhere with different configurations:
+Build once, deploy anywhere with different runtime configurations:
 
 ```bash
 # Same image, different environments
 docker run -e NEXT_PUBLIC_API_URL=https://staging-api.com my-app
 docker run -e NEXT_PUBLIC_API_URL=https://prod-api.com my-app
 ```
+
+This is the **fundamental promise of containers**—environment-agnostic build artifacts.
 
 ## Basic Dockerfile
 
@@ -64,6 +66,9 @@ const nextConfig = {
 
 module.exports = nextConfig
 ```
+
+::: tip Why Standalone? Standalone output creates a minimal production server with only the dependencies you need. This
+dramatically reduces Docker image size (often 10x smaller). :::
 
 ## Application Setup
 

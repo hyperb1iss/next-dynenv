@@ -1,47 +1,67 @@
 # Introduction
 
-**next-dynenv** provides dynamic runtime environment variables for Next.js applications, enabling the "build once,
-deploy many" philosophy.
+**next-dynenv** brings true runtime environment variables to Next.js, enabling the "build once, deploy anywhere"
+philosophy that modern deployment workflows demand.
 
-## Why Runtime Environment Variables?
+## The Problem with Build-Time Variables
 
-In traditional Next.js applications, environment variables are baked into the build at compile time. This means you need
-separate builds for development, staging, and production environments.
+Traditional Next.js apps bake environment variables into your JavaScript bundle at build time. Want to change an API
+endpoint? You need a full rebuild. Deploying to staging and production? That's two separate builds with different
+configurations.
 
-With **next-dynenv**, you build once and deploy anywhere:
+This creates friction for:
 
-- **Development** → Same build, different `.env`
-- **Staging** → Same build, staging environment variables
-- **Production** → Same build, production environment variables
+- **Docker workflows** - You want one image for all environments, not three
+- **Feature flags** - Toggle features without rebuilding and redeploying
+- **Multi-tenant apps** - Different configs per customer without separate builds
+- **CI/CD pipelines** - Build artifacts should be environment-agnostic
 
-This approach is a cornerstone of:
+## The Solution
+
+**next-dynenv** injects environment variables at **runtime**, not build time. Build once, then deploy the same artifact
+everywhere with different configurations.
+
+::: tip Build Once, Deploy Anywhere
+
+```bash
+# Build your app once
+npm run build
+
+# Deploy the same build to different environments
+docker run -e NEXT_PUBLIC_API_URL=https://staging.api my-app
+docker run -e NEXT_PUBLIC_API_URL=https://prod.api my-app
+```
+
+:::
+
+This approach aligns with:
 
 - [Twelve-Factor App](https://12factor.net) methodology
-- Continuous delivery pipelines
-- Container-based deployments (Docker, Kubernetes)
+- Modern container orchestration (Docker, Kubernetes)
+- Continuous delivery best practices
 
 ## Key Features
 
-### Isomorphic API
+### 🎯 Isomorphic API
 
-The `env()` function works everywhere in your Next.js app:
+One function, works everywhere:
 
 ```tsx
 import { env } from 'next-dynenv'
 
-// Works in server components
+// Server components
 const apiUrl = env('NEXT_PUBLIC_API_URL')
 
-// Works in client components
+// Client components
 const debug = env('NEXT_PUBLIC_DEBUG')
 
-// Works in middleware
+// Middleware
 const featureFlag = env('NEXT_PUBLIC_FEATURE_FLAG')
 ```
 
-### Type-Safe Parsers
+### 🔧 Type-Safe Parsers
 
-Convert environment strings to proper types:
+Stop fighting with string casting:
 
 ```tsx
 import { envParsers } from 'next-dynenv'
@@ -52,13 +72,17 @@ const features = envParsers.array('NEXT_PUBLIC_FEATURES') // string[]
 const config = envParsers.json<Config>('NEXT_PUBLIC_CONFIG') // typed JSON
 ```
 
-### Security Built-in
+### 🔒 Security Built-in
 
-- **XSS Protection**: All values are JSON-escaped before injection
-- **Immutable Values**: Runtime environment is frozen with `Object.freeze()`
-- **Strict Prefix Enforcement**: Only `NEXT_PUBLIC_*` variables are exposed to the browser
+Protected by default:
+
+- **XSS Protection** - All values JSON-escaped before injection
+- **Immutable Values** - Runtime environment frozen with `Object.freeze()`
+- **Strict Prefix Enforcement** - Only `NEXT_PUBLIC_*` variables exposed to browser
 
 ## Quick Example
+
+Add the script to your layout:
 
 ```tsx
 // app/layout.tsx
@@ -76,6 +100,8 @@ export default function RootLayout({ children }) {
 }
 ```
 
+Use environment variables anywhere:
+
 ```tsx
 // app/components/ApiStatus.tsx
 'use client'
@@ -83,9 +109,11 @@ import { env } from 'next-dynenv'
 
 export function ApiStatus() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')
-    return <div>API: {apiUrl}</div>
+    return <div>Connected to: {apiUrl}</div>
 }
 ```
+
+That's it. Change your environment variables at runtime without rebuilding.
 
 ## Next Steps
 

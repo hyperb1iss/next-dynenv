@@ -1,16 +1,16 @@
 # Custom Variables
 
-Fine-grained control over which environment variables are exposed.
+Fine-grained control over exactly which environment variables reach the client.
 
 ## Overview
 
-While `PublicEnvScript` and `PublicEnvProvider` automatically expose all `NEXT_PUBLIC_*` variables, sometimes you need
-more control:
+`PublicEnvScript` and `PublicEnvProvider` automatically expose all `NEXT_PUBLIC_*` variables—which is great for most
+apps. But sometimes you need more control:
 
-- Expose only specific variables
-- Rename variables for the client
-- Compute values at request time
-- Filter based on conditions
+- **Whitelist** - Expose only specific variables
+- **Transform** - Rename or modify variables before exposing them
+- **Compute** - Generate values dynamically at request time
+- **Filter** - Exclude certain variables based on conditions
 
 ## Using EnvScript
 
@@ -210,20 +210,23 @@ export default function Layout({ children }) {
 
 ## Security Considerations
 
-::: danger Never Expose Secrets Even with custom variables, never expose sensitive data to the client. :::
+::: danger Never Expose Secrets Even with custom variables, **never** expose sensitive data to the client. Just because
+you _can_ put anything in the custom env object doesn't mean you _should_. :::
 
 ```tsx
-// WRONG - exposes secret to browser
+// ❌ WRONG - Exposes secret to browser
 const badEnv = {
     NEXT_PUBLIC_API_KEY: process.env.SECRET_API_KEY, // Never do this!
 }
 
-// CORRECT - only expose safe values
+// ✅ CORRECT - Only safe values
 const goodEnv = {
     NEXT_PUBLIC_API_URL: process.env.API_URL,
     NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
 }
 ```
+
+**Rule of thumb:** If it's secret on the server, it stays secret on the server.
 
 ## Next Steps
 

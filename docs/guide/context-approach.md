@@ -1,11 +1,11 @@
 # Context Approach
 
-Alternative approach using React Context for environment access.
+Pure React pattern for environment variables—no global state, just Context.
 
 ## Overview
 
-The context approach uses React Context to pass environment variables through the component tree. This is a pure React
-pattern without global state.
+The context approach uses React Context to pass environment variables through your component tree. If you prefer
+avoiding global state and want to keep everything within React's boundaries, this approach is for you.
 
 ## Basic Setup
 
@@ -196,10 +196,13 @@ export function SafeComponent() {
 
 Use the context approach when:
 
-- Your app is purely React
-- You prefer avoiding global state
-- You want to leverage React patterns
-- Type safety is important
+- **Pure React philosophy** - You want to avoid global state
+- **Type safety matters** - Better TypeScript inference with context
+- **Explicit dependencies** - You prefer React tree dependencies over globals
+- **No third-party integration** - You don't need environment access outside React
+
+::: tip Most Apps Should Use Script Approach Unless you have a strong preference for React Context or specific
+requirements, the [script approach](/guide/script-approach) is simpler and more flexible. :::
 
 ## Next Steps
 

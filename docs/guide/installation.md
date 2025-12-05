@@ -1,10 +1,15 @@
 # Installation
 
+Get next-dynenv installed and verified in under a minute.
+
 ## Requirements
 
 - **Next.js** 15.x or 16.x
 - **React** 19.x
 - **Node.js** 20.x or higher
+
+::: info Compatibility Note next-dynenv requires Next.js 15+ because it leverages the `connection()` API for dynamic
+rendering. If you're on Next.js 14 or earlier, you'll need to upgrade first. :::
 
 ## Package Installation
 
@@ -22,15 +27,20 @@ pnpm add next-dynenv
 yarn add next-dynenv
 ```
 
+```bash [bun]
+bun add next-dynenv
+```
+
 :::
 
 ## TypeScript Support
 
-next-dynenv is written in TypeScript and includes built-in type definitions. No additional `@types` packages are needed.
+next-dynenv is written in TypeScript with built-in type definitions. No additional `@types` packages needed—you get full
+type safety out of the box.
 
 ## Peer Dependencies
 
-The package has peer dependencies on `next` and `react`:
+The package requires `next` and `react` as peer dependencies:
 
 ```json
 {
@@ -41,9 +51,11 @@ The package has peer dependencies on `next` and `react`:
 }
 ```
 
+Your package manager will handle these automatically if they're already installed.
+
 ## Verify Installation
 
-After installation, verify it works:
+Quick sanity check:
 
 ```tsx
 import { env } from 'next-dynenv'
@@ -52,6 +64,8 @@ import { env } from 'next-dynenv'
 console.log(typeof env) // 'function'
 ```
 
+If you see `'function'`, you're good to go.
+
 ## Next Steps
 
-Continue to [Quick Start](/guide/quick-start) to set up your first runtime environment variable.
+Head to [Quick Start](/guide/quick-start) to set up your first runtime environment variable.

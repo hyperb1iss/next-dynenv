@@ -207,20 +207,9 @@
 }
 
 :root:not(.dark) .VPSidebarItem.is-active > .item > .link > .text {
-  color: var(--dawn-purple);
-  font-weight: 500;
-}
-
-:root:not(.dark) .VPSidebarItem.is-active > .item > .link::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 16px;
-  background: linear-gradient(180deg, var(--dawn-purple), var(--dawn-cyan));
-  border-radius: 0 2px 2px 0;
+  color: var(--dawn-purple) !important;
+  font-weight: 600;
+  -webkit-text-fill-color: var(--dawn-purple);
 }
 
 /* Light Mode Hero */
@@ -501,21 +490,9 @@
 }
 
 .dark .VPSidebarItem.is-active > .item > .link > .text {
-  color: var(--iris-cyan);
-  font-weight: 500;
-}
-
-/* Active indicator */
-.dark .VPSidebarItem.is-active > .item > .link::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 3px;
-  height: 16px;
-  background: linear-gradient(180deg, var(--iris-purple), var(--iris-cyan));
-  border-radius: 0 2px 2px 0;
+  color: var(--iris-cyan) !important;
+  font-weight: 600;
+  -webkit-text-fill-color: var(--iris-cyan);
 }
 
 /* ═══════════════════════════════════════════════════════════════

@@ -1,50 +1,57 @@
 # Security
 
-next-dynenv includes multiple layers of security by default.
+next-dynenv is secure by default—multiple layers of protection baked in.
 
 ## Built-in Security Features
 
 ### XSS Protection
 
-All environment values are JSON-escaped before injection into the HTML. This prevents script injection attacks:
+All environment values are JSON-escaped before injection to prevent script injection:
 
 ```tsx
-// If someone sets:
-// NEXT_PUBLIC_XSS="</script><script>alert('hacked')</script>"
+// If someone maliciously sets:
+NEXT_PUBLIC_XSS="</script><script>alert('hacked')</script>"
 
 // It becomes safely escaped:
-// \u003c/script\u003e\u003cscript\u003ealert('hacked')\u003c/script\u003e
+\u003c/script\u003e\u003cscript\u003ealert('hacked')\u003c/script\u003e
 ```
+
+The browser renders it as harmless text, not executable code.
 
 ### Immutable Runtime Values
 
-Environment values are wrapped with `Object.freeze()`, preventing modification after initialization:
+Environment values are frozen with `Object.freeze()`:
 
 ```tsx
-// This will fail silently (or throw in strict mode)
+// Any attempt to modify fails
 window.__ENV.NEXT_PUBLIC_API_URL = 'https://evil.com'
+// In strict mode, this throws. In sloppy mode, it fails silently.
 ```
+
+This prevents client-side tampering with environment configuration.
 
 ### Strict Prefix Enforcement
 
-Only variables prefixed with `NEXT_PUBLIC_` are exposed to the browser. Attempting to access non-public variables in
-client code throws an error:
+Only `NEXT_PUBLIC_*` variables reach the browser. Try to access a secret? Error:
 
 ```tsx
 'use client'
 
-// This throws: "Environment variable 'SECRET_KEY' is not public"
 const secret = env('SECRET_KEY')
+// ❌ Error: Environment variable 'SECRET_KEY' is not public
 ```
+
+This prevents accidentally leaking server-side secrets to client code.
 
 ## Best Practices
 
 ### Never Expose Secrets to the Browser
 
-::: danger Only `NEXT_PUBLIC_*` variables are exposed to the browser. Never expose sensitive data. :::
+::: danger Fundamental Rule Only `NEXT_PUBLIC_*` variables are exposed to the browser. **Never** put secrets, API keys,
+tokens, or sensitive data in public variables. :::
 
 ```tsx
-// ❌ WRONG - Don't try to access secrets in client components
+// ❌ WRONG - Trying to access secrets in client components
 'use client'
 const apiKey = env('SECRET_API_KEY') // Throws error!
 
@@ -52,39 +59,48 @@ const apiKey = env('SECRET_API_KEY') // Throws error!
 // app/api/data/route.ts
 export async function GET() {
     const apiKey = env('SECRET_API_KEY') // Works!
-    // ... fetch data securely
+    // Fetch data securely server-side
 }
 ```
 
+**Golden rule:** If it's secret, keep it server-side.
+
 ### Validate Required Variables
 
-Use `requireEnv()` to fail fast when critical variables are missing:
+Fail fast when critical variables are missing:
 
 ```tsx
 import { requireEnv } from 'next-dynenv'
 
-// Throws immediately if undefined
+// Throws immediately if undefined (better than runtime surprises)
 const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
 ```
 
+::: tip Development vs Production Use `requireEnv()` for variables your app can't function without. Use `env()` with
+defaults for optional config. :::
+
 ### Use Type-Safe Parsers
 
-Parse environment variables to their expected types:
+Parse and validate environment variables:
 
 ```tsx
 import { envParsers } from 'next-dynenv'
 
-// Validates and throws if invalid
-const port = envParsers.number('NEXT_PUBLIC_PORT')
-const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
-const env = envParsers.enum('NEXT_PUBLIC_ENV', ['dev', 'staging', 'prod'])
+// Type-safe parsing with validation
+const port = envParsers.number('NEXT_PUBLIC_PORT') // number
+const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL') // validated URL
+const env = envParsers.enum('NEXT_PUBLIC_ENV', ['dev', 'staging', 'prod']) // enum
 ```
 
-## Content Security Policy
+These throw meaningful errors if values are invalid, catching config issues early.
 
-If using CSP, you have two options:
+## Content Security Policy (CSP)
 
-### Option 1: Allow Inline Scripts (Simpler)
+If your app uses CSP, you have two options for allowing the environment script:
+
+### Option 1: Allow Inline Scripts
+
+Simpler, but less strict:
 
 ```js
 // next.config.js
@@ -93,9 +109,12 @@ const ContentSecurityPolicy = `
 `
 ```
 
-### Option 2: Use Nonce (More Secure)
+::: warning Security Tradeoff `'unsafe-inline'` weakens your CSP by allowing all inline scripts, not just next-dynenv's.
+:::
 
-Pass a nonce to the component:
+### Option 2: Use Nonce (Recommended)
+
+More secure—only allow specific scripts:
 
 ```tsx
 // app/layout.tsx
@@ -117,7 +136,7 @@ export default async function RootLayout({ children }) {
 }
 ```
 
-Or retrieve the nonce from headers automatically:
+Or let next-dynenv fetch the nonce automatically:
 
 ```tsx
 <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
@@ -125,12 +144,12 @@ Or retrieve the nonce from headers automatically:
 
 ## Server vs Client Environment Access
 
-| Context           | Access                   | Variables Available  |
+| Context           | Access Method            | Variables Available  |
 | ----------------- | ------------------------ | -------------------- |
 | Server Components | `env()` or `process.env` | All variables        |
 | API Routes        | `env()` or `process.env` | All variables        |
 | Middleware        | `env()` or `process.env` | All variables        |
 | Client Components | `env()` only             | Only `NEXT_PUBLIC_*` |
 
-::: tip Recommendation Use `env()` everywhere for consistency. It works in all contexts and provides better error
-messages when misused. :::
+::: tip Best Practice Use `env()` everywhere for consistency. It works in all contexts and provides clear error messages
+when you try to access secrets from client code. :::

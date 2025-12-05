@@ -1,14 +1,17 @@
 # Vercel Deployment
 
-Deploy to Vercel with runtime environment variables.
+Deploy to Vercel with true runtime environment variables—change configs without rebuilding.
 
 ## How It Works on Vercel
 
-Vercel has its own environment variable system. With next-dynenv:
+Vercel has built-in environment variable management. With next-dynenv:
 
-1. Set variables in Vercel's dashboard
-2. next-dynenv reads them at runtime
-3. Changes take effect without redeploying
+1. **Set variables** in Vercel's dashboard
+2. **next-dynenv reads them** at runtime (not build time)
+3. **Changes take effect immediately** without redeploying
+
+::: info Key Benefit Traditional Next.js on Vercel bakes `NEXT_PUBLIC_*` variables into the build. next-dynenv reads
+them at runtime, so you can change variables without triggering a rebuild. :::
 
 ## Basic Setup
 
@@ -134,29 +137,32 @@ vercel env pull .env.local
 
 ### Runtime vs Build Time
 
-On Vercel, `NEXT_PUBLIC_*` variables set in the dashboard are available at:
+On Vercel, `NEXT_PUBLIC_*` variables set in the dashboard are available at both build time and runtime. next-dynenv
+ensures you get the **runtime** values, not stale build-time values.
 
-- **Build time**: When Vercel builds your app
-- **Runtime**: When next-dynenv reads them
+### Static Pages and ISR
 
-next-dynenv ensures runtime values are used, not build-time cached values.
-
-### Static Pages
-
-If you're using static generation, environment variables are baked in at build time. Use dynamic rendering to get
-runtime values:
+If you're using static generation (SSG) or ISR, environment variables are captured at generation time:
 
 ```tsx
-// This forces dynamic rendering
-import { PublicEnvScript } from 'next-dynenv'
+// Pages with ISR revalidate periodically
+export const revalidate = 60 // Env vars update every 60 seconds
 
-export const dynamic = 'force-dynamic'
+export default function Page() {
+    return <div>...</div>
+}
+```
+
+For truly dynamic pages, `PublicEnvScript` automatically opts into dynamic rendering via `connection()`:
+
+```tsx
+import { PublicEnvScript } from 'next-dynenv'
 
 export default function Page() {
     return (
         <html>
             <head>
-                <PublicEnvScript />
+                <PublicEnvScript /> {/* Automatically dynamic */}
             </head>
             <body>...</body>
         </html>
@@ -164,28 +170,15 @@ export default function Page() {
 }
 ```
 
-Or simply use `PublicEnvScript` which automatically opts into dynamic rendering via `connection()`.
-
-### ISR Considerations
-
-For Incremental Static Regeneration, environment values are captured at revalidation time:
-
-```tsx
-export const revalidate = 60 // Revalidate every 60 seconds
-
-export default function Page() {
-    // Environment values updated on revalidation
-    return <div>...</div>
-}
-```
-
 ## Deployment Checklist
 
-- [ ] Add `PublicEnvScript` to your root layout
-- [ ] Set environment variables in Vercel dashboard
-- [ ] Configure variables for each environment (Production, Preview, Development)
-- [ ] Verify runtime values in your deployed app
-- [ ] Test preview deployments with preview-specific variables
+Before deploying to Vercel, make sure you've:
+
+- [ ] Added `PublicEnvScript` to your root layout
+- [ ] Set all `NEXT_PUBLIC_*` variables in Vercel dashboard
+- [ ] Configured environment-specific values (Production, Preview, Development)
+- [ ] Tested preview deployments with preview-specific variables
+- [ ] Verified runtime values in deployed app (check browser console for `window.__ENV`)
 
 ## Next Steps
 

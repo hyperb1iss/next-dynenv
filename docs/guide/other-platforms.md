@@ -1,6 +1,6 @@
 # Other Platforms
 
-Deploy next-dynenv to Railway, Fly.io, Render, and more.
+Deploy next-dynenv anywhere—Railway, Fly.io, Render, AWS, GCP, Azure, and beyond.
 
 ## Railway
 
@@ -252,9 +252,11 @@ Set variables in Coolify's UI for each environment.
 
 ## General Tips
 
+These tips apply to all platforms:
+
 ### 1. Use Standalone Output
 
-Always enable standalone for smaller deployments:
+Always enable standalone for production deployments:
 
 ```js
 // next.config.js
@@ -263,25 +265,29 @@ module.exports = {
 }
 ```
 
+::: tip Docker Image Size Standalone output reduces image size by ~10x by including only production dependencies. :::
+
 ### 2. Health Checks
 
-Add a health endpoint for all platforms:
+Add a health endpoint:
 
 ```ts
 // app/api/health/route.ts
 export function GET() {
-    return Response.json({ status: 'ok' })
+    return Response.json({ status: 'ok', timestamp: Date.now() })
 }
 ```
 
+Most platforms can use this for readiness and liveness probes.
+
 ### 3. Graceful Shutdown
 
-Handle shutdown signals:
+Handle shutdown signals properly:
 
 ```js
-// server.js (if custom)
+// server.js (if using custom server)
 process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down...')
+    console.log('SIGTERM received, shutting down gracefully...')
     process.exit(0)
 })
 ```

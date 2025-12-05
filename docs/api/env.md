@@ -1,6 +1,7 @@
 # env()
 
-Access environment variables isomorphically (server and client).
+The workhorse function of `next-dynenv`. Access environment variables everywhere—server components, client components,
+API routes, middleware—with a single, unified interface.
 
 ## Import
 
@@ -15,46 +16,59 @@ function env(key: string): string | undefined
 function env<T extends string>(key: string, defaultValue: T): string
 ```
 
+The overload with `defaultValue` returns `string` (never `undefined`), giving you cleaner code without null checks.
+
 ## Parameters
 
-| Parameter      | Type     | Description                         |
-| -------------- | -------- | ----------------------------------- |
-| `key`          | `string` | The environment variable name       |
-| `defaultValue` | `string` | Optional default value if undefined |
+| Parameter      | Type     | Description                                   |
+| -------------- | -------- | --------------------------------------------- |
+| `key`          | `string` | Environment variable name                     |
+| `defaultValue` | `string` | Optional default value if variable is not set |
 
 ## Returns
 
-- `string` - The environment variable value
-- `undefined` - If the variable is undefined and no default is provided
+| Scenario                       | Return Type | Example                                 |
+| ------------------------------ | ----------- | --------------------------------------- |
+| Variable exists                | `string`    | `env('NEXT_PUBLIC_API_URL')`            |
+| Variable missing, no default   | `undefined` | `env('NEXT_PUBLIC_MISSING')`            |
+| Variable missing, with default | `string`    | `env('NEXT_PUBLIC_MISSING', 'default')` |
 
 ## Throws
 
-- `Error` - When called in the browser with a non-public variable name (doesn't start with `NEXT_PUBLIC_`)
+`env()` throws an error when:
 
-## Behavior
+- Called in the browser with a non-public variable (doesn't start with `NEXT_PUBLIC_`)
+
+This prevents accidentally leaking server secrets to the client.
+
+## How It Works
 
 ### Server-Side
 
-Reads directly from `process.env`:
+On the server, `env()` reads directly from `process.env`. All variables are accessible:
 
 ```ts
-// Server component or API route
-const apiUrl = env('NEXT_PUBLIC_API_URL') // From process.env
-const secret = env('SECRET_KEY') // From process.env
-const dbUrl = env('DATABASE_URL') // From process.env
+// Server component, API route, or middleware
+const apiUrl = env('NEXT_PUBLIC_API_URL') // Public variable
+const secret = env('SECRET_KEY') // Private variable
+const dbUrl = env('DATABASE_URL') // Private variable
 ```
 
 ### Client-Side
 
-Reads from `window.__ENV` (set by `PublicEnvScript`):
+In the browser, `env()` reads from `window.__ENV`, which is populated by `PublicEnvScript`. Only `NEXT_PUBLIC_*`
+variables are available:
 
 ```tsx
 'use client'
 import { env } from 'next-dynenv'
 
-const apiUrl = env('NEXT_PUBLIC_API_URL') // From window.__ENV
-const secret = env('SECRET_KEY') // Throws Error!
+const apiUrl = env('NEXT_PUBLIC_API_URL') // Works - public variable
+const secret = env('SECRET_KEY') // Throws Error - private variable!
 ```
+
+::: tip Why the restriction? Next.js bundles `NEXT_PUBLIC_*` variables at build time, making them static. `next-dynenv`
+makes them truly runtime by injecting them via script tag. Non-public variables are server-only for security. :::
 
 ## Examples
 
@@ -157,33 +171,68 @@ export function middleware(request) {
 }
 ```
 
-### Type Narrowing
+### Type Narrowing with TypeScript
+
+TypeScript understands the default value overload, eliminating `undefined` from the type:
 
 ```tsx
 import { env } from 'next-dynenv'
 
 const maybeUrl = env('NEXT_PUBLIC_API_URL')
 // Type: string | undefined
-
+// You must check before using:
 if (maybeUrl) {
-    // Type: string (narrowed)
-    fetch(maybeUrl)
+    fetch(maybeUrl) // Type: string (narrowed)
 }
 
 const definiteUrl = env('NEXT_PUBLIC_API_URL', 'https://fallback.com')
-// Type: string (no undefined thanks to default)
+// Type: string (never undefined thanks to default)
+fetch(definiteUrl) // No check needed
+```
+
+### Conditional Defaults
+
+```tsx
+import { env } from 'next-dynenv'
+
+// Different defaults per environment
+const apiUrl = env(
+    'NEXT_PUBLIC_API_URL',
+    process.env.NODE_ENV === 'development' ? 'http://localhost:8080' : 'https://api.example.com',
+)
+```
+
+### Working with Undefined Values
+
+```tsx
+import { env } from 'next-dynenv'
+
+// Option 1: Use default value
+const timeout = env('NEXT_PUBLIC_TIMEOUT', '5000')
+
+// Option 2: Nullish coalescing
+const timeout2 = env('NEXT_PUBLIC_TIMEOUT') ?? '5000'
+
+// Option 3: Check explicitly
+const rawTimeout = env('NEXT_PUBLIC_TIMEOUT')
+if (!rawTimeout) {
+    console.warn('NEXT_PUBLIC_TIMEOUT not set, using default')
+}
+const timeout3 = rawTimeout ?? '5000'
 ```
 
 ## Error Messages
 
 ### Non-Public Variable in Browser
 
+When you try to access a non-public variable from client-side code:
+
 ```tsx
 'use client'
 const secret = env('SECRET_KEY')
 ```
 
-Throws:
+You'll get a helpful error:
 
 ```
 Error: Environment variable 'SECRET_KEY' is not public and cannot be accessed in the browser.
@@ -192,6 +241,9 @@ To fix this:
   2. Use makeEnvPublic('SECRET_KEY') in next.config.js, or
   3. Access from a server component or API route instead
 ```
+
+::: warning Security first This error is intentional. Never expose secrets to the browser. If you need this variable
+client-side, it probably shouldn't be a secret. :::
 
 ## Related
 

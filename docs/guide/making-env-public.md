@@ -1,6 +1,6 @@
 # Making Environment Variables Public
 
-Use `makeEnvPublic()` to expose existing variables without renaming them.
+Transform existing environment variables into `NEXT_PUBLIC_*` prefixed versions without renaming.
 
 ## The Problem
 
@@ -9,14 +9,18 @@ You have environment variables without the `NEXT_PUBLIC_` prefix:
 ```bash
 API_URL=https://api.example.com
 APP_NAME=MyApp
-FEATURE_FLAG=true
+REGION=us-east-1
 ```
 
-But you want them available in the browser without changing their names everywhere.
+You want them available in the browser, but:
+
+- You don't want to rename them in your deployment config
+- Other services already use these names
+- You're migrating from another framework
 
 ## The Solution
 
-Use `makeEnvPublic()` to create prefixed copies:
+`makeEnvPublic()` creates prefixed copies automatically:
 
 ```js
 // next.config.js
@@ -30,7 +34,10 @@ module.exports = {
 }
 ```
 
-Now `API_URL` remains available as-is on the server, and `NEXT_PUBLIC_API_URL` is available in the browser.
+Now you have both:
+
+- `API_URL` - Original (server-side only)
+- `NEXT_PUBLIC_API_URL` - Copy (available in browser)
 
 ## Basic Usage
 
@@ -194,10 +201,13 @@ const appName = env('NEXT_PUBLIC_APP_NAME')
 
 Use `makeEnvPublic()` when:
 
-- You have existing env vars without the `NEXT_PUBLIC_` prefix
-- You want to avoid renaming variables in your deployment config
-- You're migrating from another framework
-- You prefer keeping env var names consistent across services
+- **Existing infrastructure** - You have env vars already deployed without the prefix
+- **Cross-service consistency** - Multiple services share the same variable names
+- **Migration path** - Moving from another framework (like Create React App)
+- **Deployment simplicity** - You don't want to update every deployment config
+
+::: tip Alternative Approach If you're starting fresh, consider using the `NEXT_PUBLIC_` prefix directly in your
+environment variables. It's more explicit and requires no transformation step. :::
 
 ## Next Steps
 
