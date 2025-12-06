@@ -1,4 +1,3 @@
-import { headers } from 'next/headers'
 import Script, { type ScriptProps } from 'next/script'
 import { type FC } from 'react'
 
@@ -146,6 +145,8 @@ export const EnvScript: FC<EnvScriptProps> = async ({
     let nonceString: string | undefined
     if (typeof nonce === 'object' && nonce !== null) {
         try {
+            // Dynamic import to avoid bundling server-only code in client contexts
+            const { headers } = await import('next/headers')
             // Next.js 16+ requires async headers() call
             const headerStore = await headers()
 

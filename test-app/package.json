@@ -9,9 +9,9 @@
         "start": "node .next/standalone/test-app/server.js"
     },
     "dependencies": {
-        "next": "15.5.5",
+        "next": "16.0.7",
+        "next-dynenv": "workspace:*",
         "react": "19.2.0",
-        "react-dom": "19.2.0",
-        "next-dynenv": "workspace:*"
+        "react-dom": "19.2.0"
     }
 }

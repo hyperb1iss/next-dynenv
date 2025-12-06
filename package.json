@@ -2,12 +2,13 @@
     "name": "next-dynenv",
     "version": "4.0.0",
     "description": "Dynamic runtime environment variables for Next.js - populate your environment at runtime, not build time.",
+    "type": "module",
     "main": "build/index.js",
     "types": "build/index.d.ts",
     "exports": {
         ".": {
             "types": "./build/index.d.ts",
-            "default": "./build/index.js"
+            "import": "./build/index.js"
         }
     },
     "engines": {
@@ -51,7 +52,7 @@
     },
     "homepage": "https://github.com/hyperb1iss/next-dynenv#readme",
     "dependencies": {
-        "next": "^15",
+        "next": "^16.0.7",
         "react": "^19"
     },
     "devDependencies": {
