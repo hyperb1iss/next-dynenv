@@ -1,6 +1,11 @@
 import { defineConfig } from 'vitepress'
+import llmstxt from 'vitepress-plugin-llms'
 
 export default defineConfig({
+    vite: {
+        plugins: [llmstxt()],
+    },
+
     title: 'next-dynenv',
     description: 'Runtime environment variables for Next.js. Build once, deploy anywhere.',
     base: '/next-dynenv/',
@@ -73,26 +78,21 @@ export default defineConfig({
                 },
             ],
             '/api/': [
+                { text: 'Overview', link: '/api/' },
                 {
-                    text: 'API Reference',
+                    text: 'Functions',
                     items: [
-                        { text: 'Overview', link: '/api/' },
                         { text: 'env()', link: '/api/env' },
                         { text: 'requireEnv()', link: '/api/require-env' },
                         { text: 'envParsers', link: '/api/parsers' },
-                        { text: 'Components', link: '/api/components' },
                     ],
                 },
+                { text: 'Components', link: '/api/components' },
             ],
             '/examples/': [
-                {
-                    text: 'Examples',
-                    items: [
-                        { text: 'Overview', link: '/examples/' },
-                        { text: 'App Router (Script)', link: '/examples/app-router-script' },
-                        { text: 'App Router (Context)', link: '/examples/app-router-context' },
-                    ],
-                },
+                { text: 'Overview', link: '/examples/' },
+                { text: 'App Router (Script)', link: '/examples/app-router-script' },
+                { text: 'App Router (Context)', link: '/examples/app-router-context' },
             ],
         },
 
