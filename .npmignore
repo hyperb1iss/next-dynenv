@@ -1,7 +1,9 @@
 # testing
 /coverage
+/test-app
+vitest.config.ts
 
-# server
+# config
 .audit-ci.json
 .env.sample
 .eslintignore
@@ -10,15 +12,22 @@
 codecov.yml
 jest.config.js
 prettier.config.js
+.prettierrc
 tsconfig.json
+biome.jsonc
+pnpm-workspace.yaml
+pnpm-lock.yaml
 /.github
 /.vscode
 
 # source
 /src
 
-# expamples
+# examples
 /examples
+
+# docs
+/docs
 
 # misc
 .DS_Store
