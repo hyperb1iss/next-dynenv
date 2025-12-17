@@ -1,6 +1,6 @@
 {
     "name": "next-dynenv",
-    "version": "4.0.1",
+    "version": "4.0.2",
     "description": "Dynamic runtime environment variables for Next.js - populate your environment at runtime, not build time.",
     "type": "module",
     "main": "build/index.js",
