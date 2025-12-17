@@ -52,28 +52,35 @@
     },
     "homepage": "https://github.com/hyperb1iss/next-dynenv#readme",
     "dependencies": {
-        "next": "^16.0.7",
-        "react": "^19"
+        "react": "catalog:"
     },
     "devDependencies": {
-        "@biomejs/biome": "^2.2.6",
-        "@testing-library/jest-dom": "^6.6.3",
-        "@testing-library/react": "^16.3.0",
-        "@types/node": "^24.7.2",
-        "@types/react": "^19.2.2",
-        "@types/react-dom": "^19.2.2",
-        "@vitest/coverage-v8": "^3.2.4",
-        "audit-ci": "^7.1.0",
-        "jsdom": "^26.1.0",
-        "prettier": "^3.5.3",
-        "react-dom": "19.2.0",
-        "semantic-release": "^24.2.3",
-        "typescript": "^5.9.3",
-        "vitest": "^3.2.4"
+        "@biomejs/biome": "catalog:",
+        "@testing-library/jest-dom": "catalog:",
+        "@testing-library/react": "catalog:",
+        "@types/node": "catalog:",
+        "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
+        "@vitest/coverage-v8": "catalog:",
+        "audit-ci": "catalog:",
+        "jsdom": "catalog:",
+        "next": "catalog:",
+        "prettier": "catalog:",
+        "react-dom": "catalog:",
+        "semantic-release": "catalog:",
+        "typescript": "catalog:",
+        "vitest": "catalog:"
     },
     "peerDependencies": {
         "next": "^15 || ^16",
         "react": "^19"
     },
-    "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402"
+    "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402",
+    "pnpm": {
+        "overrides": {
+            "glob": ">=10.5.0",
+            "brace-expansion": ">=2.0.2",
+            "js-yaml": ">=4.1.1"
+        }
+    }
 }
