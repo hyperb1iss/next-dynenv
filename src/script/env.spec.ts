@@ -1,5 +1,5 @@
-import { afterEach, describe, expect, it } from 'vitest'
-import { env, requireEnv } from './env'
+import { afterEach, describe, expect, it, vi } from 'vitest'
+import { env, requireEnv, serverOnly } from './env'
 
 declare global {
     var mockWindow: (envVars: Record<string, string>) => void
@@ -87,5 +87,81 @@ describe('requireEnv()', () => {
         expect(() => requireEnv('NEXT_PUBLIC_MISSING')).toThrow(
             "Required environment variable 'NEXT_PUBLIC_MISSING' is not defined.",
         )
+    })
+})
+
+describe('serverOnly()', () => {
+    afterEach(() => {
+        delete process.env.SECRET_KEY
+        delete process.env.DATABASE_URL
+    })
+
+    // In jsdom, window always exists, so IS_BROWSER is true
+    // These tests verify browser behavior (returns fallback)
+
+    it('should return fallback in browser context', () => {
+        // window exists in jsdom, so this simulates browser
+        expect(serverOnly('SECRET_KEY', 'fallback-value')).toEqual('fallback-value')
+    })
+
+    it('should return undefined when no fallback provided in browser', () => {
+        expect(serverOnly('SECRET_KEY')).toBeUndefined()
+    })
+
+    it('should not read process.env in browser context', () => {
+        process.env.SECRET_KEY = 'actual-secret'
+        // Even though the env var exists, browser should return fallback
+        expect(serverOnly('SECRET_KEY', 'fallback')).toEqual('fallback')
+    })
+
+    // Test server behavior by re-importing module without window
+    describe('server context', () => {
+        it('should return process.env value on server', async () => {
+            // Save original window
+            const originalWindow = globalThis.window
+
+            // Remove window to simulate server
+            // @ts-expect-error - intentionally removing window
+            delete globalThis.window
+
+            // Reset module cache and re-import
+            vi.resetModules()
+            const { serverOnly: serverOnlyServer } = await import('./env')
+
+            process.env.SECRET_KEY = 'server-secret'
+            expect(serverOnlyServer('SECRET_KEY')).toEqual('server-secret')
+
+            // Restore window
+            globalThis.window = originalWindow
+            vi.resetModules()
+        })
+
+        it('should return fallback when env var undefined on server', async () => {
+            const originalWindow = globalThis.window
+            // @ts-expect-error - intentionally removing window
+            delete globalThis.window
+
+            vi.resetModules()
+            const { serverOnly: serverOnlyServer } = await import('./env')
+
+            expect(serverOnlyServer('NONEXISTENT_VAR', 'default')).toEqual('default')
+
+            globalThis.window = originalWindow
+            vi.resetModules()
+        })
+
+        it('should return undefined when no fallback and env var undefined on server', async () => {
+            const originalWindow = globalThis.window
+            // @ts-expect-error - intentionally removing window
+            delete globalThis.window
+
+            vi.resetModules()
+            const { serverOnly: serverOnlyServer } = await import('./env')
+
+            expect(serverOnlyServer('NONEXISTENT_VAR')).toBeUndefined()
+
+            globalThis.window = originalWindow
+            vi.resetModules()
+        })
     })
 })

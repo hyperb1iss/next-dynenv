@@ -1,5 +1,7 @@
-import { isBrowser } from '../helpers/is-browser'
+import { isBrowser as isBrowserWithEnv } from '../helpers/is-browser'
 import { PUBLIC_ENV_KEY } from './constants'
+
+const IS_BROWSER = typeof window !== 'undefined'
 
 /**
  * Reads environment variables safely from both browser and server contexts.
@@ -64,7 +66,7 @@ import { PUBLIC_ENV_KEY } from './constants'
 export function env(key: string): string | undefined
 export function env<T extends string>(key: string, defaultValue: T): string
 export function env(key: string, defaultValue?: string): string | undefined {
-    if (isBrowser()) {
+    if (isBrowserWithEnv()) {
         if (!key.startsWith('NEXT_PUBLIC_')) {
             throw new Error(
                 `Environment variable '${key}' is not public and cannot be accessed in the browser.\n` +
@@ -124,4 +126,74 @@ export function requireEnv(key: string): string {
         )
     }
     return value
+}
+
+/**
+ * Safely reads a server-only environment variable.
+ *
+ * Returns the fallback value when running in the browser, allowing this function
+ * to be safely called from code that runs on both client and server (e.g., shared
+ * lazy getters, utility modules).
+ *
+ * Unlike {@link env}, this function:
+ * - **Never throws** in the browser—it gracefully returns the fallback
+ * - Is designed for **non-`NEXT_PUBLIC_*`** variables that shouldn't be exposed to clients
+ * - Provides a clean pattern for isomorphic code that needs server secrets
+ *
+ * @param key - The environment variable name to retrieve
+ * @param fallback - Optional fallback value returned in the browser or if undefined
+ * @returns The environment variable value on the server, or the fallback on the client/if undefined
+ *
+ * @example
+ * Basic usage with server-only secrets:
+ * ```ts
+ * import { serverOnly } from 'next-dynenv'
+ *
+ * // Returns the actual value on server, undefined on client
+ * const dbUrl = serverOnly('DATABASE_URL')
+ *
+ * // With a fallback for development
+ * const apiKey = serverOnly('API_SECRET_KEY', 'dev-key')
+ * ```
+ *
+ * @example
+ * In shared code with lazy evaluation (e.g., with Zod schemas):
+ * ```ts
+ * import { env, serverOnly } from 'next-dynenv'
+ * import { z } from 'zod'
+ *
+ * const configSchema = z.object({
+ *   supabaseUrl: z.string().url(),
+ *   supabaseAnonKey: z.string(),
+ *   // Server-only: returns fallback on client, real value on server
+ *   supabaseServiceKey: z.string().optional(),
+ * })
+ *
+ * // This lazy getter can be safely imported anywhere
+ * const config = lazy(() => configSchema.parse({
+ *   supabaseUrl: env('NEXT_PUBLIC_SUPABASE_URL'),
+ *   supabaseAnonKey: env('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+ *   supabaseServiceKey: serverOnly('SUPABASE_SERVICE_KEY'),
+ * }))
+ * ```
+ *
+ * @example
+ * Conditional server-side logic:
+ * ```ts
+ * import { serverOnly } from 'next-dynenv'
+ *
+ * // Safe to call anywhere—returns undefined on client
+ * const internalUrl = serverOnly('INTERNAL_SERVICE_URL') || publicUrl
+ * ```
+ *
+ * @see {@link env} for public variables accessible on both client and server
+ * @see {@link requireEnv} for required variables that throw if undefined
+ */
+export function serverOnly(key: string): string | undefined
+export function serverOnly<T extends string>(key: string, fallback: T): string
+export function serverOnly(key: string, fallback?: string): string | undefined {
+    if (IS_BROWSER) {
+        return fallback
+    }
+    return process.env[key] ?? fallback
 }

@@ -194,6 +194,42 @@ const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
 // Error: "Required environment variable 'NEXT_PUBLIC_API_URL' is not defined."
 ```
 
+### Server-Only Variables
+
+Use `serverOnly()` for non-public environment variables in code that runs on both client and server. Unlike `env()`,
+this function **never throws** in the browser—it gracefully returns the fallback value:
+
+```tsx
+import { serverOnly } from 'next-dynenv'
+
+// Returns the actual value on server, fallback on client
+const dbUrl = serverOnly('DATABASE_URL', 'postgresql://localhost:5432/dev')
+const apiSecret = serverOnly('API_SECRET_KEY') // undefined on client
+```
+
+This is particularly useful for shared configuration modules with lazy evaluation:
+
+```tsx
+import { env, serverOnly } from 'next-dynenv'
+import { z } from 'zod'
+
+const configSchema = z.object({
+    supabaseUrl: z.string().url(),
+    supabaseAnonKey: z.string(),
+    // Server-only: returns undefined on client, real value on server
+    supabaseServiceKey: z.string().optional(),
+})
+
+// Safe to import anywhere—evaluates lazily
+export const config = lazy(() =>
+    configSchema.parse({
+        supabaseUrl: env('NEXT_PUBLIC_SUPABASE_URL'),
+        supabaseAnonKey: env('NEXT_PUBLIC_SUPABASE_ANON_KEY'),
+        supabaseServiceKey: serverOnly('SUPABASE_SERVICE_KEY'),
+    }),
+)
+```
+
 ### Type-Safe Parsers
 
 Use `envParsers` to convert environment strings to typed values:
