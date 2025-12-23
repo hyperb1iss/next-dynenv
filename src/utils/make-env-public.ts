@@ -1,4 +1,4 @@
-import { event, LogOptions, warn } from '../helpers/log'
+import { event, LogOptions, warn } from '../helpers/log.js'
 
 /**
  * Options for controlling the logging behavior of {@link makeEnvPublic}.

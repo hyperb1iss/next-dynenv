@@ -1,4 +1,4 @@
-import { bold, green, red, white, yellow } from '../lib/picocolors'
+import { bold, green, red, white, yellow } from '../lib/picocolors.js'
 
 export type Level = 'error' | 'warn' | 'info'
 export type LevelWithSilent = 'silent' | Level

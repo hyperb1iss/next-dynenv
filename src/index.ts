@@ -7,6 +7,6 @@ declare global {
     }
 }
 
-export * from './provider'
-export * from './script'
-export { makeEnvPublic } from './utils/make-env-public'
+export * from './provider/index.js'
+export * from './script/index.js'
+export { makeEnvPublic } from './utils/make-env-public.js'

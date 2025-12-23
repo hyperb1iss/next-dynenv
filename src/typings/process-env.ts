@@ -1,3 +1,3 @@
-import { type Dict } from './dict'
+import { type Dict } from './dict.js'
 
 export type ProcessEnv = Dict<string>

@@ -1,4 +1,4 @@
-import { env } from './env'
+import { env } from './env.js'
 
 /**
  * Type-safe environment variable parsers for common data types.

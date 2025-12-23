@@ -1,4 +1,4 @@
-import { ProcessEnv } from '../typings/process-env'
+import { ProcessEnv } from '../typings/process-env.js'
 
 /**
  * Gets environment variables that start with `NEXT_PUBLIC_` prefix.

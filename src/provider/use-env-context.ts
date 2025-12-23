@@ -2,7 +2,7 @@
 
 import { useContext } from 'react'
 
-import { EnvContext } from './env-context'
+import { EnvContext } from './env-context.js'
 
 /**
  * React hook for accessing environment variables from the nearest EnvProvider.

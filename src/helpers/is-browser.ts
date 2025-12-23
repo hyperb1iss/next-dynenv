@@ -1,4 +1,4 @@
-import { PUBLIC_ENV_KEY } from '../script/constants'
+import { PUBLIC_ENV_KEY } from '../script/constants.js'
 
 /**
  * Checks if the code is running in the browser.

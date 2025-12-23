@@ -1,5 +1,5 @@
-import { isBrowser as isBrowserWithEnv } from '../helpers/is-browser'
-import { PUBLIC_ENV_KEY } from './constants'
+import { isBrowser as isBrowserWithEnv } from '../helpers/is-browser.js'
+import { PUBLIC_ENV_KEY } from './constants.js'
 
 const IS_BROWSER = typeof window !== 'undefined'
 
