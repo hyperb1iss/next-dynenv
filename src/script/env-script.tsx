@@ -1,4 +1,4 @@
-import Script, { type ScriptProps } from 'next/script'
+import Script, { type ScriptProps } from 'next/script.js'
 import { type FC } from 'react'
 
 import { escapeJsonForHtml } from '../helpers/escape-json-for-html.js'
@@ -146,7 +146,7 @@ export const EnvScript: FC<EnvScriptProps> = async ({
     if (typeof nonce === 'object' && nonce !== null) {
         try {
             // Dynamic import to avoid bundling server-only code in client contexts
-            const { headers } = await import('next/headers')
+            const { headers } = await import('next/headers.js')
             // Next.js 16+ requires async headers() call
             const headerStore = await headers()
 

@@ -1,4 +1,4 @@
-import { connection } from 'next/server'
+import { connection } from 'next/server.js'
 import { type FC, type PropsWithChildren } from 'react'
 
 import { getPublicEnv } from '../helpers/get-public-env.js'

@@ -1,5 +1,5 @@
-import { type ScriptProps } from 'next/script'
-import { connection } from 'next/server'
+import { type ScriptProps } from 'next/script.js'
+import { connection } from 'next/server.js'
 import { type FC } from 'react'
 
 import { getPublicEnv } from '../helpers/get-public-env.js'
