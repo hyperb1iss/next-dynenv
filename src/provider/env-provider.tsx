@@ -2,8 +2,8 @@
 
 import { type FC, type PropsWithChildren } from 'react'
 
-import { type ProcessEnv } from '../typings/process-env'
-import { EnvContext } from './env-context'
+import { type ProcessEnv } from '../typings/process-env.js'
+import { EnvContext } from './env-context.js'
 
 /**
  * Props for the {@link EnvProvider} component.

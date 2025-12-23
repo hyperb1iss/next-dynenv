@@ -1,10 +1,10 @@
 import Script, { type ScriptProps } from 'next/script'
 import { type FC } from 'react'
 
-import { escapeJsonForHtml } from '../helpers/escape-json-for-html'
-import { type NonceConfig } from '../typings/nonce'
-import { type ProcessEnv } from '../typings/process-env'
-import { PUBLIC_ENV_KEY } from './constants'
+import { escapeJsonForHtml } from '../helpers/escape-json-for-html.js'
+import { type NonceConfig } from '../typings/nonce.js'
+import { type ProcessEnv } from '../typings/process-env.js'
+import { PUBLIC_ENV_KEY } from './constants.js'
 
 /**
  * Props for the {@link EnvScript} component.

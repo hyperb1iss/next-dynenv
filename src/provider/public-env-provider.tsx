@@ -1,8 +1,8 @@
 import { connection } from 'next/server'
 import { type FC, type PropsWithChildren } from 'react'
 
-import { getPublicEnv } from '../helpers/get-public-env'
-import { EnvProvider } from './env-provider'
+import { getPublicEnv } from '../helpers/get-public-env.js'
+import { EnvProvider } from './env-provider.js'
 
 /**
  * Props for the {@link PublicEnvProvider} component.

@@ -2,9 +2,9 @@ import { type ScriptProps } from 'next/script'
 import { connection } from 'next/server'
 import { type FC } from 'react'
 
-import { getPublicEnv } from '../helpers/get-public-env'
-import { type NonceConfig } from '../typings/nonce'
-import { EnvScript } from './env-script'
+import { getPublicEnv } from '../helpers/get-public-env.js'
+import { type NonceConfig } from '../typings/nonce.js'
+import { EnvScript } from './env-script.js'
 
 /**
  * Props for the {@link PublicEnvScript} component.
