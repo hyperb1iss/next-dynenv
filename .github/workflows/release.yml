@@ -31,7 +31,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  NODE_VERSION: '22'
+  NODE_VERSION: '24'
 
 jobs:
   release:
@@ -41,23 +41,20 @@ jobs:
 
     steps:
       - name: '◆ Checkout'
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: '◇ Setup pnpm'
-        uses: pnpm/action-setup@v4
+        uses: pnpm/action-setup@v5
 
       - name: '◇ Setup Node.js'
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: ${{ env.NODE_VERSION }}
           cache: 'pnpm'
           registry-url: 'https://registry.npmjs.org'
-
-      - name: '◇ Update npm'
-        run: npm install -g npm@latest
 
       - name: '◇ Configure git'
         run: |
@@ -125,7 +122,7 @@ jobs:
 
       - name: '▲ Publish to npm'
         if: ${{ !inputs.dry_run }}
-        run: npm publish --access public
+        run: npm publish --provenance --access public
 
       - name: '◆ Create GitHub Release'
         if: ${{ !inputs.dry_run }}
