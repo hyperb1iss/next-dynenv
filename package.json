@@ -25,6 +25,8 @@
         "test:integration": "node test-app/integration-test.mjs",
         "build": "tsc -p .",
         "build:watch": "pnpm build --watch",
+        "prepack": "cp package.json package.json.bak && node scripts/resolve-catalog.mjs",
+        "postpack": "mv package.json.bak package.json",
         "audit-ci": "audit-ci",
         "semantic-release": "semantic-release"
     },
@@ -51,9 +53,6 @@
         "url": "https://github.com/hyperb1iss/next-dynenv/issues"
     },
     "homepage": "https://github.com/hyperb1iss/next-dynenv#readme",
-    "dependencies": {
-        "react": "catalog:"
-    },
     "devDependencies": {
         "@biomejs/biome": "catalog:",
         "@testing-library/jest-dom": "catalog:",

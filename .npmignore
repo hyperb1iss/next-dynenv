@@ -29,6 +29,11 @@ pnpm-lock.yaml
 # docs
 /docs
 
+# scripts & build artifacts
+/scripts
+package.json.bak
+.claude
+
 # misc
 .DS_Store
 .env
