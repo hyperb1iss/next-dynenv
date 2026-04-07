@@ -503,7 +503,6 @@ const apiUrl = env('NEXT_PUBLIC_API_URL')!
 **Key Differences:**
 
 - **Server-side contexts** (server components, API routes, middleware):
-
     - Can access ALL environment variables via `env()` or `process.env`
     - Both private and public (`NEXT_PUBLIC_*`) variables are available
 
