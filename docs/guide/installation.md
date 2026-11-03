@@ -1,17 +1,16 @@
 # Installation
 
-Get next-dynenv installed and verified in under a minute.
-
 ## Requirements
 
-- **Next.js** 15.x or 16.x
-- **React** 19.x
-- **Node.js** 20.x or higher
+| Requirement | Version                                      |
+| ----------- | -------------------------------------------- |
+| Next.js     | 15 or 16, App Router                         |
+| React       | 19                                           |
+| Node.js     | 20.9 or newer (the same floor as Next.js 16) |
 
-::: info Compatibility Note next-dynenv requires Next.js 15+ because it leverages the `connection()` API for dynamic
-rendering. If you're on Next.js 14 or earlier, you'll need to upgrade first. :::
+`next` and `react` are peer dependencies, so next-dynenv uses the versions your app already has.
 
-## Package Installation
+## Install
 
 ::: code-group
 
@@ -33,39 +32,40 @@ bun add next-dynenv
 
 :::
 
-## TypeScript Support
+Types ship with the package. There is nothing else to install or configure.
 
-next-dynenv is written in TypeScript with built-in type definitions. No additional `@types` packages needed—you get full
-type safety out of the box.
+## Module format
 
-## Peer Dependencies
+next-dynenv is an ES module. Import it with `import` syntax everywhere, including config files:
 
-The package requires `next` and `react` as peer dependencies:
-
-```json
-{
-    "peerDependencies": {
-        "next": "^15 || ^16",
-        "react": "^19"
-    }
-}
+```ts
+// next.config.ts, instrumentation.ts, app code
+import { env, makeEnvPublic, PublicEnvScript } from 'next-dynenv'
 ```
 
-Your package manager will handle these automatically if they're already installed.
+## Pages Router
 
-## Verify Installation
+Version 4 targets the App Router. `PublicEnvScript` and `PublicEnvProvider` are async server components, which the Pages
+Router can't render. The server-side helpers (`env()`, `requireEnv()`, `serverOnly()`, `envParsers`) only read
+`process.env`, so they work in Pages Router server code, but nothing delivers values to the browser there.
 
-Quick sanity check:
+The `app/` and `pages/` directories can live side by side, so you can adopt next-dynenv route by route as you migrate.
+See the [Pages Router note](https://github.com/hyperb1iss/next-dynenv/tree/main/examples/with-pages-router) in the
+repository for options.
 
-```tsx
-import { env } from 'next-dynenv'
+## Version guide
 
-// Should import without errors
-console.log(typeof env) // 'function'
-```
+| Package              | Next.js                  | Status       |
+| -------------------- | ------------------------ | ------------ |
+| `next-dynenv@4`      | 15 and 16 (App Router)   | Maintained   |
+| `next-runtime-env@3` | 14                       | Unmaintained |
+| `next-runtime-env@2` | 13 (App Router)          | Unmaintained |
+| `next-runtime-env@1` | 12 and 13 (Pages Router) | Unmaintained |
 
-If you see `'function'`, you're good to go.
+next-dynenv is a fork of [next-runtime-env](https://github.com/expatfile/next-runtime-env). Moving from
+`next-runtime-env@3` means upgrading to Next.js 15 or newer and changing the import path; the core API (`env()`,
+`PublicEnvScript`, `PublicEnvProvider`, `useEnvContext()`, `makeEnvPublic()`) keeps its shape.
 
-## Next Steps
+## Next steps
 
-Head to [Quick Start](/guide/quick-start) to set up your first runtime environment variable.
+Head to the [quick start](/guide/quick-start).

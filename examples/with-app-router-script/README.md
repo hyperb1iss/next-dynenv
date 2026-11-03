@@ -1,144 +1,54 @@
-# Next.js App Router with Script Tag Example
+# next-dynenv example: script approach
 
-This example demonstrates the **script tag approach** for using `next-dynenv` with Next.js 15 App Router.
+A Next.js App Router app that renders `<PublicEnvScript />` in the root layout and reads runtime values with `env()`. It
+also runs a strict Content Security Policy with a per-request nonce.
 
-## What This Example Demonstrates
+Walkthrough: https://hyperb1iss.github.io/next-dynenv/examples/app-router-script.html
 
-- **Runtime environment injection** using the `<PublicEnvScript>` component
-- Loading environment variables in **client components** with the `env()` function
-- Loading environment variables in **server components** and **API routes**
-- Loading environment variables in **middleware**
-- CSP nonce support for enhanced security
-- **Build once, deploy many**: Build without environment variables, run with them
+## Run it
 
-## Architecture
-
-This approach uses a script tag injected into the `<head>` of your document to expose environment variables to the
-browser:
-
-```tsx
-// app/layout.tsx
-import { PublicEnvScript } from 'next-dynenv'
-
-export default function RootLayout({ children }: { children: ReactNode }) {
-    return (
-        <html lang="en">
-            <head>
-                <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-Then access variables anywhere using the `env()` function:
-
-```tsx
-'use client'
-import { env } from 'next-dynenv'
-
-export default function ClientComponent() {
-    const apiUrl = env('NEXT_PUBLIC_API_URL')
-    return <div>API URL: {apiUrl}</div>
-}
-```
-
-## Setup Instructions
-
-### 1. Install Dependencies
+This example is a pnpm workspace member and uses the local build of `next-dynenv`. From the repository root:
 
 ```bash
-npm install
-# or
 pnpm install
-# or
-yarn install
-```
-
-### 2. Create Environment Variables
-
-Create a `.env.local` file (for development):
-
-```bash
-# .env.local
-NEXT_PUBLIC_FOO=foo-value
-NEXT_PUBLIC_BAZ=baz-value
-BAR=bar-value
-```
-
-> **Note:** Variables prefixed with `NEXT_PUBLIC_` are automatically exposed to the browser. Server-only variables (like
-> `BAR`) are only accessible in server components, API routes, and middleware.
-
-## Running the Example
-
-### Development Mode
-
-```bash
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value npm run dev
-# or
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value pnpm dev
-# or
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value yarn dev
-```
-
-Open [http://localhost:3000](http://localhost:3000) to see the result.
-
-### Production Mode (Demonstrating Runtime Configuration)
-
-**Step 1:** Build the app **without** environment variables:
-
-```bash
-npm run build
-# or
 pnpm build
-# or
-yarn build
+cp examples/with-app-router-script/.env.example examples/with-app-router-script/.env.local
+pnpm --filter example-app-router-script dev
 ```
 
-**Step 2:** Run with environment variables at runtime:
+Open http://localhost:3000.
+
+## Build once, run with new values
 
 ```bash
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value npm run start
-# or
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value pnpm start
-# or
-NEXT_PUBLIC_FOO=foo-value BAR=bar-value BAZ=baz-value yarn start
+pnpm --filter example-app-router-script build
+NEXT_PUBLIC_FOO=first BAR=secret BAZ=shared pnpm --filter example-app-router-script start
 ```
 
-This demonstrates the core benefit: **the same build artifact works in any environment** by injecting variables at
-runtime.
+Stop the server, start the same build with different values, and the pages show them without a rebuild.
 
-## What to Expect
+## Routes
 
-### Available Routes
+| Route          | Shows                                                                    |
+| -------------- | ------------------------------------------------------------------------ |
+| `/client-side` | `NEXT_PUBLIC_FOO` and `NEXT_PUBLIC_BAZ` read with `env()` in the browser |
+| `/server-side` | `BAR` and `BAZ` read with `env()` in a server component                  |
+| `/api/bar-baz` | `BAR` and `BAZ` as JSON from a route handler                             |
 
-- **[/](http://localhost:3000)** - Home page with navigation
-- **[/client-side](http://localhost:3000/client-side)** - Client component accessing `NEXT_PUBLIC_FOO` and
-  `NEXT_PUBLIC_BAZ`
-- **[/server-side](http://localhost:3000/server-side)** - Server component accessing `BAR` and `BAZ`
-- **[/api/bar-baz](http://localhost:3000/api/bar-baz)** - API route accessing server-side environment variables
+## Files
 
-### Expected Behavior
+- `src/app/layout.tsx`: `<PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />` in `<head>`
+- `src/proxy.ts`: per-request nonce, CSP response header, and the `x-nonce` request header
+- `src/instrumentation.ts`: `makeEnvPublic('BAZ')`, so `BAZ` also reaches the browser as `NEXT_PUBLIC_BAZ`
+- `src/app/client-side/page.tsx`, `src/app/server-side/page.tsx`, `src/app/api/bar-baz/route.ts`: the demo routes
 
-- **Client components** can access `NEXT_PUBLIC_*` variables
-- **Server components** can access all variables (public and private)
-- **API routes** can access all variables (public and private)
-- **Middleware** can access all variables through `process.env`
-- Environment variables are populated **at runtime**, not build time
+## Use it outside this repo
 
-## Key Files
+Copy the folder, then replace `workspace:*` and the `catalog:` entries in `package.json` with real versions
+(`npm install next-dynenv next react react-dom`).
 
-- `src/app/layout.tsx` - Root layout with `<PublicEnvScript>`
-- `src/app/client-side/page.tsx` - Client component example
-- `src/app/server-side/page.tsx` - Server component example
-- `src/app/api/bar-baz/route.ts` - API route example
-- `src/middleware.ts` - Middleware example
-- `next.config.js` - Next.js configuration with instrumentation hook
+## Learn more
 
-## Learn More
-
-- [Main Documentation](../../README.md)
-- [Exposing Custom Environment Variables](../../docs/EXPOSING_CUSTOM_ENV.md)
-- [Making Environment Variables Public](../../docs/MAKING_ENV_PUBLIC.md)
-- [Next.js 15 Documentation](https://nextjs.org/docs)
+- Script approach: https://hyperb1iss.github.io/next-dynenv/guide/script-approach.html
+- Making env public: https://hyperb1iss.github.io/next-dynenv/guide/making-env-public.html
+- Security and CSP: https://hyperb1iss.github.io/next-dynenv/guide/security.html

@@ -1,216 +1,88 @@
-# Making Environment Variables Public
+# Making variables public
 
-Transform existing environment variables into `NEXT_PUBLIC_*` prefixed versions without renaming.
+Your platform sets `API_URL`. The browser needs `NEXT_PUBLIC_API_URL`. `makeEnvPublic()` copies one to the other when
+the server starts, so you don't have to rename anything in your deployment config.
 
-## The Problem
+## Call it in `register()`
 
-You have environment variables without the `NEXT_PUBLIC_` prefix:
-
-```bash
-API_URL=https://api.example.com
-APP_NAME=MyApp
-REGION=us-east-1
-```
-
-You want them available in the browser, but:
-
-- You don't want to rename them in your deployment config
-- Other services already use these names
-- You're migrating from another framework
-
-## The Solution
-
-`makeEnvPublic()` creates prefixed copies automatically:
-
-```js
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-// Creates NEXT_PUBLIC_API_URL from API_URL
-makeEnvPublic('API_URL')
-
-module.exports = {
-    // your config
-}
-```
-
-Now you have both:
-
-- `API_URL` - Original (server-side only)
-- `NEXT_PUBLIC_API_URL` - Copy (available in browser)
-
-## Basic Usage
-
-### Single Variable
-
-```js
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-makeEnvPublic('API_URL')
-// API_URL → NEXT_PUBLIC_API_URL
-```
-
-### Multiple Variables
-
-```js
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-makeEnvPublic(['API_URL', 'APP_NAME', 'VERSION'])
-// API_URL → NEXT_PUBLIC_API_URL
-// APP_NAME → NEXT_PUBLIC_APP_NAME
-// VERSION → NEXT_PUBLIC_VERSION
-```
-
-## Usage in Next.js Config
-
-```js
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-// Make variables public BEFORE the config export
-makeEnvPublic(['API_URL', 'APP_NAME', 'ANALYTICS_ID', 'FEATURE_FLAGS'])
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    // your Next.js configuration
-}
-
-module.exports = nextConfig
-```
-
-## With ESM Syntax
-
-```js
-// next.config.mjs
-import { makeEnvPublic } from 'next-dynenv'
-
-makeEnvPublic(['API_URL', 'APP_NAME'])
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {}
-
-export default nextConfig
-```
-
-## Controlling Logging
-
-### Default Logging
-
-By default, `makeEnvPublic` logs events:
-
-```
-[next-dynenv] Prefixed environment variable 'API_URL'
-[next-dynenv] Prefixed environment variable 'APP_NAME'
-```
-
-### Silent Mode
-
-```js
-makeEnvPublic('API_URL', { logLevel: 'silent' })
-```
-
-### Production-Only Silence
-
-```js
-makeEnvPublic(['API_URL', 'APP_NAME'], {
-    logLevel: process.env.NODE_ENV === 'production' ? 'silent' : 'info',
-})
-```
-
-## Behavior Details
-
-### Missing Variables
-
-If a variable doesn't exist, a warning is logged (but no error thrown):
-
-```js
-// If MISSING_VAR is not in process.env
-makeEnvPublic('MISSING_VAR')
-// Warning: "Skipped prefixing environment variable 'MISSING_VAR'. Variable not in process.env"
-```
-
-### Already Public Variables
-
-If a variable already has the prefix, it's skipped:
-
-```js
-makeEnvPublic('NEXT_PUBLIC_API_URL')
-// Warning: "Environment variable 'NEXT_PUBLIC_API_URL' is already public"
-```
-
-### Original Variables Preserved
-
-The original variable remains available:
-
-```js
-makeEnvPublic('API_URL')
-
-// Both are now available:
-process.env.API_URL // Original
-process.env.NEXT_PUBLIC_API_URL // Copy (for browser)
-```
-
-## Using with instrumentation.ts
-
-For Next.js 13.2+, you can use the instrumentation file:
+Put the call in [`instrumentation.ts`](https://nextjs.org/docs/app/guides/instrumentation). Next.js runs `register()`
+once when each server instance starts, before it handles requests:
 
 ```ts
-// instrumentation.ts
+// instrumentation.ts (or src/instrumentation.ts)
 import { makeEnvPublic } from 'next-dynenv'
 
 export function register() {
-    makeEnvPublic(['API_URL', 'APP_NAME', 'REGION'])
+    makeEnvPublic(['API_URL', 'APP_NAME', 'SENTRY_DSN'])
 }
 ```
 
-## Complete Example
+After startup, `process.env` holds both names:
 
-```js
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-// Environment variables to expose
-const publicVars = ['API_URL', 'APP_NAME', 'VERSION', 'ANALYTICS_ID', 'FEATURE_AUTH', 'FEATURE_PAYMENTS']
-
-// Make them public
-makeEnvPublic(publicVars, {
-    logLevel: process.env.NODE_ENV === 'production' ? 'silent' : 'info',
-})
-
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    reactStrictMode: true,
-}
-
-module.exports = nextConfig
+```ts
+process.env.API_URL // 'https://api.example.com', unchanged
+process.env.NEXT_PUBLIC_API_URL // 'https://api.example.com', the copy
 ```
 
-Then in your components:
+`PublicEnvScript` and `PublicEnvProvider` read `process.env` on each request, so they pick up the copies and send them
+to the browser. Server and browser agree on the name, which keeps hydration clean:
 
 ```tsx
+'use client'
+
 import { env } from 'next-dynenv'
 
-// These now work in both server and client
-const apiUrl = env('NEXT_PUBLIC_API_URL')
-const appName = env('NEXT_PUBLIC_APP_NAME')
+export function ApiStatus() {
+    return <p>{env('NEXT_PUBLIC_API_URL')}</p>
+}
 ```
 
-## When to Use
+## Why not `next.config`
 
-Use `makeEnvPublic()` when:
+Older guides call `makeEnvPublic()` at the top of `next.config.js`. That only works with `next start`, which evaluates
+the config when the server boots. A
+[standalone build](https://nextjs.org/docs/app/api-reference/config/next-config-js/output) (`output: 'standalone'`, the
+usual choice for Docker) serializes the config into `server.js` at build time and never runs `next.config` again. The
+call happens on the build machine and the running container never sees the copies.
 
-- **Existing infrastructure** - You have env vars already deployed without the prefix
-- **Cross-service consistency** - Multiple services share the same variable names
-- **Migration path** - Moving from another framework (like Create React App)
-- **Deployment simplicity** - You don't want to update every deployment config
+`register()` runs in every output mode, so it's the one place that always works.
 
-::: tip Alternative Approach If you're starting fresh, consider using the `NEXT_PUBLIC_` prefix directly in your
-environment variables. It's more explicit and requires no transformation step. :::
+## Logging
 
-## Next Steps
+Each call reports what it did. Lines go to the console with a `(next-dynenv)` suffix:
 
-- [Custom Variables](/guide/custom-variables) - More control over variables
-- [Docker Deployment](/guide/docker) - Container deployment patterns
-- [API Reference](/api/) - Full API documentation
+```
+ ✓ Prefixed environment variable 'API_URL' (next-dynenv)
+ ⚠ Skipped prefixing environment variable 'SENTRY_DSN'. Variable not in process.env (next-dynenv)
+```
+
+Pass `logLevel` to quiet it down:
+
+| `logLevel`            | Success lines | Warnings |
+| --------------------- | ------------- | -------- |
+| unset (default)       | Shown         | Shown    |
+| `'info'`, `'warn'`    | Hidden        | Shown    |
+| `'error'`, `'silent'` | Hidden        | Hidden   |
+
+```ts
+makeEnvPublic(['API_URL', 'APP_NAME'], { logLevel: 'warn' })
+```
+
+## Behavior
+
+- **Missing variables** (`undefined`) are skipped with a warning. Nothing throws.
+- **Empty strings** are copied like any other value.
+- **Keys that already start with `NEXT_PUBLIC_`** are skipped with a warning.
+- **An existing `NEXT_PUBLIC_` copy is overwritten** by the unprefixed value, without a warning.
+- **The original variable stays** in `process.env`, still server-only.
+
+## Before you call it
+
+Everything you make public ships to every visitor in the page HTML. Copy URLs, IDs, and flags. Never copy keys, tokens,
+or passwords; for those, keep reading them on the server with [`env()`](/api/env).
+
+## Related
+
+- [`makeEnvPublic()` reference](/api/make-env-public)
+- [Docker and Kubernetes](/guide/docker)
+- [Custom variables](/guide/custom-variables)

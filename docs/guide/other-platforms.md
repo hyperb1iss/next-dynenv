@@ -1,137 +1,89 @@
-# Other Platforms
+# Other platforms
 
-Deploy next-dynenv anywhere—Railway, Fly.io, Render, AWS, GCP, Azure, and beyond.
+Any host that runs `next start` or the standalone `server.js` works the same way: build once, set variables on the
+platform, and restart. A value change needs a restart or a new revision of the same image, never a rebuild.
 
-## Railway
+## Before you deploy
 
-### Setup
+- Render `PublicEnvScript` or `PublicEnvProvider` in the root layout.
+- Read public values with `env()`, `useEnvContext()`, or `envParsers`, not literal `process.env.NEXT_PUBLIC_*` in client
+  code (Next.js inlines those at build time).
+- Copy unprefixed variables with [`makeEnvPublic()`](/api/make-env-public) in `instrumentation.ts`, not in
+  `next.config`.
+- For container hosts, use `output: 'standalone'` and the Dockerfile from the [Docker guide](/guide/docker).
 
-```bash
-# railway.toml
-[build]
-builder = "nixpacks"
+## Where values live
 
-[deploy]
-startCommand = "node server.js"
-```
-
-### Environment Variables
-
-Set in Railway dashboard or CLI:
-
-```bash
-railway variables set NEXT_PUBLIC_API_URL=https://api.example.com
-railway variables set NEXT_PUBLIC_APP_NAME=MyApp
-```
-
-### Dockerfile Deployment
-
-```bash
-# Use the Docker deployment guide
-railway up --dockerfile
-```
+| Platform             | Where to set variables                                 | Applying a change                            |
+| -------------------- | ------------------------------------------------------ | -------------------------------------------- |
+| Fly.io               | `fly secrets set`, or `[env]` in `fly.toml`            | Secrets: Machines restart on the same image  |
+| Railway              | Service **Variables** tab                              | Apply the staged change; Railway redeploys   |
+| Render               | Service **Environment** page                           | Save and redeploy from the dashboard         |
+| Google Cloud Run     | `--set-env-vars`, `--update-env-vars`, `--set-secrets` | New revision from the same image             |
+| AWS ECS / Fargate    | Task definition `environment` and `secrets`            | New task definition revision, service update |
+| Azure Container Apps | `az containerapp update --set-env-vars`                | New revision from the same image             |
+| Heroku               | `heroku config:set`                                    | Dynos restart with the same slug             |
+| Kubernetes           | ConfigMap and Secret (see [Docker](/guide/docker))     | `kubectl rollout restart`                    |
+| Vercel               | Project settings (see [Vercel](/guide/vercel))         | New deployment                               |
 
 ## Fly.io
 
-### fly.toml
+Plain values can live in `fly.toml`; secrets go through the CLI:
 
 ```toml
 # fly.toml
-app = "my-nextjs-app"
-primary_region = "iad"
-
-[build]
-  dockerfile = "Dockerfile"
-
-[http_service]
-  internal_port = 3000
-  force_https = true
-  auto_stop_machines = true
-  auto_start_machines = true
-  min_machines_running = 0
-
 [env]
-  NODE_ENV = "production"
-  PORT = "3000"
+  NEXT_PUBLIC_API_URL = "https://api.example.com"
+  NEXT_PUBLIC_APP_NAME = "My App"
 ```
-
-### Setting Secrets
 
 ```bash
-# Set environment variables
-fly secrets set NEXT_PUBLIC_API_URL=https://api.example.com
-fly secrets set NEXT_PUBLIC_APP_NAME=MyApp
-fly secrets set DATABASE_URL=postgres://...
+fly secrets set DATABASE_URL=postgres://user:pass@db.internal:5432/app
 ```
 
-### Deploy
+`fly secrets set` restarts your Machines with the new value. Changes to `[env]` ship with the next `fly deploy`.
+
+## Railway and Render
+
+Both platforms manage variables per service in the dashboard. Add your `NEXT_PUBLIC_*` values and secrets there, then
+apply the change so the service restarts with the new environment.
+
+## Google Cloud Run
 
 ```bash
-fly deploy
+gcloud run deploy my-app \
+  --image us-docker.pkg.dev/my-project/apps/my-app:1.4.0 \
+  --set-env-vars NEXT_PUBLIC_API_URL=https://api.example.com,NEXT_PUBLIC_APP_NAME=MyApp \
+  --set-secrets DATABASE_URL=database-url:latest
 ```
 
-## Render
+Change one value later without touching the image:
 
-### render.yaml
-
-```yaml
-# render.yaml
-services:
-    - type: web
-      name: my-nextjs-app
-      env: node
-      buildCommand: pnpm install && pnpm build
-      startCommand: node .next/standalone/server.js
-      envVars:
-          - key: NEXT_PUBLIC_API_URL
-            value: https://api.example.com
-          - key: NEXT_PUBLIC_APP_NAME
-            value: MyApp
-          - key: DATABASE_URL
-            fromDatabase:
-                name: mydb
-                property: connectionString
+```bash
+gcloud run services update my-app --update-env-vars NEXT_PUBLIC_API_URL=https://api-v2.example.com
 ```
 
-### Environment Groups
+Cloud Run sets `PORT`, and the standalone server listens on it.
 
-Use environment groups for shared variables:
+## AWS ECS and Fargate
 
-```yaml
-envVars:
-    - fromGroup: production-env
-```
-
-## AWS (ECS/Fargate)
-
-### Task Definition
+Set public values under `environment` and pull secrets from Secrets Manager or Parameter Store under `secrets`:
 
 ```json
 {
     "containerDefinitions": [
         {
-            "name": "nextjs-app",
-            "image": "your-registry/my-nextjs-app:latest",
-            "portMappings": [
-                {
-                    "containerPort": 3000,
-                    "protocol": "tcp"
-                }
-            ],
+            "name": "my-app",
+            "image": "123456789012.dkr.ecr.us-east-1.amazonaws.com/my-app:1.4.0",
+            "portMappings": [{ "containerPort": 3000 }],
             "environment": [
-                {
-                    "name": "NEXT_PUBLIC_API_URL",
-                    "value": "https://api.example.com"
-                },
-                {
-                    "name": "NEXT_PUBLIC_APP_NAME",
-                    "value": "MyApp"
-                }
+                { "name": "NEXT_PUBLIC_API_URL", "value": "https://api.example.com" },
+                { "name": "NEXT_PUBLIC_APP_NAME", "value": "My App" }
             ],
             "secrets": [
                 {
                     "name": "DATABASE_URL",
-                    "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789:secret:db-url"
+                    "valueFrom": "arn:aws:secretsmanager:us-east-1:123456789012:secret:database-url"
                 }
             ]
         }
@@ -139,161 +91,40 @@ envVars:
 }
 ```
 
-## Google Cloud Run
-
-### Deploy Command
-
-```bash
-gcloud run deploy my-nextjs-app \
-  --image gcr.io/my-project/my-nextjs-app \
-  --set-env-vars NEXT_PUBLIC_API_URL=https://api.example.com \
-  --set-env-vars NEXT_PUBLIC_APP_NAME=MyApp \
-  --platform managed \
-  --region us-central1
-```
-
-### Using Secret Manager
-
-```bash
-gcloud run deploy my-nextjs-app \
-  --image gcr.io/my-project/my-nextjs-app \
-  --set-secrets DATABASE_URL=db-url:latest \
-  --platform managed
-```
+Register a new task definition revision with the changed values and update the service. The image stays the same.
 
 ## Azure Container Apps
 
-### Deployment
-
-```yaml
-# azure-container-app.yaml
-properties:
-    configuration:
-        ingress:
-            external: true
-            targetPort: 3000
-    template:
-        containers:
-            - name: nextjs-app
-              image: myregistry.azurecr.io/my-nextjs-app:latest
-              env:
-                  - name: NEXT_PUBLIC_API_URL
-                    value: https://api.example.com
-                  - name: NEXT_PUBLIC_APP_NAME
-                    value: MyApp
-                  - name: DATABASE_URL
-                    secretRef: db-url
+```bash
+az containerapp update \
+  --name my-app \
+  --resource-group my-group \
+  --set-env-vars NEXT_PUBLIC_API_URL=https://api.example.com
 ```
 
-## DigitalOcean App Platform
-
-### app.yaml
-
-```yaml
-# .do/app.yaml
-name: my-nextjs-app
-services:
-    - name: web
-      dockerfile_path: Dockerfile
-      http_port: 3000
-      instance_count: 1
-      instance_size_slug: basic-xxs
-      envs:
-          - key: NEXT_PUBLIC_API_URL
-            value: https://api.example.com
-          - key: NEXT_PUBLIC_APP_NAME
-            value: MyApp
-          - key: DATABASE_URL
-            scope: RUN_TIME
-            type: SECRET
-```
+Each update creates a new revision from the same image.
 
 ## Heroku
 
-### Procfile
-
-```
-web: node .next/standalone/server.js
-```
-
-### Config Vars
+Heroku runs your `start` script (`next start`), which reads `PORT` from the environment.
 
 ```bash
 heroku config:set NEXT_PUBLIC_API_URL=https://api.example.com
-heroku config:set NEXT_PUBLIC_APP_NAME=MyApp
 ```
 
-## Coolify
+Setting a config var restarts the dynos with the same slug.
 
-Self-hosted PaaS alternative:
+## Build-and-host platforms
 
-```yaml
-# docker-compose.yml for Coolify
-services:
-    app:
-        build: .
-        environment:
-            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-            - NEXT_PUBLIC_APP_NAME=${NEXT_PUBLIC_APP_NAME}
-```
+Platforms that build and host in one step tie variables to deployments, so a change there means a new deploy. Vercel is
+covered in its [own guide](/guide/vercel).
 
-Set variables in Coolify's UI for each environment.
+On AWS Amplify Hosting, variables set in the console are only available during the build. To reach a server runtime,
+Amplify's documentation has you write them into `.env.production` as part of the build commands, which means a value
+change needs a new build there.
 
-## Platform Comparison
+## Next steps
 
-| Platform  | Docker | Environment UI | Secrets | Auto-scaling |
-| --------- | ------ | -------------- | ------- | ------------ |
-| Vercel    | No     | Yes            | Yes     | Yes          |
-| Railway   | Yes    | Yes            | Yes     | Yes          |
-| Fly.io    | Yes    | CLI            | Yes     | Yes          |
-| Render    | Yes    | Yes            | Yes     | Yes          |
-| AWS ECS   | Yes    | No             | Yes     | Yes          |
-| Cloud Run | Yes    | CLI            | Yes     | Yes          |
-
-## General Tips
-
-These tips apply to all platforms:
-
-### 1. Use Standalone Output
-
-Always enable standalone for production deployments:
-
-```js
-// next.config.js
-module.exports = {
-    output: 'standalone',
-}
-```
-
-::: tip Docker Image Size Standalone output reduces image size by ~10x by including only production dependencies. :::
-
-### 2. Health Checks
-
-Add a health endpoint:
-
-```ts
-// app/api/health/route.ts
-export function GET() {
-    return Response.json({ status: 'ok', timestamp: Date.now() })
-}
-```
-
-Most platforms can use this for readiness and liveness probes.
-
-### 3. Graceful Shutdown
-
-Handle shutdown signals properly:
-
-```js
-// server.js (if using custom server)
-process.on('SIGTERM', () => {
-    console.log('SIGTERM received, shutting down gracefully...')
-    process.exit(0)
-})
-```
-
-## Next Steps
-
-- [Docker Deployment](/guide/docker) - Detailed Docker guide
-- [Security](/guide/security) - Security best practices
-- [API Reference](/api/) - Full API documentation
+- [Docker](/guide/docker): Dockerfile, Compose, and Kubernetes
+- [Security](/guide/security): what is safe to send to the browser
+- [Troubleshooting](/guide/troubleshooting)

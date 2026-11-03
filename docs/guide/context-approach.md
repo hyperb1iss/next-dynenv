@@ -1,15 +1,9 @@
-# Context Approach
+# Context approach
 
-Pure React pattern for environment variables—no global state, just Context.
+Deliver public variables through React Context instead of a global. A server component reads `process.env` and passes
+the values to a client provider; client components read them with a hook.
 
-## Overview
-
-The context approach uses React Context to pass environment variables through your component tree. If you prefer
-avoiding global state and want to keep everything within React's boundaries, this approach is for you.
-
-## Basic Setup
-
-Wrap your app with `PublicEnvProvider`:
+## Setup
 
 ```tsx
 // app/layout.tsx
@@ -26,186 +20,100 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-## Using Environment Variables
+`PublicEnvProvider` sends every `NEXT_PUBLIC_*` variable in `process.env`, and like `PublicEnvScript` it opts the routes
+under it into [dynamic rendering](/guide/how-it-works#dynamic-rendering).
 
-### With useEnvContext Hook
+## Reading values
 
 ```tsx
 'use client'
 
 import { useEnvContext } from 'next-dynenv'
 
-export function ApiClient() {
+export function ApiStatus() {
+    const { NEXT_PUBLIC_API_URL, NEXT_PUBLIC_APP_NAME = 'My App' } = useEnvContext()
+
+    return (
+        <p>
+            {NEXT_PUBLIC_APP_NAME} is talking to {NEXT_PUBLIC_API_URL}
+        </p>
+    )
+}
+```
+
+`useEnvContext()` returns `{ [key: string]: string | undefined }` and throws if no provider sits above the component:
+
+```
+useEnvContext must be used within a EnvProvider or PublicEnvProvider
+```
+
+Server components don't need the provider. They call `env()`, which reads `process.env`.
+
+## A typed hook
+
+The context is an untyped dictionary. Wrap it once to get named, parsed fields:
+
+```ts
+// lib/use-app-env.ts
+import { useEnvContext } from 'next-dynenv'
+
+export function useAppEnv() {
     const env = useEnvContext()
 
-    return (
-        <div>
-            <p>API URL: {env.NEXT_PUBLIC_API_URL}</p>
-            <p>App Name: {env.NEXT_PUBLIC_APP_NAME}</p>
-        </div>
-    )
+    return {
+        apiUrl: env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8080',
+        appName: env.NEXT_PUBLIC_APP_NAME ?? 'My App',
+        debug: env.NEXT_PUBLIC_DEBUG === 'true',
+        features: (env.NEXT_PUBLIC_FEATURES ?? '').split(',').filter(Boolean),
+    }
 }
 ```
 
-### Destructuring Variables
+## What context doesn't reach
+
+The provider only feeds `useEnvContext()`. Keep these limits in mind:
+
+- **`env()` and `envParsers` don't read context.** In the browser they look at `window.__ENV`, which only the script
+  approach creates. Without it they return `undefined` or your default. Parse context values yourself, as in the typed
+  hook above.
+- **Non-React code can't call hooks.** API clients, SDK setup, and `instrumentation-client.ts` need the
+  [script approach](/guide/script-approach).
+- **Values still reach the HTML.** The provider's props travel in the React Server Component payload embedded in the
+  page, so context is not a way to hide anything. Only send public values.
+
+Need both? Render `PublicEnvScript` in `<head>` and `PublicEnvProvider` around `children`. They read the same source.
+
+## Nesting providers
+
+`useEnvContext()` returns the nearest provider's object. An inner provider replaces the outer one for its subtree; the
+two are not merged. To extend the public set for one section, pass a merged object to
+[`EnvProvider`](/api/components#envprovider):
 
 ```tsx
-'use client'
-
-import { useEnvContext } from 'next-dynenv'
-
-export function FeatureFlags() {
-    const { NEXT_PUBLIC_FEATURE_A, NEXT_PUBLIC_FEATURE_B } = useEnvContext()
-
-    return (
-        <div>
-            {NEXT_PUBLIC_FEATURE_A === 'true' && <FeatureA />}
-            {NEXT_PUBLIC_FEATURE_B === 'true' && <FeatureB />}
-        </div>
-    )
-}
-```
-
-### With Default Values
-
-```tsx
-'use client'
-
-import { useEnvContext } from 'next-dynenv'
-
-export function Config() {
-    const env = useEnvContext()
-
-    const apiUrl = env.NEXT_PUBLIC_API_URL ?? 'https://default-api.com'
-    const timeout = Number(env.NEXT_PUBLIC_TIMEOUT ?? '5000')
-
-    return (
-        <div>
-            <p>API: {apiUrl}</p>
-            <p>Timeout: {timeout}ms</p>
-        </div>
-    )
-}
-```
-
-## Custom Variables with EnvProvider
-
-For fine-grained control, use `EnvProvider` directly:
-
-```tsx
-// Server component
+// app/admin/layout.tsx
+import { connection } from 'next/server'
 import { EnvProvider } from 'next-dynenv'
 
-export async function CustomEnvWrapper({ children }) {
-    // Fetch or compute custom environment
-    const customEnv = {
-        NEXT_PUBLIC_API_URL: process.env.API_URL,
-        NEXT_PUBLIC_USER_TIER: await getUserTier(),
-        NEXT_PUBLIC_REGION: process.env.REGION || 'us-east-1',
-    }
+export default async function AdminLayout({ children }: { children: React.ReactNode }) {
+    await connection()
 
-    return <EnvProvider env={customEnv}>{children}</EnvProvider>
+    const publicEnv = Object.fromEntries(Object.entries(process.env).filter(([key]) => key.startsWith('NEXT_PUBLIC_')))
+
+    return <EnvProvider env={{ ...publicEnv, NEXT_PUBLIC_ADMIN_MODE: 'true' }}>{children}</EnvProvider>
 }
 ```
 
-## Combining with Other Providers
+Keys you add this way exist only in context. A server-side `env('NEXT_PUBLIC_ADMIN_MODE')` won't see them, so read them
+through the hook on the client side only.
 
-```tsx
-// app/layout.tsx
-import { PublicEnvProvider } from 'next-dynenv'
-import { ThemeProvider } from './theme-provider'
-import { AuthProvider } from './auth-provider'
+## When to pick it
 
-export default function RootLayout({ children }) {
-    return (
-        <html>
-            <body>
-                <PublicEnvProvider>
-                    <ThemeProvider>
-                        <AuthProvider>{children}</AuthProvider>
-                    </ThemeProvider>
-                </PublicEnvProvider>
-            </body>
-        </html>
-    )
-}
-```
+Use the context approach when every consumer is a React client component and you like values flowing through the tree,
+for example in a design system or a provider-heavy app. Otherwise start with the
+[script approach](/guide/script-approach).
 
-## TypeScript Support
+## Related
 
-Create typed environment access:
-
-```tsx
-// types/env.d.ts
-declare module 'next-dynenv' {
-    interface ProcessEnv {
-        NEXT_PUBLIC_API_URL?: string
-        NEXT_PUBLIC_APP_NAME?: string
-        NEXT_PUBLIC_DEBUG?: string
-    }
-}
-```
-
-Then use with full type safety:
-
-```tsx
-'use client'
-
-import { useEnvContext } from 'next-dynenv'
-
-export function TypedComponent() {
-    const env = useEnvContext()
-
-    // TypeScript knows these properties exist
-    const apiUrl = env.NEXT_PUBLIC_API_URL
-
-    return <div>{apiUrl}</div>
-}
-```
-
-## Error Handling
-
-The hook throws if used outside a provider:
-
-```tsx
-'use client'
-
-import { useEnvContext } from 'next-dynenv'
-
-export function SafeComponent() {
-    try {
-        const env = useEnvContext()
-        return <div>API: {env.NEXT_PUBLIC_API_URL}</div>
-    } catch (error) {
-        return <div>Error: Component must be wrapped in PublicEnvProvider</div>
-    }
-}
-```
-
-## Comparison with Script Approach
-
-| Feature           | Context | Script     |
-| ----------------- | ------- | ---------- |
-| React-only        | Yes     | No         |
-| Global state      | No      | Yes        |
-| Outside React     | No      | Yes        |
-| Sentry compatible | Yes     | Needs flag |
-| Setup complexity  | Simple  | Simple     |
-
-## When to Use Context Approach
-
-Use the context approach when:
-
-- **Pure React philosophy** - You want to avoid global state
-- **Type safety matters** - Better TypeScript inference with context
-- **Explicit dependencies** - You prefer React tree dependencies over globals
-- **No third-party integration** - You don't need environment access outside React
-
-::: tip Most Apps Should Use Script Approach Unless you have a strong preference for React Context or specific
-requirements, the [script approach](/guide/script-approach) is simpler and more flexible. :::
-
-## Next Steps
-
-- [Script Approach](/guide/script-approach) - Alternative global approach
-- [Custom Variables](/guide/custom-variables) - Fine-grained control
-- [API Reference](/api/components) - Component documentation
+- [Custom variables](/guide/custom-variables): curated objects with `EnvProvider`.
+- [Components reference](/api/components#publicenvprovider)
+- [Context example](/examples/app-router-context)
