@@ -1,0 +1,30 @@
+name: Setup
+description: Install pnpm and Node.js, then install workspace dependencies
+
+inputs:
+  node-version:
+    description: Node.js version
+    default: '26'
+  filter:
+    description: Optional pnpm filter to install a subset of the workspace
+    default: ''
+  cache:
+    description: Cache the pnpm store (disable in publishing jobs)
+    default: 'true'
+
+runs:
+  using: composite
+  steps:
+    - name: Setup pnpm
+      uses: pnpm/action-setup@v6
+
+    - name: Setup Node.js
+      uses: actions/setup-node@v7
+      with:
+        node-version: ${{ inputs.node-version }}
+        cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
+        package-manager-cache: ${{ inputs.cache == 'true' }}
+
+    - name: Install dependencies
+      shell: bash
+      run: pnpm install --frozen-lockfile ${{ inputs.filter && format('--filter {0}', inputs.filter) || '' }}

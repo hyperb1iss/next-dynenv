@@ -6,6 +6,8 @@ on:
     paths:
       - 'docs/**'
       - '.github/workflows/docs.yml'
+      - '.github/actions/setup/**'
+      - 'pnpm-lock.yaml'
   workflow_dispatch:
 
 permissions:
@@ -17,42 +19,29 @@ concurrency:
   group: pages
   cancel-in-progress: false
 
-env:
-  NODE_VERSION: '24'
-
 jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v6
+        uses: actions/checkout@v7
         with:
           fetch-depth: 0
 
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v5
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
+      - name: Setup
+        uses: ./.github/actions/setup
         with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'pnpm'
-          cache-dependency-path: docs/pnpm-lock.yaml
+          filter: next-dynenv-docs
 
       - name: Setup Pages
-        uses: actions/configure-pages@v5
-
-      - name: Install dependencies
-        working-directory: docs
-        run: pnpm install --frozen-lockfile
+        uses: actions/configure-pages@v6
 
       - name: Build VitePress
-        working-directory: docs
-        run: pnpm build
+        run: pnpm --filter next-dynenv-docs build
 
       - name: Upload artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
           path: docs/.vitepress/dist
 
@@ -66,7 +55,7 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5
 
       - name: Summary
         run: |
