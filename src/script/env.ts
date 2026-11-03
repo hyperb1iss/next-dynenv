@@ -15,6 +15,10 @@ const IS_BROWSER = typeof window !== 'undefined'
  * - **Client-side**: Only allows access to `NEXT_PUBLIC_*` prefixed variables that
  *   were injected via {@link PublicEnvScript} or {@link EnvScript}.
  *
+ * **Client components:** only read `NEXT_PUBLIC_*` keys there. Client components
+ * also render on the server, where this function returns any variable, so a
+ * secret would be written into the HTML before the browser-side check runs.
+ *
  * **Note on Dynamic Rendering:** This function reads from `process.env` synchronously.
  * To ensure environment variables are evaluated at runtime (not build time), wrap your
  * layout with {@link PublicEnvScript} or {@link PublicEnvProvider}. These components
@@ -136,9 +140,12 @@ export function requireEnv(key: string): string {
  * lazy getters, utility modules).
  *
  * Unlike {@link env}, this function:
- * - **Never throws** in the browser—it gracefully returns the fallback
+ * - **Never throws** in the browser: it returns the fallback instead
  * - Is designed for **non-`NEXT_PUBLIC_*`** variables that shouldn't be exposed to clients
  * - Provides a clean pattern for isomorphic code that needs server secrets
+ *
+ * Never render its result from a client component: during server rendering it
+ * returns the real value, which would end up in the HTML.
  *
  * @param key - The environment variable name to retrieve
  * @param fallback - Optional fallback value returned in the browser or if undefined
@@ -182,7 +189,7 @@ export function requireEnv(key: string): string {
  * ```ts
  * import { serverOnly } from 'next-dynenv'
  *
- * // Safe to call anywhere—returns undefined on client
+ * // Returns undefined in the browser
  * const internalUrl = serverOnly('INTERNAL_SERVICE_URL') || publicUrl
  * ```
  *

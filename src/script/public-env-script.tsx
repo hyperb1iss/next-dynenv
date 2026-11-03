@@ -21,7 +21,7 @@ type PublicEnvScriptProps = {
      * // Direct nonce string
      * <PublicEnvScript nonce="random-nonce-value" />
      *
-     * // Nonce from header (currently blocked by Next.js PR #58129)
+     * // Nonce read from a request header set in proxy.ts
      * <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
      * ```
      */
@@ -30,8 +30,12 @@ type PublicEnvScriptProps = {
     /**
      * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
      *
-     * Set to `true` when using tools like Sentry where the Next.js Script component's
-     * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
+     * Set to `true` when code in `instrumentation-client.ts` (for example a Sentry
+     * init) reads the environment: Next.js runs that file before `beforeInteractive`
+     * scripts, while a plain inline script runs as soon as the HTML is parsed.
+     *
+     * Next.js only adds its CSP nonce to its own `<Script>`, so pass `nonce`
+     * explicitly when this is `true` and a CSP is in place.
      *
      * @default false
      * @example
@@ -45,12 +49,14 @@ type PublicEnvScriptProps = {
      * Additional props to pass to Next.js' `<Script>` component.
      *
      * Only used when `disableNextScript` is `false`.
+     * Keep the default `beforeInteractive` strategy: with a later strategy, client
+     * components hydrate before `window.__ENV` exists and read `undefined`.
      *
      * @default { strategy: 'beforeInteractive' }
      * @see https://nextjs.org/docs/app/api-reference/components/script
      * @example
      * ```tsx
-     * <PublicEnvScript nextScriptProps={{ strategy: 'afterInteractive' }} />
+     * <PublicEnvScript nextScriptProps={{ id: 'runtime-env' }} />
      * ```
      */
     nextScriptProps?: ScriptProps

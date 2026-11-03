@@ -33,8 +33,6 @@ type EnvScriptProps = {
      * Can be a string value directly, or a NonceConfig object that specifies
      * a header key to read the nonce from at runtime.
      *
-     * **Note:** NonceConfig object support is currently blocked by Next.js PR #58129.
-     *
      * @example
      * ```tsx
      * // Direct nonce string
@@ -46,11 +44,12 @@ type EnvScriptProps = {
     /**
      * Whether to use a regular `<script>` tag instead of Next.js' `<Script>` component.
      *
-     * Set to `true` when using tools like Sentry where the Next.js Script component's
-     * timing causes initialization issues, even with `strategy: "beforeInteractive"`.
+     * Set to `true` when code in `instrumentation-client.ts` (for example a Sentry
+     * init) reads the environment: Next.js runs that file before `beforeInteractive`
+     * scripts, while a plain inline script runs as soon as the HTML is parsed.
      *
-     * When `true`, renders a standard HTML script tag. When `false`, uses Next.js'
-     * optimized Script component.
+     * Next.js only adds its CSP nonce to its own `<Script>`, so pass `nonce`
+     * explicitly when this is `true` and a CSP is in place.
      *
      * @default false
      * @example
@@ -63,20 +62,15 @@ type EnvScriptProps = {
     /**
      * Additional props to pass to Next.js' `<Script>` component.
      *
-     * Only used when `disableNextScript` is `false`. Allows customization of
-     * script loading behavior through Next.js Script component props.
+     * Only used when `disableNextScript` is `false`.
+     * Keep the default `beforeInteractive` strategy: with a later strategy, client
+     * components hydrate before `window.__ENV` exists and read `undefined`.
      *
      * @default { strategy: 'beforeInteractive' }
      * @see https://nextjs.org/docs/app/api-reference/components/script
      * @example
      * ```tsx
-     * <EnvScript
-     *   env={env}
-     *   nextScriptProps={{
-     *     strategy: 'afterInteractive',
-     *     onLoad: () => console.log('Env loaded')
-     *   }}
-     * />
+     * <EnvScript env={env} nextScriptProps={{ id: 'runtime-env' }} />
      * ```
      */
     nextScriptProps?: ScriptProps
@@ -101,10 +95,17 @@ type EnvScriptProps = {
  * ```tsx
  * import { EnvScript } from 'next-dynenv';
  *
- * export default function Layout() {
+ * import { connection } from 'next/server';
+ *
+ * export default async function Layout({ children }) {
+ *   // Read the environment per request instead of at build time
+ *   await connection();
+ *
+ *   // Expose two public variables instead of every NEXT_PUBLIC_* key. Keep the
+ *   // names the server sees, so env() agrees during SSR and in the browser.
  *   const customEnv = {
- *     NEXT_PUBLIC_API_URL: process.env.API_URL,
- *     NEXT_PUBLIC_FEATURE_FLAG: process.env.FEATURE_FLAG,
+ *     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL,
+ *     NEXT_PUBLIC_REGION: process.env.NEXT_PUBLIC_REGION,
  *   };
  *
  *   return (
@@ -112,7 +113,7 @@ type EnvScriptProps = {
  *       <head>
  *         <EnvScript env={customEnv} />
  *       </head>
- *       <body>...</body>
+ *       <body>{children}</body>
  *     </html>
  *   );
  * }

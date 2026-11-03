@@ -9,8 +9,8 @@
  * - `>` → `\u003e` (prevents tag injection)
  * - `&` → `\u0026` (prevents HTML entity injection)
  * - `'` → `\u0027` (prevents single quote escapes)
- * - `\u2028` → `\u2028` (line separator - already escaped by JSON.stringify)
- * - `\u2029` → `\u2029` (paragraph separator - already escaped by JSON.stringify)
+ *
+ * U+2028 and U+2029 need no escaping: they are valid in string literals since ES2019.
  *
  * @param obj - The object to serialize as safe JSON for HTML embedding
  * @returns A JSON string that is safe to embed in a `<script>` tag
