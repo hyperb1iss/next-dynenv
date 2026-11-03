@@ -28,11 +28,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
 ### Props
 
-| Prop                | Type                              | Default                             | Description                                                          |
-| ------------------- | --------------------------------- | ----------------------------------- | -------------------------------------------------------------------- |
-| `nonce`             | `string \| { headerKey: string }` | none                                | CSP nonce, or the request header to read it from                     |
-| `disableNextScript` | `boolean`                         | `false`                             | Render a plain `<script>` instead of `next/script`                   |
-| `nextScriptProps`   | `ScriptProps` from `next/script`  | `{ strategy: 'beforeInteractive' }` | Extra props for `next/script`. Replaces the default object entirely. |
+| Prop                | Type                              | Default                             | Description                                                      |
+| ------------------- | --------------------------------- | ----------------------------------- | ---------------------------------------------------------------- |
+| `nonce`             | `string \| { headerKey: string }` | none                                | CSP nonce, or the request header to read it from                 |
+| `disableNextScript` | `boolean`                         | `false`                             | Render a plain `<script>` instead of `next/script`               |
+| `nextScriptProps`   | `ScriptProps` from `next/script`  | `{ strategy: 'beforeInteractive' }` | Extra props for `next/script`, merged over the default strategy. |
 
 ### What it renders
 
@@ -84,13 +84,13 @@ yourself when a CSP is in place.
 ### nextScriptProps
 
 ```tsx
-<PublicEnvScript nextScriptProps={{ id: 'runtime-env', strategy: 'beforeInteractive' }} />
+<PublicEnvScript nextScriptProps={{ id: 'runtime-env' }} />
 ```
 
-Passing the prop replaces `{ strategy: 'beforeInteractive' }`, so restate the strategy. Keep it `beforeInteractive`:
-with `afterInteractive` or `lazyOnload`, client components hydrate before `window.__ENV` exists, `env()` returns
-`undefined`, and React reports a hydration mismatch. Function props such as `onLoad` cannot cross from a server
-component, so only pass serializable values.
+The props are merged over `{ strategy: 'beforeInteractive' }`, so the strategy stays unless you override it. Keep it
+`beforeInteractive`: with `afterInteractive` or `lazyOnload`, client components hydrate before `window.__ENV` exists,
+`env()` returns `undefined`, and React reports a hydration mismatch. Function props such as `onLoad` cannot cross from a
+server component, so only pass serializable values.
 
 ## EnvScript
 

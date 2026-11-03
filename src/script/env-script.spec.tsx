@@ -86,6 +86,16 @@ describe('EnvScript', () => {
         })
     })
 
+    it('should keep the beforeInteractive strategy when other Script props are passed', async () => {
+        const Component = await EnvScript({ env: {}, nextScriptProps: { id: 'runtime-env' } })
+        render(Component)
+
+        await waitFor(() => {
+            expect(document.querySelector('script')).toHaveAttribute('id', 'runtime-env')
+            expect(document.querySelector('script')).toHaveAttribute('strategy', 'beforeInteractive')
+        })
+    })
+
     it('should not have Next.js Script props when a regular script tag is used', async () => {
         const env = { NODE_ENV: 'test', API_URL: 'http://localhost:3000' }
         const id = 'text-id-abc'

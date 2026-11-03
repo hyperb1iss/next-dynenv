@@ -62,7 +62,8 @@ type EnvScriptProps = {
     /**
      * Additional props to pass to Next.js' `<Script>` component.
      *
-     * Only used when `disableNextScript` is `false`.
+     * Only used when `disableNextScript` is `false`. Merged over the default
+     * `strategy: 'beforeInteractive'`, so passing `{ id }` keeps the strategy.
      * Keep the default `beforeInteractive` strategy: with a later strategy, client
      * components hydrate before `window.__ENV` exists and read `undefined`.
      *
@@ -137,12 +138,7 @@ type EnvScriptProps = {
  *
  * @see {@link PublicEnvScript} for automatic NEXT_PUBLIC_* variable injection
  */
-export const EnvScript: FC<EnvScriptProps> = async ({
-    env,
-    nonce,
-    disableNextScript = false,
-    nextScriptProps = { strategy: 'beforeInteractive' },
-}) => {
+export const EnvScript: FC<EnvScriptProps> = async ({ env, nonce, disableNextScript = false, nextScriptProps }) => {
     let nonceString: string | undefined
     if (typeof nonce === 'object' && nonce !== null) {
         try {
@@ -179,5 +175,12 @@ export const EnvScript: FC<EnvScriptProps> = async ({
     }
 
     // Use Next.js Script Component by default
-    return <Script {...nextScriptProps} dangerouslySetInnerHTML={innerHTML} nonce={nonceString} />
+    return (
+        <Script
+            strategy="beforeInteractive"
+            {...nextScriptProps}
+            dangerouslySetInnerHTML={innerHTML}
+            nonce={nonceString}
+        />
+    )
 }

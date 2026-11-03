@@ -109,9 +109,9 @@ Sentry.init({
 
 ::: warning Leave the strategy alone
 
-`nextScriptProps` replaces the default object, so passing `{ id: 'env' }` silently drops `beforeInteractive`. Include
-`strategy: 'beforeInteractive'` whenever you pass it, and never use `afterInteractive`: client components would hydrate
-before `window.__ENV` exists and React would report a hydration mismatch.
+`nextScriptProps` is merged over the default `strategy: 'beforeInteractive'`, so passing `{ id: 'env' }` keeps it. Don't
+override it with `afterInteractive` or `lazyOnload`: client components would hydrate before `window.__ENV` exists and
+React would report a hydration mismatch.
 
 :::
 

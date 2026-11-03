@@ -48,7 +48,8 @@ type PublicEnvScriptProps = {
     /**
      * Additional props to pass to Next.js' `<Script>` component.
      *
-     * Only used when `disableNextScript` is `false`.
+     * Only used when `disableNextScript` is `false`. Merged over the default
+     * `strategy: 'beforeInteractive'`, so passing `{ id }` keeps the strategy.
      * Keep the default `beforeInteractive` strategy: with a later strategy, client
      * components hydrate before `window.__ENV` exists and read `undefined`.
      *
