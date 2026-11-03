@@ -61,6 +61,20 @@ function httpGet(url) {
     })
 }
 
+// Poll until the server answers, instead of guessing how long startup takes
+async function waitForServer(url, timeoutMs) {
+    const deadline = Date.now() + timeoutMs
+    while (Date.now() < deadline) {
+        try {
+            await httpGet(url)
+            return
+        } catch {
+            await setTimeout(250)
+        }
+    }
+    throw new Error(`Server did not respond at ${url} within ${timeoutMs}ms`)
+}
+
 const TEST_APP_DIR = join(process.cwd(), 'test-app')
 
 async function main() {
@@ -101,7 +115,7 @@ async function main() {
 
         // Wait for server to be ready
         console.log('⏳ Waiting for server to start...')
-        await setTimeout(3000)
+        await waitForServer('http://localhost:3456/', 30_000)
 
         // Step 4: Test the home page
         console.log('🧪 Testing script mode (/)...')
