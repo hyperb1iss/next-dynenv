@@ -90,6 +90,7 @@ jobs:
             exit 1
           fi
 
+          echo "current=$CURRENT" >> $GITHUB_OUTPUT
           echo "version=$VERSION" >> $GITHUB_OUTPUT
           echo "Releasing version: $VERSION"
 
@@ -111,6 +112,21 @@ jobs:
 
       - name: '▲ Pack'
         run: pnpm pack --out next-dynenv.tgz
+
+      # Runs on dry runs too, so a dry run proves the notes generate before
+      # anything is tagged or published.
+      - name: '◈ Generate release notes'
+        uses: hyperb1iss/git-iris@v2.1.0
+        with:
+          command: release-notes
+          from: v${{ steps.version.outputs.current }}
+          to: HEAD
+          version-name: ${{ steps.version.outputs.version }}
+          output-file: RELEASE_NOTES.md
+          provider: anthropic
+          model: claude-opus-5-5
+          api-key: ${{ secrets.ANTHROPIC_API_KEY }}
+          version: v2.1.0
 
       - name: '◆ Commit version bump'
         if: ${{ !inputs.dry_run }}
@@ -134,7 +150,7 @@ jobs:
         uses: softprops/action-gh-release@v3
         with:
           tag_name: v${{ steps.version.outputs.version }}
-          generate_release_notes: true
+          body_path: RELEASE_NOTES.md
 
       - name: '► Summary'
         run: |
@@ -142,6 +158,10 @@ jobs:
           echo "" >> $GITHUB_STEP_SUMMARY
           if [[ "${{ inputs.dry_run }}" == "true" ]]; then
             echo "✓ Build and tests passed. Ready to release." >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "### Release notes preview" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            cat RELEASE_NOTES.md >> $GITHUB_STEP_SUMMARY
           else
             echo "✓ Successfully released" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
