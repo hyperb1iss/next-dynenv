@@ -8,9 +8,6 @@ inputs:
   filter:
     description: Optional pnpm filter to install a subset of the workspace
     default: ''
-  cache:
-    description: Cache the pnpm store (disable in publishing jobs)
-    default: 'true'
 
 runs:
   using: composite
@@ -22,8 +19,7 @@ runs:
       uses: actions/setup-node@v7
       with:
         node-version: ${{ inputs.node-version }}
-        cache: ${{ inputs.cache == 'true' && 'pnpm' || '' }}
-        package-manager-cache: ${{ inputs.cache == 'true' }}
+        cache: pnpm
 
     - name: Install dependencies
       shell: bash

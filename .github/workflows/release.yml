@@ -109,6 +109,9 @@ jobs:
       - name: '● Run integration tests'
         run: pnpm test:integration
 
+      - name: '▲ Pack'
+        run: pnpm pack --out next-dynenv.tgz
+
       - name: '◆ Commit version bump'
         if: ${{ !inputs.dry_run }}
         run: |
@@ -121,9 +124,6 @@ jobs:
           git tag -a "v${{ steps.version.outputs.version }}" -m "Release v${{ steps.version.outputs.version }}"
           git push origin HEAD:${{ github.ref_name }}
           git push origin "v${{ steps.version.outputs.version }}"
-
-      - name: '▲ Pack'
-        run: pnpm pack --out next-dynenv.tgz
 
       - name: '▲ Publish to npm'
         if: ${{ !inputs.dry_run }}
