@@ -37,20 +37,19 @@ from `useEnvContext()` yourself.
 envParsers.boolean(key: string, defaultValue?: boolean): boolean
 ```
 
-Trims and lowercases the value, then matches it against two lists.
+Trims and lowercases the value, then checks it against the truthy list.
 
-| Value                                   | Result                                 |
-| --------------------------------------- | -------------------------------------- |
-| `true`, `1`, `yes`, `on` (any case)     | `true`                                 |
-| `false`, `0`, `no`, `off` (any case)    | `false`                                |
-| Anything else, including `''` and typos | `defaultValue` (`false` unless passed) |
-| Not set                                 | `defaultValue`                         |
+| Value                               | Result                                 |
+| ----------------------------------- | -------------------------------------- |
+| `true`, `1`, `yes`, `on` (any case) | `true`                                 |
+| Any other value, including `''`     | `false`                                |
+| Not set                             | `defaultValue` (`false` unless passed) |
 
-Never throws for its content, so a typo falls back to your default rather than flipping a flag.
+Never throws. The default only applies when the variable is missing, so `FLAG=` turns a default-on flag off.
 
 ```ts
 const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
-// Opt-out flag: on unless someone sets it to a recognized falsy value
+// Opt-out flag: on unless the variable is set to something other than a truthy value
 const analytics = envParsers.boolean('NEXT_PUBLIC_ANALYTICS', true)
 ```
 
