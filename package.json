@@ -26,9 +26,7 @@
         "build": "tsc -p .",
         "build:watch": "pnpm build --watch",
         "prepack": "cp package.json package.json.bak && node scripts/resolve-catalog.mjs",
-        "postpack": "mv package.json.bak package.json",
-        "audit-ci": "audit-ci",
-        "semantic-release": "semantic-release"
+        "postpack": "mv package.json.bak package.json"
     },
     "keywords": [
         "nextjs",
@@ -61,13 +59,11 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@vitest/coverage-v8": "catalog:",
-        "audit-ci": "catalog:",
         "jsdom": "catalog:",
         "next": "catalog:",
         "prettier": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
-        "semantic-release": "catalog:",
         "typescript": "catalog:",
         "vitest": "catalog:"
     },
@@ -75,11 +71,5 @@
         "next": "^15 || ^16",
         "react": "^19"
     },
-    "packageManager": "pnpm@10.26.0+sha512.3b3f6c725ebe712506c0ab1ad4133cf86b1f4b687effce62a9b38b4d72e3954242e643190fc51fa1642949c735f403debd44f5cb0edd657abe63a8b6a7e1e402",
-    "pnpm": {
-        "overrides": {
-            "glob": ">=10.5.0",
-            "brace-expansion": ">=2.0.2"
-        }
-    }
+    "packageManager": "pnpm@12.16.1+sha512.091d1dee7927575661b25dab3c2ae31cafc1c54d6b71ed6a6600cf0c1cb10434a447eae14015f1b23e2e6bedeed79df94a932e2164d2832280dce3fb32f656d1"
 }
