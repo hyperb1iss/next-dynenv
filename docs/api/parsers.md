@@ -1,7 +1,7 @@
 # envParsers
 
-Type-safe parsers for converting environment variable strings into structured data. Because environment variables are
-always strings, and you deserve better.
+Turn environment strings into booleans, numbers, lists, JSON, URLs, and enums, with error messages that name the
+variable.
 
 ## Import
 
@@ -9,405 +9,220 @@ always strings, and you deserve better.
 import { envParsers } from 'next-dynenv'
 ```
 
-## Overview
+## At a glance
 
-Environment variables arrive as strings. `envParsers` transforms them into the types you actually need—booleans,
-numbers, arrays, JSON objects, URLs, and type-safe enums—with validation and clear error messages.
+| Parser                                      | Returns    | Not set              | Invalid       |
+| ------------------------------------------- | ---------- | -------------------- | ------------- |
+| [`boolean(key, default = false)`](#boolean) | `boolean`  | `default`            | `default`     |
+| [`number(key, default = 0)`](#number)       | `number`   | `default`            | Throws        |
+| [`array(key, default = [])`](#array)        | `string[]` | `default`            | Never invalid |
+| [`json<T>(key, default?)`](#json)           | `T`        | `default`, or throws | Throws        |
+| [`url(key, default?)`](#url)                | `string`   | `default`, or throws | Throws        |
+| [`enum<T>(key, allowed, default?)`](#enum)  | `T`        | `default`, or throws | Throws        |
 
-::: tip Philosophy
+"Not set" means `undefined`. Empty strings differ per parser: `boolean` and `number` treat blank values as not set,
+`array` returns `[]`, and `json`, `url`, and `enum` throw.
 
-- **Validate early**: Fail fast with clear errors, not mysterious bugs later
-- **Sensible defaults**: Boolean returns `false`, number returns `0`, array returns `[]`
-- **Type safety**: Full TypeScript support with generics where appropriate :::
+::: info Parsers read through env()
 
-## Parsers
+Every parser calls [`env()`](/api/env), so the same rules apply. In client components, use `NEXT_PUBLIC_` keys and
+render [`PublicEnvScript`](/api/components#publicenvscript) or `EnvScript`. With the context approach, parse the strings
+from `useEnvContext()` yourself.
 
-### boolean()
+:::
 
-Parse strings into boolean values. Perfect for feature flags.
+## boolean()
 
 ```ts
 envParsers.boolean(key: string, defaultValue?: boolean): boolean
 ```
 
-**Truthy values** (case-insensitive): `'true'`, `'1'`, `'yes'`, `'on'` **Everything else**: `false` (or your default)
+Trims and lowercases the value, then matches it against two lists.
 
-#### Examples
+| Value                                   | Result                                 |
+| --------------------------------------- | -------------------------------------- |
+| `true`, `1`, `yes`, `on` (any case)     | `true`                                 |
+| `false`, `0`, `no`, `off` (any case)    | `false`                                |
+| Anything else, including `''` and typos | `defaultValue` (`false` unless passed) |
+| Not set                                 | `defaultValue`                         |
 
-```tsx
-// NEXT_PUBLIC_DEBUG=true → true
-// NEXT_PUBLIC_DEBUG=1 → true
-// NEXT_PUBLIC_DEBUG=yes → true
-// NEXT_PUBLIC_DEBUG=ON → true
-// NEXT_PUBLIC_DEBUG=false → false
-// NEXT_PUBLIC_DEBUG=0 → false
-// NEXT_PUBLIC_DEBUG=anything-else → false
-// NEXT_PUBLIC_DEBUG=undefined → false (or your default)
+Never throws for its content, so a typo falls back to your default rather than flipping a flag.
 
+```ts
 const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
-const enabled = envParsers.boolean('NEXT_PUBLIC_FEATURE_X', true) // Default: true
+// Opt-out flag: on unless someone sets it to a recognized falsy value
+const analytics = envParsers.boolean('NEXT_PUBLIC_ANALYTICS', true)
 ```
 
-#### Common Use Cases
-
-```tsx
-import { envParsers } from 'next-dynenv'
-
-// Feature flags
-const showBetaFeatures = envParsers.boolean('NEXT_PUBLIC_BETA_FEATURES')
-const enableAnalytics = envParsers.boolean('NEXT_PUBLIC_ANALYTICS', true)
-
-// Debugging
-const verbose = envParsers.boolean('NEXT_PUBLIC_VERBOSE')
-const showDevTools = envParsers.boolean('NEXT_PUBLIC_DEV_TOOLS')
-```
-
-::: tip Never throws `boolean()` is forgiving. Invalid values default to `false`, not errors. Perfect for flags. :::
-
----
-
-### number()
-
-Parse strings into numeric values with validation. Throws for invalid numbers.
+## number()
 
 ```ts
 envParsers.number(key: string, defaultValue?: number): number
 ```
 
-**Throws** if the value is defined but not a valid number (including `NaN` and `Infinity`).
+Converts with `Number()` and rejects anything that is not finite.
 
-#### Examples
+| Value                        | Result                             |
+| ---------------------------- | ---------------------------------- |
+| `3000`, `42`                 | `3000`, `42`                       |
+| `3.14`, `-42`, `1e3`, `0x10` | `3.14`, `-42`, `1000`, `16`        |
+| `''` or whitespace only      | `defaultValue` (`0` unless passed) |
+| Not set                      | `defaultValue`                     |
+| `abc`, `3000px`, `Infinity`  | Throws                             |
 
-```tsx
-// NEXT_PUBLIC_PORT=3000 → 3000
-// NEXT_PUBLIC_RATIO=3.14 → 3.14
-// NEXT_PUBLIC_NEGATIVE=-42 → -42
-// NEXT_PUBLIC_PORT=undefined → 0 (or your default)
-// NEXT_PUBLIC_PORT=abc → throws Error
-
-const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
-const ratio = envParsers.number('NEXT_PUBLIC_RATIO', 1.0)
-const timeout = envParsers.number('NEXT_PUBLIC_TIMEOUT_MS')
-```
-
-#### Common Use Cases
-
-```tsx
-import { envParsers } from 'next-dynenv'
-
-// Configuration
-const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
-const timeout = envParsers.number('NEXT_PUBLIC_TIMEOUT', 5000)
-const maxRetries = envParsers.number('NEXT_PUBLIC_MAX_RETRIES', 3)
-
-// Pagination
-const pageSize = envParsers.number('NEXT_PUBLIC_PAGE_SIZE', 20)
-```
-
-**Error message example:**
-
-```
-Environment variable 'NEXT_PUBLIC_PORT' is not a valid number: 'abc'.
+```text
+Environment variable 'NEXT_PUBLIC_PAGE_SIZE' is not a valid number: 'abc'.
 Expected a numeric value like '3000' or '3.14'.
 ```
 
-::: warning Validation Throws immediately for invalid numbers. Use this for critical numeric config that must be valid.
-:::
+```ts
+const pageSize = envParsers.number('NEXT_PUBLIC_PAGE_SIZE', 20)
+const timeoutMs = envParsers.number('NEXT_PUBLIC_TIMEOUT_MS', 5000)
+```
 
----
+Range checks stay yours: `number()` accepts `-1` and `2.5` for a page size.
 
-### array()
-
-Parse comma-separated strings into arrays. Perfect for lists of features, hosts, or tags.
+## array()
 
 ```ts
 envParsers.array(key: string, defaultValue?: string[]): string[]
 ```
 
-**Parsing behavior:**
+Splits on commas, trims each item, and drops empty items. Never throws for its content.
 
-- Splits on commas
-- Trims whitespace from each element
-- Filters out empty strings
-- Returns empty array if variable is undefined
-
-#### Examples
-
-```tsx
-// NEXT_PUBLIC_FEATURES=auth,payments,analytics
-// → ['auth', 'payments', 'analytics']
-
-// NEXT_PUBLIC_HOSTS=localhost, 127.0.0.1, example.com
-// → ['localhost', '127.0.0.1', 'example.com']
-
-// Whitespace handling
-// NEXT_PUBLIC_TAGS= tag1 , tag2 , tag3
-// → ['tag1', 'tag2', 'tag3']
-
-// Empty values
-// NEXT_PUBLIC_EMPTY= → []
-// NEXT_PUBLIC_MISSING=undefined → []
-
-const features = envParsers.array('NEXT_PUBLIC_FEATURES')
-const hosts = envParsers.array('NEXT_PUBLIC_HOSTS', ['localhost'])
-```
-
-#### Common Use Cases
-
-```tsx
-import { envParsers } from 'next-dynenv'
-
-// Feature flags
-const enabledFeatures = envParsers.array('NEXT_PUBLIC_FEATURES')
-if (enabledFeatures.includes('payments')) {
-    // Show payment UI
-}
-
-// Allowed hosts
-const allowedOrigins = envParsers.array('NEXT_PUBLIC_ALLOWED_ORIGINS')
-
-// Tags or categories
-const categories = envParsers.array('NEXT_PUBLIC_CATEGORIES', ['general'])
-```
-
-::: tip Never throws Like `boolean()`, `array()` is forgiving. Invalid formats become empty arrays. :::
-
----
-
-### json()
-
-Parse JSON strings into typed objects. Use TypeScript generics for compile-time safety.
+| Value                  | Result                              |
+| ---------------------- | ----------------------------------- |
+| `auth,payments,search` | `['auth', 'payments', 'search']`    |
+| ` auth , payments ,`   | `['auth', 'payments']`              |
+| `''`                   | `[]`                                |
+| Not set                | `defaultValue` (`[]` unless passed) |
 
 ```ts
-envParsers.json<T>(key: string, defaultValue?: T): T
-```
+const features = envParsers.array('NEXT_PUBLIC_FEATURES')
 
-**Throws** if:
-
-- Value is defined but not valid JSON
-- Value is undefined and no default provided
-
-#### Examples
-
-```tsx
-// NEXT_PUBLIC_CONFIG={"api":"https://api.example.com","timeout":5000}
-
-interface Config {
-    api: string
-    timeout: number
+if (features.includes('payments')) {
+    // render checkout
 }
-
-const config = envParsers.json<Config>('NEXT_PUBLIC_CONFIG')
-const settings = envParsers.json<Settings>('NEXT_PUBLIC_SETTINGS', { theme: 'dark' })
 ```
 
-#### Common Use Cases
+Items cannot contain commas. Use [`json()`](#json) for anything richer.
 
-```tsx
+## json()
+
+```ts
+envParsers.json<T = unknown>(key: string, defaultValue?: T): T
+```
+
+Parses with `JSON.parse`. The generic is a cast, not a check, so validate the shape when it matters.
+
+```ts
 import { envParsers } from 'next-dynenv'
+import { z } from 'zod'
 
-// Complex configuration
-interface AppConfig {
-    api: { baseUrl: string; timeout: number }
-    features: { payments: boolean; analytics: boolean }
-}
+const Flags = z.object({ checkout: z.boolean(), search: z.boolean() })
 
-const config = envParsers.json<AppConfig>('NEXT_PUBLIC_CONFIG')
-
-// Theme configuration
-const themeConfig = envParsers.json<{ mode: 'light' | 'dark'; accent: string }>('NEXT_PUBLIC_THEME', {
-    mode: 'dark',
-    accent: '#007bff',
-})
+// NEXT_PUBLIC_FLAGS={"checkout":true,"search":false}
+const flags = Flags.parse(envParsers.json('NEXT_PUBLIC_FLAGS', { checkout: false, search: false }))
 ```
 
-**Error message example:**
+Throws when the value is not set and there is no default:
 
+```text
+Required environment variable 'NEXT_PUBLIC_FLAGS' is not defined.
+Expected a JSON string value.
 ```
-Environment variable 'NEXT_PUBLIC_CONFIG' is not valid JSON: '{"invalid}'.
+
+And when the value is not valid JSON (including `''`):
+
+```text
+Environment variable 'NEXT_PUBLIC_FLAGS' is not valid JSON: '{checkout:true}'.
 Expected a valid JSON string like '{"key":"value"}'.
 ```
 
-::: warning Type safety caveat TypeScript can't validate that the JSON matches your interface at runtime. Consider using
-Zod or similar for runtime validation of complex configs. :::
-
----
-
-### url()
-
-Parse and validate URL strings. Ensures URLs are well-formed before use.
+## url()
 
 ```ts
 envParsers.url(key: string, defaultValue?: string): string
 ```
 
-**Throws** if:
+Checks the value with `new URL()` and returns the original string unchanged, so `https://api.example.com` stays without
+the trailing slash `new URL()` would add. Any absolute URL passes, including `postgres://` and `mailto:` schemes.
+Relative paths such as `/api` throw. The default is returned as is, without validation.
 
-- Value is defined but not a valid URL
-- Value is undefined and no default provided
-
-#### Examples
-
-```tsx
-// NEXT_PUBLIC_API_URL=https://api.example.com/v1
-
+```ts
 const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
 const cdnUrl = envParsers.url('NEXT_PUBLIC_CDN_URL', 'https://cdn.example.com')
 ```
 
-#### Common Use Cases
-
-```tsx
-import { envParsers } from 'next-dynenv'
-
-// API endpoints
-const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
-const graphqlUrl = envParsers.url('NEXT_PUBLIC_GRAPHQL_URL')
-
-// CDN and assets
-const cdnUrl = envParsers.url('NEXT_PUBLIC_CDN_URL', 'https://cdn.example.com')
-
-// External services
-const sentryDsn = envParsers.url('NEXT_PUBLIC_SENTRY_DSN')
+```text
+Required environment variable 'NEXT_PUBLIC_API_URL' is not defined.
+Expected a valid URL.
 ```
 
-**Error message example:**
-
-```
-Environment variable 'NEXT_PUBLIC_API_URL' is not a valid URL: 'not-a-url'.
+```text
+Environment variable 'NEXT_PUBLIC_API_URL' is not a valid URL: 'api.example.com'.
 Expected a valid URL like 'https://example.com'.
 ```
 
-::: tip URL validation Uses browser-native `URL` constructor for validation. Catches malformed URLs before they cause
-fetch errors. :::
-
----
-
-### enum()
-
-Parse strings into type-safe enum values. Enforces a whitelist of allowed values.
+## enum()
 
 ```ts
-envParsers.enum<T extends string>(
-  key: string,
-  allowedValues: readonly T[],
-  defaultValue?: T
-): T
+envParsers.enum<T extends string>(key: string, allowedValues: readonly T[], defaultValue?: T): T
 ```
 
-**Throws** if:
+Returns the value when it exactly matches one of `allowedValues`. Matching is case-sensitive, so `Production` fails
+against `'production'`. TypeScript infers `T` from the list; the default is typed against it but not checked at runtime.
 
-- Value is not in the allowed values list
-- Value is undefined and no default provided
-
-#### Examples
-
-```tsx
-// NEXT_PUBLIC_ENV=production
-
-type Environment = 'development' | 'staging' | 'production'
-const appEnv = envParsers.enum<Environment>('NEXT_PUBLIC_ENV', ['development', 'staging', 'production'], 'development')
-
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-const logLevel = envParsers.enum<LogLevel>('NEXT_PUBLIC_LOG_LEVEL', ['debug', 'info', 'warn', 'error'])
+```ts
+const stage = envParsers.enum('NEXT_PUBLIC_STAGE', ['development', 'staging', 'production'] as const, 'development')
+// stage: 'development' | 'staging' | 'production'
 ```
 
-#### Common Use Cases
-
-```tsx
-import { envParsers } from 'next-dynenv'
-
-// Environment detection
-type Env = 'development' | 'staging' | 'production'
-const environment = envParsers.enum<Env>('NEXT_PUBLIC_ENV', ['development', 'staging', 'production'], 'development')
-
-// Log levels
-type LogLevel = 'debug' | 'info' | 'warn' | 'error'
-const logLevel = envParsers.enum<LogLevel>('NEXT_PUBLIC_LOG_LEVEL', ['debug', 'info', 'warn', 'error'], 'info')
-
-// Regions
-type Region = 'us-east-1' | 'us-west-2' | 'eu-west-1'
-const region = envParsers.enum<Region>('NEXT_PUBLIC_REGION', ['us-east-1', 'us-west-2', 'eu-west-1'])
-```
-
-**Error messages:**
-
-Missing value (no default):
-
-```
-Required environment variable 'NEXT_PUBLIC_ENV' is not defined.
+```text
+Required environment variable 'NEXT_PUBLIC_STAGE' is not defined.
 Expected one of: 'development', 'staging', 'production'.
 ```
 
-Invalid value:
-
-```
-Environment variable 'NEXT_PUBLIC_ENV' has invalid value: 'invalid'.
+```text
+Environment variable 'NEXT_PUBLIC_STAGE' has invalid value: 'prod'.
 Expected one of: 'development', 'staging', 'production'.
 ```
 
-::: tip Type safety Combines runtime validation with TypeScript's literal types for maximum safety. Typos are caught
-immediately. :::
+## Putting it together
 
-## Complete Example
+Read config inside a function so values come from the request-time environment, not from whenever the module first
+loaded.
 
-```tsx
+```ts
+// lib/public-config.ts
 import { envParsers } from 'next-dynenv'
 
-// Configuration with type-safe parsing
-const config = {
-    // Boolean flag
-    debug: envParsers.boolean('NEXT_PUBLIC_DEBUG'),
-
-    // Number with default
-    port: envParsers.number('NEXT_PUBLIC_PORT', 3000),
-    timeout: envParsers.number('NEXT_PUBLIC_TIMEOUT', 5000),
-
-    // Array of features
-    features: envParsers.array('NEXT_PUBLIC_FEATURES'),
-
-    // Validated URL
-    apiUrl: envParsers.url('NEXT_PUBLIC_API_URL'),
-
-    // Enum with type safety
-    environment: envParsers.enum('NEXT_PUBLIC_ENV', ['development', 'staging', 'production'] as const, 'development'),
-
-    // JSON configuration
-    theme: envParsers.json<{ mode: 'light' | 'dark'; accent: string }>('NEXT_PUBLIC_THEME', {
-        mode: 'dark',
-        accent: '#007bff',
-    }),
+export function getPublicConfig() {
+    return {
+        apiUrl: envParsers.url('NEXT_PUBLIC_API_URL'),
+        debug: envParsers.boolean('NEXT_PUBLIC_DEBUG'),
+        features: envParsers.array('NEXT_PUBLIC_FEATURES'),
+        pageSize: envParsers.number('NEXT_PUBLIC_PAGE_SIZE', 20),
+        stage: envParsers.enum('NEXT_PUBLIC_STAGE', ['development', 'staging', 'production'] as const, 'development'),
+    }
 }
 ```
 
-## Error Handling
+Catch errors with a narrowed type to report them your way:
 
-All parsers provide clear error messages:
-
-```tsx
+```ts
 try {
-    const port = envParsers.number('NEXT_PUBLIC_PORT')
+    getPublicConfig()
 } catch (error) {
-    console.error(error.message)
-    // "Environment variable 'NEXT_PUBLIC_PORT' is not a valid number: 'abc'."
+    if (error instanceof Error) {
+        console.error(`Config error: ${error.message}`)
+    }
+    throw error
 }
 ```
-
-## Summary Table
-
-| Parser      | Returns    | Throws on Invalid | Default if Undefined | Use Case             |
-| ----------- | ---------- | ----------------- | -------------------- | -------------------- |
-| `boolean()` | `boolean`  | Never             | `false`              | Feature flags        |
-| `number()`  | `number`   | Yes               | `0`                  | Ports, timeouts      |
-| `array()`   | `string[]` | Never             | `[]`                 | Lists, tags          |
-| `json()`    | `T`        | Yes               | Required\*           | Complex config       |
-| `url()`     | `string`   | Yes               | Required\*           | API endpoints        |
-| `enum()`    | `T`        | Yes               | Required\*           | Environments, levels |
-
-\*Unless you provide a `defaultValue` parameter
 
 ## Related
 
-- [env()](/api/env) - Basic string access
-- [requireEnv()](/api/require-env) - Required string access
-- [Security](/guide/security) - Security best practices
+- [`env()`](/api/env) for raw strings
+- [`requireEnv()`](/api/require-env) for required strings
+- [Troubleshooting](/guide/troubleshooting) for values that parse differently than expected

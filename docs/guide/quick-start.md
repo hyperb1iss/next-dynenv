@@ -1,10 +1,10 @@
-# Quick Start
+# Quick start
 
-Get runtime environment variables working in under 2 minutes.
+Five steps from install to a build that picks up new values on restart.
 
-## Step 1: Add the Script Component
+## 1. Render the script
 
-Drop `PublicEnvScript` into your root layout:
+Add `PublicEnvScript` to the `<head>` of your root layout:
 
 ```tsx
 // app/layout.tsx
@@ -22,130 +22,121 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-::: tip What This Does This component automatically exposes all `NEXT_PUBLIC_*` environment variables to the browser at
-runtime. No configuration needed. :::
+On every request it reads all `NEXT_PUBLIC_*` variables from `process.env` and sends them to the browser as
+`window.__ENV`.
 
-## Step 2: Use Environment Variables
-
-### In Client Components
+## 2. Read values in client components
 
 ```tsx
-// app/components/ApiStatus.tsx
+// app/api-status.tsx
 'use client'
 
 import { env } from 'next-dynenv'
 
 export function ApiStatus() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')
-    const debug = env('NEXT_PUBLIC_DEBUG_MODE', 'false')
+    const appName = env('NEXT_PUBLIC_APP_NAME', 'My App')
 
     return (
-        <div>
-            <p>API: {apiUrl}</p>
-            <p>Debug: {debug}</p>
-        </div>
+        <p>
+            {appName} is talking to {apiUrl}
+        </p>
     )
 }
 ```
 
-### In Server Components
+In client components, only ask for `NEXT_PUBLIC_*` keys. In the browser, any other key throws. Client components also
+render on the server, where `env()` would happily return a secret into the HTML, so the rule is simple: secrets never
+appear in a `'use client'` file. [Security](/guide/security#client-components-render-on-the-server-too) explains why.
+
+## 3. Read values on the server
+
+Server components, route handlers, and proxy can read every variable:
 
 ```tsx
-// app/components/DataFetcher.tsx
-import { env } from 'next-dynenv'
+// app/dashboard/page.tsx
+import { env, requireEnv } from 'next-dynenv'
 
-export default async function DataFetcher() {
-    // Access both public and private variables
-    const apiUrl = env('NEXT_PUBLIC_API_URL')
-    const secretKey = env('SECRET_API_KEY')
+export default async function DashboardPage() {
+    const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
+    const apiKey = requireEnv('API_SECRET_KEY')
 
-    // Use secretKey for server-side API calls
-    const data = await fetch(apiUrl, {
-        headers: { Authorization: `Bearer ${secretKey}` },
+    const res = await fetch(`${apiUrl}/stats`, {
+        headers: { Authorization: `Bearer ${apiKey}` },
     })
+    const stats: { users: number } = await res.json()
 
-    return <div>{/* Render data */}</div>
+    return (
+        <h1>
+            {stats.users} users on {env('NEXT_PUBLIC_APP_NAME', 'My App')}
+        </h1>
+    )
 }
 ```
 
-::: warning Server-Side Only Private environment variables (without `NEXT_PUBLIC_` prefix) only work in server
-components, API routes, and middleware. Attempting to access them in client components will throw an error. :::
-
-### In Middleware
-
-```tsx
-// middleware.ts
+```ts
+// app/api/health/route.ts
 import { env } from 'next-dynenv'
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
 
-export function middleware(request: NextRequest) {
-    const featureEnabled = env('NEXT_PUBLIC_ENABLE_FEATURE', 'false')
-
-    if (featureEnabled === 'true') {
-        return NextResponse.next()
-    }
-
-    return NextResponse.redirect(new URL('/coming-soon', request.url))
+export function GET() {
+    return Response.json({ status: 'ok', region: env('REGION', 'local') })
 }
 ```
 
-## Step 3: Set Environment Variables
-
-Create `.env.local` for development:
-
-```bash
-# Public variables (exposed to browser)
-NEXT_PUBLIC_API_URL=http://localhost:8080
-NEXT_PUBLIC_DEBUG_MODE=true
-
-# Private variables (server-side only)
-SECRET_API_KEY=your-secret-key
-DATABASE_URL=postgresql://localhost:5432/mydb
-```
-
-For production, set variables at runtime:
-
-::: code-group
-
-```bash [Docker]
-docker run \
-  -e NEXT_PUBLIC_API_URL=https://api.prod.com \
-  -e SECRET_API_KEY=prod-secret \
-  your-app
-```
-
-```bash [Shell]
-NEXT_PUBLIC_API_URL=https://api.prod.com \
-SECRET_API_KEY=prod-secret \
-npm start
-```
-
-```bash [Vercel]
-# Set in Vercel dashboard under Environment Variables
-# Or use Vercel CLI
-vercel env add NEXT_PUBLIC_API_URL
-```
-
-:::
-
-## That's It!
-
-You're done. Your environment variables are now dynamic—change them at runtime without rebuilding.
-
-::: tip Pro Tip Use [type-safe parsers](/api/parsers) to convert environment strings to proper types:
-
-```tsx
+```ts
+// proxy.ts (Next.js 16; on Next.js 15 name it middleware.ts and export `middleware`)
+import { NextResponse, type NextRequest } from 'next/server'
 import { envParsers } from 'next-dynenv'
 
-const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
+export function proxy(request: NextRequest) {
+    if (envParsers.boolean('MAINTENANCE_MODE')) {
+        return NextResponse.rewrite(new URL('/maintenance', request.url))
+    }
+    return NextResponse.next()
+}
+
+export const config = { matcher: ['/((?!_next/static|_next/image|favicon.ico|maintenance).*)'] }
+```
+
+## 4. Set the variables
+
+Local development uses `.env.local` as usual:
+
+```bash
+# .env.local
+NEXT_PUBLIC_API_URL=http://localhost:8080
+NEXT_PUBLIC_APP_NAME=My App
+API_SECRET_KEY=dev-secret
+```
+
+## 5. Build once, run anywhere
+
+```bash
+npm run build
+
+NEXT_PUBLIC_API_URL=https://staging.example.com API_SECRET_KEY=staging-secret npm start
+NEXT_PUBLIC_API_URL=https://api.example.com API_SECRET_KEY=prod-secret npm start
+```
+
+Same build, two configurations. Open the browser console and run `window.__ENV` to see what the page received.
+
+::: tip Typed values
+
+Environment variables are strings. [`envParsers`](/api/parsers) turns them into what you meant:
+
+```ts
+import { envParsers } from 'next-dynenv'
+
 const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
+const features = envParsers.array('NEXT_PUBLIC_FEATURES')
+const pageSize = envParsers.number('NEXT_PUBLIC_PAGE_SIZE', 20)
 ```
 
 :::
 
-## Next Steps
+## Next steps
 
-- [How It Works](/guide/how-it-works) - Understand the mechanism
-- [Type-Safe Parsers](/api/parsers) - Convert strings to typed values
-- [Security](/guide/security) - Security best practices
+- [How it works](/guide/how-it-works): what the script does and what dynamic rendering costs.
+- [Making variables public](/guide/making-env-public): expose `API_URL` as `NEXT_PUBLIC_API_URL` without renaming it in
+  your platform.
+- [Docker and Kubernetes](/guide/docker): one image for every environment.

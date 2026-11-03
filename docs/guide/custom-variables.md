@@ -1,35 +1,26 @@
-# Custom Variables
+# Custom variables
 
-Fine-grained control over exactly which environment variables reach the client.
+`PublicEnvScript` and `PublicEnvProvider` send every `NEXT_PUBLIC_*` variable. When you want a smaller set, or values
+computed per request, hand your own object to `EnvScript` or `EnvProvider`.
 
-## Overview
-
-`PublicEnvScript` and `PublicEnvProvider` automatically expose all `NEXT_PUBLIC_*` variables—which is great for most
-apps. But sometimes you need more control:
-
-- **Whitelist** - Expose only specific variables
-- **Transform** - Rename or modify variables before exposing them
-- **Compute** - Generate values dynamically at request time
-- **Filter** - Exclude certain variables based on conditions
-
-## Using EnvScript
-
-`EnvScript` accepts a custom environment object:
+## Send an allowlist
 
 ```tsx
+// app/layout.tsx
+import { connection } from 'next/server'
 import { EnvScript } from 'next-dynenv'
 
-export default function Layout({ children }) {
-    // Only expose specific variables
-    const customEnv = {
-        NEXT_PUBLIC_API_URL: process.env.API_URL,
-        NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
-    }
+const BROWSER_KEYS = ['NEXT_PUBLIC_API_URL', 'NEXT_PUBLIC_APP_NAME', 'NEXT_PUBLIC_FEATURES']
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    await connection()
+
+    const browserEnv = Object.fromEntries(BROWSER_KEYS.map((key) => [key, process.env[key]]))
 
     return (
-        <html>
+        <html lang="en">
             <head>
-                <EnvScript env={customEnv} />
+                <EnvScript env={browserEnv} />
             </head>
             <body>{children}</body>
         </html>
@@ -37,199 +28,84 @@ export default function Layout({ children }) {
 }
 ```
 
-## Using EnvProvider
-
-For the context approach:
+The context version is the same object passed to `EnvProvider`:
 
 ```tsx
+<EnvProvider env={browserEnv}>{children}</EnvProvider>
+```
+
+## Three rules
+
+### Call `connection()` first
+
+`EnvScript` and `EnvProvider` render the object you give them and do nothing else. If that object comes from
+`process.env` and nothing else on the route is dynamic, Next.js can prerender the layout at build time and freeze the
+values. `await connection()` before reading `process.env` keeps the route dynamic, which is what `PublicEnvScript` does
+internally.
+
+### Use the names the server sees
+
+During server rendering, `env('NEXT_PUBLIC_API_URL')` reads `process.env.NEXT_PUBLIC_API_URL`. In the browser it reads
+`window.__ENV.NEXT_PUBLIC_API_URL`. If those disagree, a client component renders one value on the server and another
+during hydration, and React reports a mismatch.
+
+So don't rename in the object:
+
+```tsx
+// Avoid: the server has API_URL, the browser gets NEXT_PUBLIC_API_URL
+<EnvScript env={{ NEXT_PUBLIC_API_URL: process.env.API_URL }} />
+```
+
+To expose a variable your platform names without the prefix, copy it into `process.env` at startup with
+[`makeEnvPublic()`](/guide/making-env-public). Then both sides agree on `NEXT_PUBLIC_API_URL`.
+
+### Prefix every key
+
+In the browser, `env()` refuses keys that don't start with `NEXT_PUBLIC_`, even when they're present in `window.__ENV`.
+Keep every key prefixed so the browser and server use the same API, and so a grep for `NEXT_PUBLIC_` finds everything
+that ships to clients.
+
+## Per-request values
+
+Because the layout is a server component, the object can depend on the request. Values that only exist per request, like
+a region from a CDN header, belong in context or props rather than `env()`, since `env()` on the server reads
+`process.env` and won't see them:
+
+```tsx
+// app/layout.tsx
+import { headers } from 'next/headers'
 import { EnvProvider } from 'next-dynenv'
 
-export default function Layout({ children }) {
-    const customEnv = {
-        NEXT_PUBLIC_API_URL: process.env.API_URL,
-        NEXT_PUBLIC_FEATURE_FLAG: process.env.FEATURE_FLAG,
-    }
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const region = (await headers()).get('x-vercel-ip-country') ?? 'unknown'
 
     return (
-        <html>
+        <html lang="en">
             <body>
-                <EnvProvider env={customEnv}>{children}</EnvProvider>
+                <EnvProvider env={{ NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL, NEXT_PUBLIC_REGION: region }}>
+                    {children}
+                </EnvProvider>
             </body>
         </html>
     )
 }
 ```
 
-## Variable Transformation
+`headers()` already makes the route dynamic, so no separate `connection()` call is needed here. Client components read
+`NEXT_PUBLIC_REGION` with `useEnvContext()`.
 
-### Renaming Variables
+## Keep secrets out
 
-```tsx
-const customEnv = {
-    // Expose API_URL as NEXT_PUBLIC_API_URL
-    NEXT_PUBLIC_API_URL: process.env.API_URL,
-
-    // Expose DATABASE_HOST as NEXT_PUBLIC_DB_HOST
-    NEXT_PUBLIC_DB_HOST: process.env.DATABASE_HOST,
-}
-```
-
-### Computing Values
+Everything in these objects ends up in the page HTML. An allowlist protects you from shipping a variable you forgot
+about; it does nothing for a secret you put in on purpose.
 
 ```tsx
-const customEnv = {
-    NEXT_PUBLIC_API_URL: process.env.API_URL,
-
-    // Computed value
-    NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
-
-    // Conditional value
-    NEXT_PUBLIC_DEBUG: process.env.NODE_ENV === 'development' ? 'true' : 'false',
-}
+// Never: the secret is now public
+<EnvScript env={{ NEXT_PUBLIC_STRIPE_KEY: process.env.STRIPE_SECRET_KEY }} />
 ```
 
-### Environment-Specific Values
+## Related
 
-```tsx
-const getEnvConfig = () => {
-    const env = process.env.NODE_ENV
-
-    if (env === 'production') {
-        return {
-            NEXT_PUBLIC_API_URL: process.env.PROD_API_URL,
-            NEXT_PUBLIC_ANALYTICS_ID: process.env.PROD_ANALYTICS_ID,
-        }
-    }
-
-    return {
-        NEXT_PUBLIC_API_URL: process.env.DEV_API_URL || 'http://localhost:8080',
-        NEXT_PUBLIC_ANALYTICS_ID: '', // Disabled in dev
-    }
-}
-
-;<EnvScript env={getEnvConfig()} />
-```
-
-## Request-Time Variables
-
-Access request-specific data in server components:
-
-```tsx
-import { headers } from 'next/headers'
-import { EnvScript } from 'next-dynenv'
-
-export default async function Layout({ children }) {
-    const headersList = await headers()
-
-    const customEnv = {
-        NEXT_PUBLIC_API_URL: process.env.API_URL,
-
-        // Request-specific values
-        NEXT_PUBLIC_REQUEST_ID: headersList.get('x-request-id'),
-        NEXT_PUBLIC_USER_REGION: headersList.get('x-user-region') || 'unknown',
-    }
-
-    return (
-        <html>
-            <head>
-                <EnvScript env={customEnv} />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-## Filtering Variables
-
-### Include List
-
-```tsx
-const ALLOWED_VARS = [
-  'NEXT_PUBLIC_API_URL',
-  'NEXT_PUBLIC_APP_NAME',
-  'NEXT_PUBLIC_VERSION',
-]
-
-const filteredEnv = Object.fromEntries(
-  Object.entries(process.env)
-    .filter(([key]) => ALLOWED_VARS.includes(key))
-)
-
-<EnvScript env={filteredEnv} />
-```
-
-### Exclude List
-
-```tsx
-const EXCLUDED_VARS = [
-  'NEXT_PUBLIC_INTERNAL_KEY',
-  'NEXT_PUBLIC_DEBUG_TOKEN',
-]
-
-const filteredEnv = Object.fromEntries(
-  Object.entries(process.env)
-    .filter(([key]) =>
-      key.startsWith('NEXT_PUBLIC_') &&
-      !EXCLUDED_VARS.includes(key)
-    )
-)
-
-<EnvScript env={filteredEnv} />
-```
-
-## Combining Automatic and Custom
-
-Mix automatic public variables with custom ones:
-
-```tsx
-import { getPublicEnv } from 'next-dynenv'
-import { EnvScript } from 'next-dynenv'
-
-export default function Layout({ children }) {
-    // Get all NEXT_PUBLIC_* variables
-    const publicEnv = getPublicEnv()
-
-    // Add custom variables
-    const customEnv = {
-        ...publicEnv,
-        NEXT_PUBLIC_BUILD_TIME: new Date().toISOString(),
-        NEXT_PUBLIC_CUSTOM_VALUE: 'custom',
-    }
-
-    return (
-        <html>
-            <head>
-                <EnvScript env={customEnv} />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-## Security Considerations
-
-::: danger Never Expose Secrets Even with custom variables, **never** expose sensitive data to the client. Just because
-you _can_ put anything in the custom env object doesn't mean you _should_. :::
-
-```tsx
-// ❌ WRONG - Exposes secret to browser
-const badEnv = {
-    NEXT_PUBLIC_API_KEY: process.env.SECRET_API_KEY, // Never do this!
-}
-
-// ✅ CORRECT - Only safe values
-const goodEnv = {
-    NEXT_PUBLIC_API_URL: process.env.API_URL,
-    NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
-}
-```
-
-**Rule of thumb:** If it's secret on the server, it stays secret on the server.
-
-## Next Steps
-
-- [Making Env Public](/guide/making-env-public) - Prefix existing variables
-- [Security](/guide/security) - Security best practices
-- [EnvScript API](/api/components) - Component documentation
+- [Making variables public](/guide/making-env-public)
+- [`EnvScript` and `EnvProvider` reference](/api/components#envscript)
+- [Security](/guide/security)

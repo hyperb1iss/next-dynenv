@@ -1,187 +1,72 @@
-# API Reference
+# API reference
 
-The complete API surface for `next-dynenv`. Everything you need to work with runtime environment variables in Next.js.
+Every export comes from the package root. Use `import` everywhere, including `instrumentation.ts` and `next.config.ts`.
 
-## Core Functions
-
-These functions provide isomorphic (server/client) access to environment variables.
-
-### env()
-
-Access environment variables with optional defaults. Works everywhere: server components, client components, API routes,
-middleware.
-
-```tsx
-import { env } from 'next-dynenv'
-
-// Basic usage
-const apiUrl = env('NEXT_PUBLIC_API_URL')
-
-// With default value
-const timeout = env('NEXT_PUBLIC_TIMEOUT', '5000')
+```ts
+import { env, envParsers, PublicEnvScript } from 'next-dynenv'
 ```
 
-::: tip Why env()? Unifies server (`process.env`) and client (`window.__ENV`) access behind a single function. No more
-`process.env` checks or separate imports. :::
+## Exports
 
-[Full `env()` documentation →](/api/env)
+| Export                                                   | Kind                   | Runs on                                  | What it does                                                |
+| -------------------------------------------------------- | ---------------------- | ---------------------------------------- | ----------------------------------------------------------- |
+| [`env()`](/api/env)                                      | Function               | Server and browser                       | Reads a variable, with an optional default                  |
+| [`requireEnv()`](/api/require-env)                       | Function               | Server and browser                       | Reads a variable or throws when it is undefined             |
+| [`serverOnly()`](/api/server-only)                       | Function               | Server (returns the fallback in browser) | Reads a secret from a module that also loads in the browser |
+| [`envParsers`](/api/parsers)                             | Object of functions    | Server and browser                       | Parses booleans, numbers, arrays, JSON, URLs, and enums     |
+| [`makeEnvPublic()`](/api/make-env-public)                | Function               | Server startup                           | Copies `KEY` to `NEXT_PUBLIC_KEY` in `process.env`          |
+| [`PublicEnvScript`](/api/components#publicenvscript)     | Async server component | Server                                   | Writes every `NEXT_PUBLIC_*` variable to `window.__ENV`     |
+| [`EnvScript`](/api/components#envscript)                 | Async server component | Server                                   | Writes an object you choose to `window.__ENV`               |
+| [`PublicEnvProvider`](/api/components#publicenvprovider) | Async server component | Server                                   | Provides every `NEXT_PUBLIC_*` variable through Context     |
+| [`EnvProvider`](/api/components#envprovider)             | Client component       | Server render and browser                | Provides an object you choose through Context               |
+| [`useEnvContext()`](/api/components#useenvcontext)       | Client hook            | Client components                        | Reads the nearest provider's values                         |
+| `PUBLIC_ENV_KEY`                                         | Constant               | Anywhere                                 | The `window` property name, `'__ENV'`                       |
 
-### requireEnv()
+The package exports no TypeScript types. When you need one, derive it:
 
-Access environment variables that **must** exist. Throws immediately if undefined, giving you type-safe `string` instead
-of `string | undefined`.
+```ts
+import type { ComponentProps } from 'react'
+import type { makeEnvPublic, PublicEnvScript } from 'next-dynenv'
 
-```tsx
-import { requireEnv } from 'next-dynenv'
-
-// Throws if undefined
-const apiUrl = requireEnv('NEXT_PUBLIC_API_URL')
-// Error: "Required environment variable 'NEXT_PUBLIC_API_URL' is not defined."
+type PublicEnvScriptProps = ComponentProps<typeof PublicEnvScript>
+type MakeEnvPublicOptions = NonNullable<Parameters<typeof makeEnvPublic>[1]>
 ```
 
-::: tip When to use requireEnv() Use for critical configuration that your app can't function without. Fail fast at
-startup rather than runtime. :::
+## Returns and throws
 
-[Full `requireEnv()` documentation →](/api/require-env)
+| Call                               | Returns                                  | Throws when                                                        |
+| ---------------------------------- | ---------------------------------------- | ------------------------------------------------------------------ |
+| `env(key)`                         | `string \| undefined`                    | In the browser with `window.__ENV` set, `key` lacks `NEXT_PUBLIC_` |
+| `env(key, fallback)`               | `string`                                 | Same browser prefix rule                                           |
+| `requireEnv(key)`                  | `string`                                 | The value is `undefined`, or the browser prefix rule               |
+| `serverOnly(key)`                  | `string \| undefined`                    | Never                                                              |
+| `serverOnly(key, fallback)`        | `string`                                 | Never                                                              |
+| `envParsers.boolean(key)`          | `boolean`                                | Only the browser prefix rule                                       |
+| `envParsers.number(key)`           | `number`                                 | The value is set but not a finite number                           |
+| `envParsers.array(key)`            | `string[]`                               | Only the browser prefix rule                                       |
+| `envParsers.json<T>(key)`          | `T`                                      | Missing with no default, or invalid JSON                           |
+| `envParsers.url(key)`              | `string`                                 | Missing with no default, or not parseable by `new URL()`           |
+| `envParsers.enum<T>(key, allowed)` | `T`                                      | Missing with no default, or not in the allowed list                |
+| `makeEnvPublic(keys)`              | `void`                                   | Never, it logs warnings instead                                    |
+| `useEnvContext()`                  | `{ [key: string]: string \| undefined }` | Called outside `PublicEnvProvider` or `EnvProvider`                |
 
-## Type-Safe Parsers
+Every parser reads through `env()`, so each one inherits the browser prefix rule.
 
-Environment variables are always strings. These parsers convert them to typed values with validation and sensible
-defaults.
+## Which one do I want
 
-### envParsers
+- **A public value in any component:** `env()`, with [`PublicEnvScript`](/api/components#publicenvscript) in the root
+  layout.
+- **A value the app cannot run without:** [`requireEnv()`](/api/require-env).
+- **A flag, port, list, URL, or config object:** [`envParsers`](/api/parsers).
+- **A secret read by a module that also loads in the browser:** [`serverOnly()`](/api/server-only).
+- **Only some public variables in the browser:** [`EnvScript`](/api/components#envscript).
+- **Values through React Context instead of a global:** [`PublicEnvProvider`](/api/components#publicenvprovider) and
+  [`useEnvContext()`](/api/components#useenvcontext).
+- **Deployment config that uses unprefixed names:** [`makeEnvPublic()`](/api/make-env-public) in `instrumentation.ts`.
 
-A collection of parsers for common data types: booleans, numbers, arrays, JSON, URLs, and enums.
+## How the pieces connect
 
-```tsx
-import { envParsers } from 'next-dynenv'
-
-const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG')
-const port = envParsers.number('NEXT_PUBLIC_PORT', 3000)
-const features = envParsers.array('NEXT_PUBLIC_FEATURES')
-const config = envParsers.json<Config>('NEXT_PUBLIC_CONFIG')
-const apiUrl = envParsers.url('NEXT_PUBLIC_API_URL')
-const appEnv = envParsers.enum('NEXT_PUBLIC_ENV', ['dev', 'staging', 'prod'])
-```
-
-::: tip Type safety All parsers validate at runtime and throw helpful errors for invalid values. Use TypeScript generics
-for compile-time safety too. :::
-
-[Full `envParsers` documentation →](/api/parsers)
-
-## Components
-
-React components for injecting environment variables into the browser. Choose between script injection (lightweight) or
-React Context (composable).
-
-### PublicEnvScript
-
-Injects all `NEXT_PUBLIC_*` variables into the browser via a script tag. Lightweight and works outside React.
-
-```tsx
-import { PublicEnvScript } from 'next-dynenv'
-
-// In app/layout.tsx
-export default function RootLayout({ children }) {
-    return (
-        <html>
-            <head>
-                <PublicEnvScript />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-### EnvScript
-
-Inject custom environment variables (not just `NEXT_PUBLIC_*`) via script tag.
-
-```tsx
-import { EnvScript } from 'next-dynenv'
-
-export default function RootLayout({ children }) {
-    return (
-        <html>
-            <head>
-                <EnvScript
-                    env={{
-                        NEXT_PUBLIC_API: process.env.API_URL, // Rename
-                        NEXT_PUBLIC_BUILD: process.env.BUILD_ID, // Custom
-                    }}
-                />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-### PublicEnvProvider / EnvProvider
-
-React Context approach for environment variables. Use when you prefer React's composition patterns.
-
-```tsx
-import { PublicEnvProvider, useEnvContext } from 'next-dynenv'
-
-// Provider in layout
-export default function RootLayout({ children }) {
-    return <PublicEnvProvider>{children}</PublicEnvProvider>
-}
-
-// Consumer in component
-;('use client')
-export function ApiClient() {
-    const { NEXT_PUBLIC_API_URL } = useEnvContext()
-    return <div>API: {NEXT_PUBLIC_API_URL}</div>
-}
-```
-
-::: tip Script vs Context **Script approach**: Lightweight, works outside React, compatible with Sentry **Context
-approach**: React-native, composable, requires Provider wrapper :::
-
-[Full Components documentation →](/api/components)
-
-## Utilities
-
-Helper functions for advanced use cases.
-
-### makeEnvPublic()
-
-Make non-prefixed variables available as `NEXT_PUBLIC_*`. Useful when working with hosting platforms that don't let you
-customize variable names.
-
-```tsx
-// next.config.js
-const { makeEnvPublic } = require('next-dynenv')
-
-makeEnvPublic('API_URL')
-// process.env.API_URL is now available as process.env.NEXT_PUBLIC_API_URL
-```
-
-::: warning Build-time only `makeEnvPublic()` runs during Next.js build. Runtime changes won't work. :::
-
-## Quick Reference
-
-| Function             | Purpose                    | Returns               | Throws     |
-| -------------------- | -------------------------- | --------------------- | ---------- |
-| `env(key)`           | Optional access            | `string \| undefined` | Never      |
-| `env(key, default)`  | Optional with default      | `string`              | Never      |
-| `requireEnv(key)`    | Required access            | `string`              | If missing |
-| `envParsers.boolean` | Parse boolean              | `boolean`             | Never      |
-| `envParsers.number`  | Parse number               | `number`              | If invalid |
-| `envParsers.array`   | Parse comma-separated list | `string[]`            | Never      |
-| `envParsers.json`    | Parse JSON                 | `T`                   | If invalid |
-| `envParsers.url`     | Parse & validate URL       | `string`              | If invalid |
-| `envParsers.enum`    | Parse enum value           | `T`                   | If invalid |
-
-## Component Reference
-
-| Component           | Type   | Purpose                              | Requires        |
-| ------------------- | ------ | ------------------------------------ | --------------- |
-| `PublicEnvScript`   | Server | Auto-inject `NEXT_PUBLIC_*`          | None            |
-| `EnvScript`         | Server | Inject custom variables              | `env` prop      |
-| `PublicEnvProvider` | Server | Provide `NEXT_PUBLIC_*` via Context  | None            |
-| `EnvProvider`       | Client | Provide custom variables via Context | `env` prop      |
-| `useEnvContext()`   | Hook   | Access Context variables             | Provider parent |
+On the server, `env()` reads `process.env` directly. For the browser, `PublicEnvScript` reads every `NEXT_PUBLIC_*`
+variable at request time and writes them to a frozen `window.__ENV`, which `env()` and `envParsers` read after that. The
+context approach skips the global: `PublicEnvProvider` hands the same values to client components through
+`useEnvContext()`. [How it works](/guide/how-it-works) walks through the request lifecycle.

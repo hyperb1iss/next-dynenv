@@ -1,145 +1,72 @@
 # Examples
 
-Explore complete, real-world examples of `next-dynenv` in action. Each example demonstrates different approaches to
-managing runtime environment variables in Next.js applications.
+Two small App Router apps live in the repository. They expose the same variables on the same routes and differ only in
+how the browser receives public values.
 
-## Why Runtime Environment Variables?
+| Example                                                     | Layout renders                    | Client components read   | Also shows                          |
+| ----------------------------------------------------------- | --------------------------------- | ------------------------ | ----------------------------------- |
+| [Script approach](/examples/app-router-script) (start here) | `<PublicEnvScript>` in `<head>`   | `env('NEXT_PUBLIC_FOO')` | Strict CSP with a per-request nonce |
+| [Context approach](/examples/app-router-context)            | `<PublicEnvProvider>` in `<body>` | `useEnvContext()`        | React Context only, no script tag   |
 
-Traditional Next.js embeds environment variables at build time, forcing you to rebuild for each deployment environment.
-With `next-dynenv`, you can:
+Both apps share:
 
-- **Build once, deploy everywhere** - Same Docker image across staging, production, and local development
-- **Update configurations without rebuilds** - Change API endpoints, feature flags, or settings on the fly
-- **Simplify Docker workflows** - Pass environment variables at runtime like any standard web application
-- **Enable dynamic feature flags** - Toggle features without redeploying
+- `src/instrumentation.ts`, which calls `makeEnvPublic('BAZ')` so `BAZ` also reaches the browser as `NEXT_PUBLIC_BAZ`
+- `/client-side`, a client component showing `NEXT_PUBLIC_FOO` and `NEXT_PUBLIC_BAZ`
+- `/server-side`, a server component reading the server-only `BAR` and `BAZ` with `env()`
+- `/api/bar-baz`, a route handler returning `BAR` and `BAZ` as JSON
+- `.env.example` with `NEXT_PUBLIC_FOO`, `BAR`, and `BAZ` (published as `NEXT_PUBLIC_BAZ` by `instrumentation.ts`)
 
-## Official Examples
+## Run them
 
-### [App Router with Script Approach](/examples/app-router-script) ⭐ Recommended
-
-The most versatile approach using `PublicEnvScript` for injecting environment variables. Works everywhere - client
-components, server components, middleware, API routes, and even plain JavaScript outside React.
-
-```tsx
-// app/layout.tsx
-import { PublicEnvScript } from 'next-dynenv'
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html>
-            <head>
-                <PublicEnvScript />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-**Use this approach when:**
-
-- You need environment variables in middleware
-- You're working with third-party libraries that need runtime config
-- You want the simplest, most flexible solution
-- Your app uses both client and server components
-
-[View complete example →](/examples/app-router-script)
-
-### [App Router with Context Approach](/examples/app-router-context)
-
-A React-first approach using `PublicEnvProvider` for context-based environment access. Perfect for apps that are purely
-React and want to leverage React's ecosystem.
-
-```tsx
-// app/layout.tsx
-import { PublicEnvProvider } from 'next-dynenv'
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html>
-            <body>
-                <PublicEnvProvider>{children}</PublicEnvProvider>
-            </body>
-        </html>
-    )
-}
-```
-
-**Use this approach when:**
-
-- Your app is entirely React-based
-- You prefer React patterns over globals
-- You want visibility in React DevTools
-- You need to nest or override environments in subtrees
-
-[View complete example →](/examples/app-router-context)
-
-## Approach Comparison
-
-| Feature                 | Script Approach        | Context Approach             |
-| ----------------------- | ---------------------- | ---------------------------- |
-| **Access method**       | `env('KEY')` anywhere  | `useEnvContext()` hook       |
-| **Works in middleware** | ✅ Yes                 | ❌ No (React only)           |
-| **Works outside React** | ✅ Yes                 | ❌ No                        |
-| **React DevTools**      | ❌ No                  | ✅ Yes                       |
-| **Global scope**        | Yes (window.\_\_ENV)   | No                           |
-| **Setup complexity**    | Single tag in `<head>` | Provider wrapper in `<body>` |
-| **Best for**            | Most use cases         | Pure React apps              |
-
-::: tip Recommendation Start with the **Script Approach** unless you have a specific reason to use Context. The Script
-approach is more flexible and works everywhere in your Next.js app. :::
-
-## Full Working Examples
-
-Clone and run complete examples from the repository:
-
-**[with-app-router-script](https://github.com/hyperb1iss/next-dynenv/tree/development/examples/with-app-router-script)**
-Complete implementation with middleware, feature flags, API routes, and Docker deployment.
-
-**[with-app-router-context](https://github.com/hyperb1iss/next-dynenv/tree/development/examples/with-app-router-context)**
-React Context pattern with typed hooks, custom providers, and environment composition.
-
-## Running Examples Locally
+The examples are pnpm workspace members that use the local build of `next-dynenv`. From the repository root:
 
 ```bash
-# Clone the repository
 git clone https://github.com/hyperb1iss/next-dynenv.git
 cd next-dynenv
-
-# Install dependencies
 pnpm install
+pnpm build
 
-# Run the Script approach example
-cd examples/with-app-router-script
-pnpm install
-pnpm dev
-
-# Or run the Context approach example
-cd ../with-app-router-context
-pnpm install
-pnpm dev
+cp examples/with-app-router-script/.env.example examples/with-app-router-script/.env.local
+pnpm --filter example-app-router-script dev
 ```
 
-Visit `http://localhost:3000` to see the example running.
+Swap in `with-app-router-context` and `example-app-router-context` for the context version. Open
+`http://localhost:3000`.
 
-::: info Try Different Environments You can test runtime environment variable injection by changing variables and
-refreshing:
+## Build once, run with new values
+
+This is the whole point, so try it with a production build:
 
 ```bash
-NEXT_PUBLIC_API_URL=https://staging-api.com pnpm dev
+pnpm --filter example-app-router-script build
+
+NEXT_PUBLIC_FOO=first BAR=secret BAZ=shared pnpm --filter example-app-router-script start
+# stop it, then start the same build with different values
+NEXT_PUBLIC_FOO=second BAR=rotated BAZ=moved pnpm --filter example-app-router-script start
 ```
 
-No rebuild required - the new value is picked up immediately! :::
+`/client-side` and `/server-side` show the new values after the restart, with no rebuild in between.
 
-## What's Next?
+## Script or context?
 
-Each example includes:
+|                                                 | Script                       | Context                                           |
+| ----------------------------------------------- | ---------------------------- | ------------------------------------------------- |
+| Client access                                   | `env()` and `envParsers`     | `useEnvContext()`                                 |
+| Code outside React (Sentry init, plain modules) | Yes, via `env()`             | No                                                |
+| `env()` and `envParsers` in the browser         | Yes                          | No, they return `undefined` or defaults           |
+| Values in the HTML                              | Inline `window.__ENV` script | Serialized in the React Server Components payload |
+| Extra markup in `<head>`                        | One script tag               | None                                              |
 
-- Complete, copy-paste-ready code
-- Real-world scenarios (feature flags, API configuration, theming)
-- Docker deployment examples
-- Middleware integration
-- Type-safe environment access patterns
-- Common gotchas and best practices
+Code that runs before hydration, such as Sentry setup in `instrumentation-client.ts`, also needs `disableNextScript`;
+the [script approach guide](/guide/script-approach) covers that timing.
 
-Pick the approach that fits your needs and explore the full examples to see `next-dynenv` in action.
+The server side is identical: server components, route handlers, and `proxy.ts` read `process.env` through `env()` with
+either approach. Start with the script approach unless you have a reason to keep everything inside React. The
+[context approach guide](/guide/context-approach) covers the alternative in depth.
+
+## Source
+
+- [examples/with-app-router-script](https://github.com/hyperb1iss/next-dynenv/tree/main/examples/with-app-router-script)
+- [examples/with-app-router-context](https://github.com/hyperb1iss/next-dynenv/tree/main/examples/with-app-router-context)
+- [examples/with-pages-router](https://github.com/hyperb1iss/next-dynenv/tree/main/examples/with-pages-router): why
+  there is no Pages Router app

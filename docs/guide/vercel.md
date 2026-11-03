@@ -1,187 +1,88 @@
-# Vercel Deployment
+# Vercel
 
-Deploy to Vercel with true runtime environment variables—change configs without rebuilding.
+next-dynenv runs on Vercel with no extra setup: add the script, set your variables in the project, deploy. The code is
+the same code you would ship to Docker or any `next start` host.
 
-## How It Works on Vercel
+## Set it up
 
-Vercel has built-in environment variable management. With next-dynenv:
+1. Render `PublicEnvScript` in the root layout:
 
-1. **Set variables** in Vercel's dashboard
-2. **next-dynenv reads them** at runtime (not build time)
-3. **Changes take effect immediately** without redeploying
+    ```tsx
+    // app/layout.tsx
+    import { PublicEnvScript } from 'next-dynenv'
 
-::: info Key Benefit Traditional Next.js on Vercel bakes `NEXT_PUBLIC_*` variables into the build. next-dynenv reads
-them at runtime, so you can change variables without triggering a rebuild. :::
-
-## Basic Setup
-
-### 1. Add PublicEnvScript
-
-```tsx
-// app/layout.tsx
-import { PublicEnvScript } from 'next-dynenv'
-
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="en">
-            <head>
-                <PublicEnvScript />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-### 2. Configure Environment Variables
-
-In your Vercel dashboard:
-
-1. Go to your project settings
-2. Navigate to "Environment Variables"
-3. Add your `NEXT_PUBLIC_*` variables
-4. Select which environments they apply to (Production, Preview, Development)
-
-### 3. Deploy
-
-```bash
-vercel deploy
-```
-
-## Environment-Specific Variables
-
-Vercel allows different values per environment:
-
-| Variable              | Production             | Preview                   | Development             |
-| --------------------- | ---------------------- | ------------------------- | ----------------------- |
-| `NEXT_PUBLIC_API_URL` | `https://api.prod.com` | `https://api.staging.com` | `http://localhost:8080` |
-| `NEXT_PUBLIC_DEBUG`   | `false`                | `true`                    | `true`                  |
-
-## Using vercel.json
-
-You can also define environment variables in `vercel.json`:
-
-```json
-{
-    "env": {
-        "NEXT_PUBLIC_APP_NAME": "MyApp"
-    },
-    "build": {
-        "env": {
-            "NEXT_PUBLIC_BUILD_TIME": "@build-time"
-        }
+    export default function RootLayout({ children }: { children: React.ReactNode }) {
+        return (
+            <html lang="en">
+                <head>
+                    <PublicEnvScript />
+                </head>
+                <body>{children}</body>
+            </html>
+        )
     }
-}
-```
+    ```
 
-::: tip For sensitive values, always use the Vercel dashboard instead of `vercel.json`. :::
+2. Add variables under **Project Settings → Environment Variables**, scoped to Production, Preview, or Development.
 
-## Preview Deployments
+3. Deploy with `git push` or `vercel deploy`.
 
-Each pull request gets its own preview deployment. Set preview-specific variables:
+## Changing a value means a new deployment
 
-```
-NEXT_PUBLIC_API_URL (Preview) = https://api-preview.example.com
-```
+::: warning Variables are tied to deployments
 
-## Edge Functions
+Vercel applies environment variable changes to new deployments only. After you edit a value, redeploy from the dashboard
+or run `vercel redeploy <deployment-url>`. Existing deployments keep the values they started with.
 
-next-dynenv works with Vercel Edge Functions:
+:::
 
-```ts
-// middleware.ts
-import { env } from 'next-dynenv'
-import { NextResponse } from 'next/server'
+So on Vercel, next-dynenv does not let you skip the deploy. What it does give you:
 
-export function middleware(request) {
-    const maintenanceMode = env('NEXT_PUBLIC_MAINTENANCE', 'false')
+- One code path for every host. The same `env()` calls work on Vercel, in Docker, and on a plain Node server.
+- Per-environment values with no code changes. Production and Preview each read their own variables at request time.
+- The same guardrails everywhere: only `NEXT_PUBLIC_*` values reach the browser, escaped and frozen.
 
-    if (maintenanceMode === 'true') {
-        return NextResponse.redirect(new URL('/maintenance', request.url))
-    }
+The biggest payoff is on hosts where you control the runtime and can restart the same build with new values. See
+[Docker](/guide/docker) and [other platforms](/guide/other-platforms).
 
-    return NextResponse.next()
-}
-```
+## Per-environment values
 
-## Serverless Functions
-
-```ts
-// app/api/config/route.ts
-import { env } from 'next-dynenv'
-
-export function GET() {
-    return Response.json({
-        apiUrl: env('NEXT_PUBLIC_API_URL'),
-        environment: env('NEXT_PUBLIC_ENV', 'production'),
-    })
-}
-```
+| Variable              | Production                | Preview                       | Development             |
+| --------------------- | ------------------------- | ----------------------------- | ----------------------- |
+| `NEXT_PUBLIC_API_URL` | `https://api.example.com` | `https://staging.example.com` | `http://localhost:8080` |
+| `NEXT_PUBLIC_DEBUG`   | `false`                   | `true`                        | `true`                  |
 
 ## Vercel CLI
 
-Set environment variables via CLI:
-
 ```bash
-# Add a variable
-vercel env add NEXT_PUBLIC_API_URL
+# Add a variable to one environment
+vercel env add NEXT_PUBLIC_API_URL production
 
 # List variables
 vercel env ls
 
-# Pull variables to local .env
+# Pull Development values into a local file for next dev
 vercel env pull .env.local
 ```
 
-## Important Considerations
+## Rendering
 
-### Runtime vs Build Time
+`PublicEnvScript` and `PublicEnvProvider` call `connection()`, so every route under that layout renders per request in a
+Vercel Function. Static generation and ISR do not apply to those routes. To keep some routes static, give them their own
+root layout in a [route group](https://nextjs.org/docs/app/api-reference/file-conventions/route-groups) without the
+script; client code on those routes then has no `window.__ENV` to read.
 
-On Vercel, `NEXT_PUBLIC_*` variables set in the dashboard are available at both build time and runtime. next-dynenv
-ensures you get the **runtime** values, not stale build-time values.
+## Checklist
 
-### Static Pages and ISR
+- `PublicEnvScript` (or `PublicEnvProvider`) is in the root layout
+- Public values use the `NEXT_PUBLIC_` prefix, or are copied with [`makeEnvPublic()`](/api/make-env-public) in
+  `instrumentation.ts`
+- Production and Preview each have their own values
+- You redeployed after the last variable change
+- In the deployed app, `window.__ENV` in the browser console shows the values you expect
 
-If you're using static generation (SSG) or ISR, environment variables are captured at generation time:
+## Next steps
 
-```tsx
-// Pages with ISR revalidate periodically
-export const revalidate = 60 // Env vars update every 60 seconds
-
-export default function Page() {
-    return <div>...</div>
-}
-```
-
-For truly dynamic pages, `PublicEnvScript` automatically opts into dynamic rendering via `connection()`:
-
-```tsx
-import { PublicEnvScript } from 'next-dynenv'
-
-export default function Page() {
-    return (
-        <html>
-            <head>
-                <PublicEnvScript /> {/* Automatically dynamic */}
-            </head>
-            <body>...</body>
-        </html>
-    )
-}
-```
-
-## Deployment Checklist
-
-Before deploying to Vercel, make sure you've:
-
-- [ ] Added `PublicEnvScript` to your root layout
-- [ ] Set all `NEXT_PUBLIC_*` variables in Vercel dashboard
-- [ ] Configured environment-specific values (Production, Preview, Development)
-- [ ] Tested preview deployments with preview-specific variables
-- [ ] Verified runtime values in deployed app (check browser console for `window.__ENV`)
-
-## Next Steps
-
-- [Other Platforms](/guide/other-platforms) - Railway, Fly.io, and more
-- [Security](/guide/security) - Security best practices
-- [API Reference](/api/) - Full API documentation
+- [Other platforms](/guide/other-platforms): hosts where a restart is enough
+- [Security](/guide/security): what is safe to send to the browser
+- [API reference](/api/)

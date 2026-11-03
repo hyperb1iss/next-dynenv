@@ -1,16 +1,9 @@
-# Script Approach
+# Script approach
 
-The recommended way to use next-dynenv: simple, powerful, and compatible with everything.
+The default way to use next-dynenv. A server component writes your public variables into `window.__ENV`, and `env()`
+reads them from any browser code: client components, plain modules, third-party SDK setup.
 
-## Overview
-
-The script approach injects a `<script>` tag that sets `window.__ENV` with your environment variables. This is the
-recommended approach for most applications because it works everywhere—inside React, outside React, with vanilla JS,
-with third-party tools like Sentry.
-
-## Basic Setup
-
-Add `PublicEnvScript` to your root layout:
+## Setup
 
 ```tsx
 // app/layout.tsx
@@ -28,123 +21,142 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 }
 ```
 
-## Using Environment Variables
+`PublicEnvScript` sends every `NEXT_PUBLIC_*` variable in `process.env`. To send a hand-picked set instead, use
+[`EnvScript`](/guide/custom-variables).
 
-### In Client Components
+## Reading values
+
+### Client components
 
 ```tsx
 'use client'
 
-import { env } from 'next-dynenv'
+import { env, envParsers } from 'next-dynenv'
 
-export function ApiStatus() {
+export function Checkout() {
     const apiUrl = env('NEXT_PUBLIC_API_URL')
-    const debug = env('NEXT_PUBLIC_DEBUG', 'false')
+    const showBeta = envParsers.boolean('NEXT_PUBLIC_DEBUG')
 
     return (
-        <div>
-            <p>API: {apiUrl}</p>
-            <p>Debug: {debug}</p>
-        </div>
+        <form action={`${apiUrl}/checkout`}>
+            {showBeta && <p>Debug mode</p>}
+            <button type="submit">Pay</button>
+        </form>
     )
 }
 ```
 
-### In Server Components
+### Plain modules
 
-```tsx
-import { env } from 'next-dynenv'
+Anything that runs in the browser after the script can call `env()`. Read inside a function, not at module top level, so
+the value is looked up when it's needed:
 
-export default function ServerComponent() {
-    // Public variables
-    const apiUrl = env('NEXT_PUBLIC_API_URL')
+```ts
+// lib/api.ts
+import { requireEnv } from 'next-dynenv'
 
-    // Private variables (server-only)
-    const secretKey = env('SECRET_API_KEY')
-
-    return <div>API URL: {apiUrl}</div>
+export async function fetchJson<T>(path: string): Promise<T> {
+    const res = await fetch(`${requireEnv('NEXT_PUBLIC_API_URL')}${path}`)
+    return res.json() as Promise<T>
 }
 ```
 
-### In Vanilla JavaScript
+### Server code
 
-Since values live on `window.__ENV`, you can access them outside React:
+Server components, route handlers, and proxy read `process.env` directly through the same `env()` call. See the
+[quick start](/guide/quick-start#_3-read-values-on-the-server).
 
-```js
-// Any JavaScript file (even non-React code)
-const apiUrl = window.__ENV?.NEXT_PUBLIC_API_URL
+## Props
 
-// Or import the env function
-import { env } from 'next-dynenv'
-const apiUrl = env('NEXT_PUBLIC_API_URL')
-```
+| Prop                | Type                              | Default                             |
+| ------------------- | --------------------------------- | ----------------------------------- |
+| `nonce`             | `string \| { headerKey: string }` | none                                |
+| `disableNextScript` | `boolean`                         | `false`                             |
+| `nextScriptProps`   | `ScriptProps` from `next/script`  | `{ strategy: 'beforeInteractive' }` |
 
-::: tip Works Everywhere This is why the script approach is recommended—it works with any JavaScript code, not just
-React components. :::
+Full details live in the [components reference](/api/components#publicenvscript).
 
-## Component Props
+## Loading order
 
-### `nonce`
+With the defaults, Next.js runs the script before hydration. Every client component sees `window.__ENV` on its first
+render.
 
-For Content Security Policy compliance, pass a nonce:
+Two kinds of code run earlier than that:
+
+- `instrumentation-client.ts`, which Next.js runs before it processes `beforeInteractive` scripts.
+- Third-party snippets that initialize from `<head>`.
+
+If either reads `env()`, render a plain inline script. The browser runs it while it parses `<head>`, before any bundle
+loads:
 
 ```tsx
-// Direct nonce value
-<PublicEnvScript nonce="random-nonce-value" />
+// app/layout.tsx
+<head>
+    <PublicEnvScript disableNextScript />
+</head>
+```
 
-// Or fetch from headers automatically
+```ts
+// instrumentation-client.ts
+import * as Sentry from '@sentry/nextjs'
+import { env } from 'next-dynenv'
+
+Sentry.init({
+    dsn: env('NEXT_PUBLIC_SENTRY_DSN'),
+    environment: env('NEXT_PUBLIC_APP_ENV', 'development'),
+})
+```
+
+::: warning Leave the strategy alone
+
+`nextScriptProps` replaces the default object, so passing `{ id: 'env' }` silently drops `beforeInteractive`. Include
+`strategy: 'beforeInteractive'` whenever you pass it, and never use `afterInteractive`: client components would hydrate
+before `window.__ENV` exists and React would report a hydration mismatch.
+
+:::
+
+## Content Security Policy
+
+A strict CSP blocks inline scripts unless they carry the request's nonce. Generate the nonce in proxy, as the
+[Next.js CSP guide](https://nextjs.org/docs/app/guides/content-security-policy) shows, and forward it as a request
+header:
+
+```ts
+// proxy.ts (Next.js 16; middleware.ts on Next.js 15)
+import { NextResponse, type NextRequest } from 'next/server'
+
+export function proxy(request: NextRequest) {
+    const nonce = Buffer.from(crypto.randomUUID()).toString('base64')
+    const csp = `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'; object-src 'none'; base-uri 'self';`
+
+    const requestHeaders = new Headers(request.headers)
+    requestHeaders.set('x-nonce', nonce)
+    requestHeaders.set('Content-Security-Policy', csp)
+
+    const response = NextResponse.next({ request: { headers: requestHeaders } })
+    response.headers.set('Content-Security-Policy', csp)
+    return response
+}
+```
+
+Then point `PublicEnvScript` at the header. It reads it with `await headers()` on each request:
+
+```tsx
 <PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
 ```
 
-### `disableNextScript`
-
-Use a regular `<script>` tag instead of Next.js `<Script>`:
-
-```tsx
-// Use when timing matters (e.g., Sentry integration)
-<PublicEnvScript disableNextScript={true} />
-```
-
-::: info When to Use This Some tools (like Sentry) need environment variables available before Next.js `<Script>`
-components run. Set `disableNextScript={true}` to use a blocking `<script>` tag instead. :::
-
-### `nextScriptProps`
-
-Pass additional props to the Next.js `<Script>` component:
-
-```tsx
-<PublicEnvScript
-    nextScriptProps={{
-        strategy: 'afterInteractive',
-        onLoad: () => console.log('Env loaded'),
-    }}
-/>
-```
-
-## CSP Configuration
-
-### Option 1: Allow Inline Scripts
-
-```js
-// next.config.js
-const cspHeader = `
-  script-src 'self' 'unsafe-inline';
-`
-```
-
-### Option 2: Use Nonce (Recommended)
+Passing a string works too, if you already have the nonce in hand:
 
 ```tsx
 // app/layout.tsx
 import { headers } from 'next/headers'
 import { PublicEnvScript } from 'next-dynenv'
 
-export default async function RootLayout({ children }) {
-    const headersList = await headers()
-    const nonce = headersList.get('x-nonce')
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+    const nonce = (await headers()).get('x-nonce') ?? undefined
 
     return (
-        <html>
+        <html lang="en">
             <head>
                 <PublicEnvScript nonce={nonce} />
             </head>
@@ -154,69 +166,23 @@ export default async function RootLayout({ children }) {
 }
 ```
 
-Or configure automatic nonce retrieval:
+With the default `next/script` path, Next.js also reads the nonce from the `Content-Security-Policy` request header and
+applies it to the scripts it manages. With `disableNextScript`, that automatic help is gone, so always pass `nonce`
+explicitly in that mode. The [script example](/examples/app-router-script) wires all of this together.
 
-```tsx
-<PublicEnvScript nonce={{ headerKey: 'x-nonce' }} />
-```
-
-## Custom Variables with EnvScript
-
-For more control, use `EnvScript` directly:
-
-```tsx
-import { EnvScript } from 'next-dynenv'
-
-export default function Layout({ children }) {
-    const customEnv = {
-        NEXT_PUBLIC_API_URL: process.env.API_URL,
-        NEXT_PUBLIC_APP_NAME: process.env.APP_NAME,
-        NEXT_PUBLIC_BUILD_ID: process.env.BUILD_ID || 'development',
-    }
-
-    return (
-        <html>
-            <head>
-                <EnvScript env={customEnv} />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
-}
-```
-
-## Sentry Integration
-
-When using Sentry, the Next.js `<Script>` component timing can cause issues. Use `disableNextScript`:
-
-```tsx
-// app/layout.tsx
-<head>
-    <PublicEnvScript disableNextScript={true} />
-</head>
-```
-
-```ts
-// sentry.client.config.ts
-import { env } from 'next-dynenv'
-
-Sentry.init({
-    dsn: env('NEXT_PUBLIC_SENTRY_DSN'),
-    environment: env('NEXT_PUBLIC_ENV', 'development'),
-})
-```
-
-## When to Use Script Approach
+## When to pick it
 
 Use the script approach when:
 
-- **Default choice** - It's the recommended approach for most apps
-- **Third-party tools** - Integrating with Sentry, analytics, or other libraries
-- **Non-React code** - You have vanilla JavaScript that needs environment access
-- **Simplicity** - You want one import that works everywhere
+- Client code outside React components reads config (API clients, SDK setup, analytics).
+- You want `envParsers` in the browser.
+- Something has to read values before hydration.
+- You'd rather not thread a provider through the tree.
 
-## Next Steps
+Otherwise, the [context approach](/guide/context-approach) is a fine alternative.
 
-- [Context Approach](/guide/context-approach) - Alternative React Context setup
-- [Custom Variables](/guide/custom-variables) - Fine-grained control
-- [Security](/guide/security) - Security best practices
+## Related
+
+- [Custom variables](/guide/custom-variables): send a curated object with `EnvScript`.
+- [Security](/guide/security): what the script protects against, and what it doesn't.
+- [`env()` reference](/api/env)

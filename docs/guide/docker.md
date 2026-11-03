@@ -1,317 +1,247 @@
-# Docker Deployment
+# Docker and Kubernetes
 
-Build one Docker image, deploy it everywhere—the way containers were meant to be used.
-
-## The Goal
-
-Build once, deploy anywhere with different runtime configurations:
+Build one image, then hand it different values at `docker run`. The image never needs a rebuild to point at a new API,
+flip a flag, or move from staging to production.
 
 ```bash
-# Same image, different environments
-docker run -e NEXT_PUBLIC_API_URL=https://staging-api.com my-app
-docker run -e NEXT_PUBLIC_API_URL=https://prod-api.com my-app
+docker run -e NEXT_PUBLIC_API_URL=https://staging.example.com my-app
+docker run -e NEXT_PUBLIC_API_URL=https://api.example.com my-app
 ```
 
-This is the **fundamental promise of containers**—environment-agnostic build artifacts.
+## Prepare the app
 
-## Basic Dockerfile
+Render `PublicEnvScript` (or `PublicEnvProvider`) in the root layout, as in the [quick start](/guide/quick-start). Then
+turn on standalone output so Next.js emits a self-contained `server.js` with only the files it needs:
+
+```ts
+// next.config.ts
+import type { NextConfig } from 'next'
+
+const nextConfig: NextConfig = {
+    output: 'standalone',
+}
+
+export default nextConfig
+```
+
+::: warning Read public values through next-dynenv
+
+Use `env()`, `useEnvContext()`, or `envParsers` for public values. A literal `process.env.NEXT_PUBLIC_API_URL` in client
+code is still replaced by Next.js at build time, and that value ships inside the image.
+
+:::
+
+## Dockerfile
+
+This is a three-stage build: install, build, then a slim runtime image that runs as a non-root user. It uses npm; swap
+in your package manager's install and build commands if you use pnpm, Yarn, or Bun.
 
 ```dockerfile
-# Dockerfile
-FROM node:22-alpine AS base
+FROM node:24-alpine AS base
 
-# Install dependencies
 FROM base AS deps
 WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
-# Build
 FROM base AS builder
 WORKDIR /app
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
-RUN corepack enable pnpm && pnpm build
+ENV NEXT_TELEMETRY_DISABLED=1
+RUN npm run build
 
-# Production
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+ENV PORT=3000
+# The standalone server binds to $HOSTNAME, which Docker sets to the container id
+ENV HOSTNAME=0.0.0.0
 
-# Create non-root user
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
+RUN addgroup --system --gid 1001 nodejs && adduser --system --uid 1001 nextjs
 
+# Drop this line if your app has no public/ directory
 COPY --from=builder /app/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 USER nextjs
 EXPOSE 3000
-ENV PORT=3000
-
 CMD ["node", "server.js"]
 ```
 
-## Next.js Configuration
+The build stage needs no `NEXT_PUBLIC_*` values. They arrive when the container starts.
 
-Enable standalone output for smaller Docker images:
+Keep local env files out of the build context so the image only ever sees what you pass at run time:
 
-```js
-// next.config.js
-/** @type {import('next').NextConfig} */
-const nextConfig = {
-    output: 'standalone',
-}
-
-module.exports = nextConfig
+```text
+# .dockerignore
+.env*
+.next
+node_modules
+.git
 ```
 
-::: tip Why Standalone? Standalone output creates a minimal production server with only the dependencies you need. This
-dramatically reduces Docker image size (often 10x smaller). :::
+## Expose unprefixed variables
 
-## Application Setup
+If your platform hands you `API_URL` rather than `NEXT_PUBLIC_API_URL`, call [`makeEnvPublic()`](/api/make-env-public)
+from `instrumentation.ts`. Next.js runs `register()` once when the server starts, in every output mode:
 
-```tsx
-// app/layout.tsx
-import { PublicEnvScript } from 'next-dynenv'
+```ts
+// instrumentation.ts (or src/instrumentation.ts)
+import { makeEnvPublic } from 'next-dynenv'
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
-    return (
-        <html lang="en">
-            <head>
-                <PublicEnvScript />
-            </head>
-            <body>{children}</body>
-        </html>
-    )
+export function register() {
+    makeEnvPublic(['API_URL', 'APP_NAME'])
 }
 ```
 
-## Running the Container
+::: danger Not in next.config
 
-### With Environment Variables
+A standalone `server.js` embeds a serialized copy of your config and never evaluates `next.config.ts` again. A
+`makeEnvPublic()` call there runs during `next build` only, so the container never sees the copied variables.
+
+:::
+
+## Run the container
 
 ```bash
-# Build the image
-docker build -t my-nextjs-app .
+docker build -t my-app .
 
-# Run with environment variables
 docker run -p 3000:3000 \
   -e NEXT_PUBLIC_API_URL=https://api.example.com \
-  -e NEXT_PUBLIC_APP_NAME=MyApp \
-  -e NEXT_PUBLIC_DEBUG=false \
-  my-nextjs-app
+  -e NEXT_PUBLIC_APP_NAME="My App" \
+  -e DATABASE_URL=postgres://user:pass@db:5432/app \
+  my-app
 ```
 
-### With Environment File
+Or keep the values in a file outside the image:
 
 ```bash
-# .env.production
-NEXT_PUBLIC_API_URL=https://api.example.com
-NEXT_PUBLIC_APP_NAME=MyApp
-NEXT_PUBLIC_ANALYTICS_ID=UA-123456
-
-# Run with env file
-docker run -p 3000:3000 --env-file .env.production my-nextjs-app
+docker run -p 3000:3000 --env-file ./production.env my-app
 ```
+
+To check what the browser received, open the app and run `window.__ENV` in the devtools console.
 
 ## Docker Compose
 
 ```yaml
-# docker-compose.yml
-version: '3.8'
-
+# compose.yaml
 services:
     app:
         build: .
         ports:
             - '3000:3000'
         environment:
-            - NEXT_PUBLIC_API_URL=https://api.example.com
-            - NEXT_PUBLIC_APP_NAME=MyApp
-            - NEXT_PUBLIC_DEBUG=false
-            - DATABASE_URL=postgres://db:5432/myapp
+            NEXT_PUBLIC_API_URL: https://api.example.com
+            NEXT_PUBLIC_APP_NAME: My App
+            DATABASE_URL: postgres://app:app@db:5432/app
         depends_on:
             - db
 
     db:
-        image: postgres:15
+        image: postgres:17
         environment:
-            POSTGRES_DB: myapp
-            POSTGRES_USER: user
-            POSTGRES_PASSWORD: password
+            POSTGRES_DB: app
+            POSTGRES_USER: app
+            POSTGRES_PASSWORD: app
         volumes:
-            - postgres_data:/var/lib/postgresql/data
+            - db-data:/var/lib/postgresql/data
 
 volumes:
-    postgres_data:
+    db-data:
 ```
 
-### Multiple Environments
+Layer an override file per environment and the same image picks up different values:
 
 ```yaml
-# docker-compose.staging.yml
-version: '3.8'
-
+# compose.staging.yaml
 services:
     app:
-        build: .
         environment:
-            - NEXT_PUBLIC_API_URL=https://staging-api.example.com
-            - NEXT_PUBLIC_ENV=staging
-```
-
-```yaml
-# docker-compose.production.yml
-version: '3.8'
-
-services:
-    app:
-        build: .
-        environment:
-            - NEXT_PUBLIC_API_URL=https://api.example.com
-            - NEXT_PUBLIC_ENV=production
+            NEXT_PUBLIC_API_URL: https://staging.example.com
 ```
 
 ```bash
-# Run staging
-docker compose -f docker-compose.yml -f docker-compose.staging.yml up
-
-# Run production
-docker compose -f docker-compose.yml -f docker-compose.production.yml up
+docker compose -f compose.yaml -f compose.staging.yaml up
 ```
 
 ## Kubernetes
 
-### ConfigMap
+Put public values in a ConfigMap and secrets in a Secret, then load both into the container:
 
 ```yaml
-# configmap.yaml
 apiVersion: v1
 kind: ConfigMap
 metadata:
-    name: app-config
+    name: my-app-config
 data:
-    NEXT_PUBLIC_API_URL: 'https://api.example.com'
-    NEXT_PUBLIC_APP_NAME: 'MyApp'
-    NEXT_PUBLIC_ENV: 'production'
-```
-
-### Deployment
-
-```yaml
-# deployment.yaml
+    NEXT_PUBLIC_API_URL: https://api.example.com
+    NEXT_PUBLIC_APP_NAME: My App
+---
+apiVersion: v1
+kind: Secret
+metadata:
+    name: my-app-secrets
+type: Opaque
+stringData:
+    DATABASE_URL: postgres://user:pass@db:5432/app
+    API_SECRET_KEY: replace-me
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-    name: nextjs-app
+    name: my-app
 spec:
     replicas: 3
     selector:
         matchLabels:
-            app: nextjs-app
+            app: my-app
     template:
         metadata:
             labels:
-                app: nextjs-app
+                app: my-app
         spec:
             containers:
                 - name: app
-                  image: my-registry/my-nextjs-app:latest
+                  image: registry.example.com/my-app:1.4.0
                   ports:
                       - containerPort: 3000
                   envFrom:
                       - configMapRef:
-                            name: app-config
-                  env:
-                      # Secrets should come from Secret resources
-                      - name: DATABASE_URL
-                        valueFrom:
-                            secretKeyRef:
-                                name: app-secrets
-                                key: database-url
+                            name: my-app-config
+                      - secretRef:
+                            name: my-app-secrets
 ```
 
-### Secret
+Environment variables are read when a container starts. After you edit the ConfigMap or Secret, restart the pods; no
+rebuild is involved:
 
-```yaml
-# secret.yaml
-apiVersion: v1
-kind: Secret
-metadata:
-    name: app-secrets
-type: Opaque
-stringData:
-    database-url: 'postgres://user:pass@db:5432/myapp'
+```bash
+kubectl rollout restart deployment/my-app
 ```
 
-## Health Checks
+## Health checks
 
-Add a health endpoint:
+A route handler makes a cheap readiness probe and confirms which config the container booted with:
 
 ```ts
 // app/api/health/route.ts
 import { env } from 'next-dynenv'
 
 export function GET() {
-    return Response.json({
-        status: 'healthy',
-        environment: env('NEXT_PUBLIC_ENV', 'unknown'),
-        timestamp: new Date().toISOString(),
-    })
+    return Response.json({ status: 'ok', app: env('NEXT_PUBLIC_APP_NAME', 'unknown') })
 }
 ```
 
-Docker health check:
-
 ```dockerfile
-HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --no-verbose --tries=1 --spider http://localhost:3000/api/health || exit 1
+HEALTHCHECK --interval=30s --timeout=3s --start-period=10s --retries=3 \
+  CMD wget -q --spider http://127.0.0.1:3000/api/health || exit 1
 ```
 
-## Multi-Stage Build Optimization
+## Next steps
 
-```dockerfile
-# Optimized Dockerfile
-FROM node:22-alpine AS base
-RUN apk add --no-cache libc6-compat
-
-FROM base AS deps
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile --prod
-
-FROM base AS builder
-WORKDIR /app
-COPY package.json pnpm-lock.yaml ./
-RUN corepack enable pnpm && pnpm install --frozen-lockfile
-COPY . .
-ENV NEXT_TELEMETRY_DISABLED=1
-RUN pnpm build
-
-FROM base AS runner
-WORKDIR /app
-ENV NODE_ENV=production
-ENV NEXT_TELEMETRY_DISABLED=1
-
-RUN addgroup --system --gid 1001 nodejs
-RUN adduser --system --uid 1001 nextjs
-
-COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
-
-USER nextjs
-EXPOSE 3000
-ENV PORT=3000
-ENV HOSTNAME="0.0.0.0"
-
-CMD ["node", "server.js"]
-```
-
-## Next Steps
-
-- [Vercel Deployment](/guide/vercel) - Deploy to Vercel
-- [Other Platforms](/guide/other-platforms) - Railway, Fly.io, and more
-- [Security](/guide/security) - Security best practices
+- [Other platforms](/guide/other-platforms): Fly.io, Cloud Run, ECS, and friends
+- [Making env public](/guide/making-env-public): more on `makeEnvPublic()`
+- [Security](/guide/security): what is safe to send to the browser
