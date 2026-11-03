@@ -31,6 +31,15 @@ describe('makeEnvPublic()', () => {
         expect(process.env.NEXT_PUBLIC_FOO).toEqual('foo')
     })
 
+    it('should prefix an env var that is set to an empty string', () => {
+        process.env.FOO = ''
+
+        makeEnvPublic('FOO')
+
+        expect(process.env.NEXT_PUBLIC_FOO).toEqual('')
+        expect(warnMock).not.toHaveBeenCalled()
+    })
+
     it('should prefix multiple env vars with NEXT_PUBLIC_', () => {
         process.env.FOO = 'foo'
         process.env.BAR = 'bar'

@@ -14,7 +14,7 @@ export type MakeEnvPublicOptions = LogOptions
  */
 function prefixKey(key: string, options?: MakeEnvPublicOptions) {
     // Check if key is available in process.env.
-    if (!process.env[key]) {
+    if (process.env[key] === undefined) {
         warn(`Skipped prefixing environment variable '${key}'. Variable not in process.env`, options)
 
         return

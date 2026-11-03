@@ -19,13 +19,14 @@ export const envParsers = {
     /**
      * Parses an environment variable as a boolean.
      *
-     * Recognizes these truthy values (case-insensitive):
-     * - `'true'`, `'1'`, `'yes'`, `'on'`
+     * Recognizes these values (case-insensitive, surrounding whitespace ignored):
+     * - truthy: `'true'`, `'1'`, `'yes'`, `'on'`
+     * - falsy: `'false'`, `'0'`, `'no'`, `'off'`
      *
-     * All other values (including undefined) return the default or `false`.
+     * Undefined, empty, and unrecognized values return the default.
      *
      * @param key - The environment variable name
-     * @param defaultValue - Default value if undefined (defaults to `false`)
+     * @param defaultValue - Default value if undefined, empty, or unrecognized (defaults to `false`)
      * @returns The parsed boolean value
      *
      * @example
@@ -34,33 +35,37 @@ export const envParsers = {
      * // NEXT_PUBLIC_DEBUG=1 → true
      * // NEXT_PUBLIC_DEBUG=yes → true
      * // NEXT_PUBLIC_DEBUG=false → false
-     * // NEXT_PUBLIC_DEBUG undefined → false
+     * // NEXT_PUBLIC_DEBUG undefined → false (or default)
+     * // NEXT_PUBLIC_DEBUG=maybe → false (or default)
      *
      * const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG');
      * const enabled = envParsers.boolean('NEXT_PUBLIC_FEATURE', true);
      * ```
      */
     boolean(key: string, defaultValue = false): boolean {
-        const value = env(key)
+        const value = env(key)?.trim().toLowerCase()
         if (value === undefined) return defaultValue
-        return ['true', '1', 'yes', 'on'].includes(value.toLowerCase())
+        if (['true', '1', 'yes', 'on'].includes(value)) return true
+        if (['false', '0', 'no', 'off'].includes(value)) return false
+        return defaultValue
     },
 
     /**
      * Parses an environment variable as a number.
      *
      * @param key - The environment variable name
-     * @param defaultValue - Default value if undefined or invalid (defaults to `0`)
+     * @param defaultValue - Default value if undefined or empty (defaults to `0`)
      * @returns The parsed number value
      *
-     * @throws {Error} If the value is defined but not a valid number
+     * @throws {Error} If the value is set but not a finite number
      *
      * @example
      * ```ts
      * // NEXT_PUBLIC_PORT=3000 → 3000
      * // NEXT_PUBLIC_PORT=3.14 → 3.14
-     * // NEXT_PUBLIC_PORT undefined → 0 (or default)
+     * // NEXT_PUBLIC_PORT undefined or empty → 0 (or default)
      * // NEXT_PUBLIC_PORT=abc → throws Error
+     * // NEXT_PUBLIC_PORT=Infinity → throws Error
      *
      * const port = envParsers.number('NEXT_PUBLIC_PORT', 3000);
      * const ratio = envParsers.number('NEXT_PUBLIC_RATIO', 1.0);
@@ -68,10 +73,10 @@ export const envParsers = {
      */
     number(key: string, defaultValue = 0): number {
         const value = env(key)
-        if (value === undefined) return defaultValue
+        if (value === undefined || value.trim() === '') return defaultValue
 
         const parsed = Number(value)
-        if (Number.isNaN(parsed)) {
+        if (!Number.isFinite(parsed)) {
             throw new Error(
                 `Environment variable '${key}' is not a valid number: '${value}'.\n` +
                     `Expected a numeric value like '3000' or '3.14'.`,
