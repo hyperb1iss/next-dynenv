@@ -61,7 +61,7 @@ jobs:
         uses: ./.github/actions/setup
 
       - name: Audit all dependencies
-        run: pnpm audit --audit-level moderate
+        run: pnpm audit
 
   # ════════════════════════════════════════════════════════════════════
   # Build & Test
