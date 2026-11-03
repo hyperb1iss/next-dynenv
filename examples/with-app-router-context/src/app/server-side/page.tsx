@@ -1,21 +1,23 @@
-// This is as of Next.js 14, but you could also use other dynamic functions
-import { headers } from 'next/headers'
+import { connection } from 'next/server'
+import { env } from 'next-dynenv'
 
-import styles from './page.module.css'
+export default async function ServerSide() {
+    // Render per request so the values below come from the running server
+    await connection()
 
-export default function ServerSide() {
-    headers() // Opt into dynamic rendering
-
-    // This value will be evaluated at runtime
     return (
-        <main className={styles.main}>
-            <div className={styles.description}>
-                <p>
-                    BAR: {process.env.BAR}
-                    <br />
-                    BAZ: {process.env.BAZ}
-                </p>
-            </div>
-        </main>
+        <>
+            <h1>Server component</h1>
+            <p>
+                Server components can read any variable, public or not. <code>BAZ</code> is also exposed to the browser
+                as <code>NEXT_PUBLIC_BAZ</code> by <code>makeEnvPublic</code> in <code>instrumentation.ts</code>.
+            </p>
+            <dl>
+                <dt>BAR</dt>
+                <dd>{env('BAR') ?? 'unset'}</dd>
+                <dt>BAZ</dt>
+                <dd>{env('BAZ') ?? 'unset'}</dd>
+            </dl>
+        </>
     )
 }

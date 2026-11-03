@@ -1,12 +1,8 @@
-// This is as of Next.js 14, but you could also use other dynamic functions
-import { headers } from 'next/headers'
+import { env } from 'next-dynenv'
 
-export async function GET() {
-    headers() // Opt into dynamic rendering
-
-    // This value will be evaluated at runtime
+export function GET() {
     return Response.json({
-        bar: process.env.BAR,
-        baz: process.env.BAZ,
+        bar: env('BAR') ?? null,
+        baz: env('BAZ') ?? null,
     })
 }
