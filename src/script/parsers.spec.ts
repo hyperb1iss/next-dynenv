@@ -59,24 +59,16 @@ describe('envParsers', () => {
             expect(envParsers.boolean('NEXT_PUBLIC_MISSING', true)).toBe(true)
         })
 
-        it('should return false for "no" and "off" even with a true default', () => {
-            process.env.NEXT_PUBLIC_DEBUG = 'no'
-            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(false)
-            process.env.NEXT_PUBLIC_DEBUG = 'OFF'
-            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(false)
+        it('should return false for any other defined value, even with a true default', () => {
+            for (const value of ['no', 'OFF', '', 'disabled']) {
+                process.env.NEXT_PUBLIC_DEBUG = value
+                expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(false)
+            }
         })
 
         it('should ignore surrounding whitespace', () => {
             process.env.NEXT_PUBLIC_DEBUG = ' true '
             expect(envParsers.boolean('NEXT_PUBLIC_DEBUG')).toBe(true)
-        })
-
-        it('should return the default for empty or unrecognized values', () => {
-            process.env.NEXT_PUBLIC_DEBUG = ''
-            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(true)
-            process.env.NEXT_PUBLIC_DEBUG = 'maybe'
-            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(true)
-            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG')).toBe(false)
         })
 
         it('should work in browser context', () => {

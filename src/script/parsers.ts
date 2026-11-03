@@ -19,14 +19,14 @@ export const envParsers = {
     /**
      * Parses an environment variable as a boolean.
      *
-     * Recognizes these values (case-insensitive, surrounding whitespace ignored):
-     * - truthy: `'true'`, `'1'`, `'yes'`, `'on'`
-     * - falsy: `'false'`, `'0'`, `'no'`, `'off'`
+     * Recognizes these truthy values (case-insensitive, surrounding whitespace ignored):
+     * - `'true'`, `'1'`, `'yes'`, `'on'`
      *
-     * Undefined, empty, and unrecognized values return the default.
+     * Any other defined value, including an empty string, is `false`. The default
+     * only applies when the variable is undefined.
      *
      * @param key - The environment variable name
-     * @param defaultValue - Default value if undefined, empty, or unrecognized (defaults to `false`)
+     * @param defaultValue - Default value if undefined (defaults to `false`)
      * @returns The parsed boolean value
      *
      * @example
@@ -35,19 +35,17 @@ export const envParsers = {
      * // NEXT_PUBLIC_DEBUG=1 → true
      * // NEXT_PUBLIC_DEBUG=yes → true
      * // NEXT_PUBLIC_DEBUG=false → false
+     * // NEXT_PUBLIC_DEBUG= (empty) → false
      * // NEXT_PUBLIC_DEBUG undefined → false (or default)
-     * // NEXT_PUBLIC_DEBUG=maybe → false (or default)
      *
      * const debug = envParsers.boolean('NEXT_PUBLIC_DEBUG');
      * const enabled = envParsers.boolean('NEXT_PUBLIC_FEATURE', true);
      * ```
      */
     boolean(key: string, defaultValue = false): boolean {
-        const value = env(key)?.trim().toLowerCase()
+        const value = env(key)
         if (value === undefined) return defaultValue
-        if (['true', '1', 'yes', 'on'].includes(value)) return true
-        if (['false', '0', 'no', 'off'].includes(value)) return false
-        return defaultValue
+        return ['true', '1', 'yes', 'on'].includes(value.trim().toLowerCase())
     },
 
     /**
