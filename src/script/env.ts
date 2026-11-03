@@ -76,7 +76,7 @@ export function env(key: string, defaultValue?: string): string | undefined {
                 `Environment variable '${key}' is not public and cannot be accessed in the browser.\n` +
                     'To fix this:\n' +
                     `  1. Rename to 'NEXT_PUBLIC_${key}' if it should be public, or\n` +
-                    `  2. Use makeEnvPublic('${key}') in next.config.js, or\n` +
+                    `  2. Use makeEnvPublic('${key}') in instrumentation.ts, or\n` +
                     '  3. Access from a server component or API route instead',
             )
         }
