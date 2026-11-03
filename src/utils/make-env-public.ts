@@ -40,9 +40,10 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * `NEXT_PUBLIC_` prefixed versions, making them accessible in the browser when
  * used with Next.js' built-in environment variable handling.
  *
- * **Important:** This function modifies `process.env` and should be called early
- * in your application lifecycle, typically in `next.config.js` or an initialization
- * script that runs before your app starts.
+ * **Important:** This function modifies `process.env` and must run in the server
+ * process before rendering. Call it from `register()` in `instrumentation.ts`.
+ * Calling it from `next.config` only works with `next start`: standalone builds
+ * (`output: 'standalone'`) never execute `next.config` at runtime.
  *
  * **Behavior:**
  * - Skips variables that don't exist in `process.env` (logs a warning)
@@ -52,16 +53,19 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  *
  * @param key - Single environment variable name or array of names to make public
  * @param options - Logging configuration options
- * @param options.logLevel - Controls logging verbosity: 'info' (default), 'silent', etc.
+ * @param options.logLevel - Minimum level to log: `'info'`, `'warn'`, `'error'`, or `'silent'`.
+ * By default every message is logged, including the success message for each variable.
  *
  * @example
  * Making a single variable public:
  * ```ts
- * // next.config.js or instrumentation.ts
+ * // instrumentation.ts
  * import { makeEnvPublic } from 'next-dynenv';
  *
- * // Make API_URL available as NEXT_PUBLIC_API_URL
- * makeEnvPublic('API_URL');
+ * export function register() {
+ *   // Make API_URL available as NEXT_PUBLIC_API_URL
+ *   makeEnvPublic('API_URL');
+ * }
  * ```
  *
  * @example
@@ -81,24 +85,10 @@ function prefixKey(key: string, options?: MakeEnvPublicOptions) {
  * // Disable all logging
  * makeEnvPublic('API_URL', { logLevel: 'silent' });
  *
- * // Only log in development
+ * // Only log warnings and errors in production
  * makeEnvPublic('API_URL', {
- *   logLevel: process.env.NODE_ENV === 'production' ? 'silent' : 'info'
+ *   logLevel: process.env.NODE_ENV === 'production' ? 'warn' : undefined
  * });
- * ```
- *
- * @example
- * Using in next.config.js:
- * ```js
- * // next.config.js
- * const { makeEnvPublic } = require('next-dynenv');
- *
- * // Make variables public before Next.js processes them
- * makeEnvPublic(['DATABASE_URL', 'API_KEY']);
- *
- * module.exports = {
- *   // ... your Next.js config
- * };
  * ```
  *
  * @example
