@@ -1,94 +1,22 @@
-import Image from 'next/image'
-
-import styles from './page.module.css'
+import Link from 'next/link'
 
 export default function Home() {
     return (
-        <main className={styles.main}>
-            <div className={styles.description}>
-                <p>
-                    Get started by editing&nbsp;
-                    <code className={styles.code}>src/app/page.tsx</code>
-                </p>
-                <div>
-                    <a
-                        href="https://vercel.com?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                        rel="noopener noreferrer"
-                        target="_blank"
-                    >
-                        By{' '}
-                        <Image
-                            alt="Vercel Logo"
-                            className={styles.vercelLogo}
-                            height={24}
-                            priority={true}
-                            src="/vercel.svg"
-                            width={100}
-                        />
-                    </a>
-                </div>
-            </div>
-
-            <div className={styles.center}>
-                <Image
-                    alt="Next.js Logo"
-                    className={styles.logo}
-                    height={37}
-                    priority={true}
-                    src="/next.svg"
-                    width={180}
-                />
-            </div>
-
-            <div className={styles.grid}>
-                <a
-                    className={styles.card}
-                    href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <h2>
-                        Docs <span>-&gt;</span>
-                    </h2>
-                    <p>Find in-depth information about Next.js features and API.</p>
-                </a>
-
-                <a
-                    className={styles.card}
-                    href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <h2>
-                        Learn <span>-&gt;</span>
-                    </h2>
-                    <p>Learn about Next.js in an interactive course with&nbsp;quizzes!</p>
-                </a>
-
-                <a
-                    className={styles.card}
-                    href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <h2>
-                        Templates <span>-&gt;</span>
-                    </h2>
-                    <p>Explore the Next.js 15 example.</p>
-                </a>
-
-                <a
-                    className={styles.card}
-                    href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-                    rel="noopener noreferrer"
-                    target="_blank"
-                >
-                    <h2>
-                        Deploy <span>-&gt;</span>
-                    </h2>
-                    <p>Instantly deploy your Next.js site to a shareable URL with Vercel.</p>
-                </a>
-            </div>
-        </main>
+        <>
+            <h1>Build once, configure at runtime</h1>
+            <p>
+                <code>&lt;PublicEnvProvider&gt;</code> reads every <code>NEXT_PUBLIC_*</code> variable at request time
+                and hands it to client components through React Context and <code>useEnvContext()</code>.
+            </p>
+            <p>
+                Change a value in <code>.env</code> and restart the server: the pages below pick it up without a
+                rebuild.
+            </p>
+            <nav>
+                <Link href="/client-side">Client component</Link>
+                <Link href="/server-side">Server component</Link>
+                <a href="/api/bar-baz">Route handler (JSON)</a>
+            </nav>
+        </>
     )
 }
