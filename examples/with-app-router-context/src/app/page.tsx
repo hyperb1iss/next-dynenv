@@ -9,7 +9,7 @@ export default function Home() {
                 and hands it to client components through React Context and <code>useEnvContext()</code>.
             </p>
             <p>
-                Change a value in <code>.env</code> and restart the server: the pages below pick it up without a
+                Change a value in <code>.env.local</code> and restart the server: the pages below pick it up without a
                 rebuild.
             </p>
             <nav>
