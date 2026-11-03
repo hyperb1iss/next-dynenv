@@ -1,5 +1,5 @@
 {
-    "$schema": "https://biomejs.dev/schemas/2.4.10/schema.json",
+    "$schema": "https://biomejs.dev/schemas/2.6.4/schema.json",
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     // ◆ VCS INTEGRATION
@@ -14,7 +14,8 @@
     // ◆ FILE HANDLING
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
     "files": {
-        "ignoreUnknown": true // Don't error on unknown file types (MD/JSON/YAML handled by Prettier)
+        "ignoreUnknown": true, // Don't error on unknown file types
+        "includes": ["**", "!**/*.md", "!**/*.yml", "!**/*.yaml"] // Markdown and YAML belong to Prettier
     },
 
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -46,7 +47,7 @@
     "linter": {
         "enabled": true,
         "rules": {
-            "recommended": true,
+            "preset": "recommended",
 
             // ────────────────────────────────────────────────────────────────────
             // → Accessibility Rules (React/JSX)
@@ -194,7 +195,8 @@
                         "noExplicitAny": "off" // Allow 'any' in tests
                     },
                     "correctness": {
-                        "noUnusedVariables": "off" // Test setup may have unused vars
+                        "noUnusedVariables": "off", // Test setup may have unused vars
+                        "noComponentHookFactories": "off" // Single-render probe components live inside tests
                     }
                 }
             }
