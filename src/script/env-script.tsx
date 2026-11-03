@@ -154,18 +154,12 @@ export const EnvScript: FC<EnvScriptProps> = async ({
                 nonceString = headerStore.get(nonce.headerKey) ?? undefined
             }
         } catch (error) {
-            // Handle cases where headers() is called outside a request scope
-            // (e.g., during static generation, CLI scripts, or tests)
-            const isOutsideRequestScope =
-                error instanceof Error &&
-                (error.message.includes('outside a request scope') ||
-                    error.message.includes('was called outside a request scope') ||
-                    error.message.includes('Dynamic server usage'))
-
-            if (!isOutsideRequestScope) {
+            // Render without a nonce when there is no request at all (CLI scripts,
+            // tests). Everything else, including Next's dynamic-rendering bailouts
+            // during prerendering, must propagate so Next can handle it.
+            if (!(error instanceof Error && error.message.includes('outside a request scope'))) {
                 throw error
             }
-            nonceString = undefined
         }
     } else if (typeof nonce === 'string') {
         nonceString = nonce

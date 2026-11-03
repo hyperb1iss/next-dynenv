@@ -59,6 +59,26 @@ describe('envParsers', () => {
             expect(envParsers.boolean('NEXT_PUBLIC_MISSING', true)).toBe(true)
         })
 
+        it('should return false for "no" and "off" even with a true default', () => {
+            process.env.NEXT_PUBLIC_DEBUG = 'no'
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(false)
+            process.env.NEXT_PUBLIC_DEBUG = 'OFF'
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(false)
+        })
+
+        it('should ignore surrounding whitespace', () => {
+            process.env.NEXT_PUBLIC_DEBUG = ' true '
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG')).toBe(true)
+        })
+
+        it('should return the default for empty or unrecognized values', () => {
+            process.env.NEXT_PUBLIC_DEBUG = ''
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(true)
+            process.env.NEXT_PUBLIC_DEBUG = 'maybe'
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG', true)).toBe(true)
+            expect(envParsers.boolean('NEXT_PUBLIC_DEBUG')).toBe(false)
+        })
+
         it('should work in browser context', () => {
             mockWindow({ NEXT_PUBLIC_DEBUG: 'true' })
             expect(envParsers.boolean('NEXT_PUBLIC_DEBUG')).toBe(true)
@@ -87,6 +107,20 @@ describe('envParsers', () => {
 
         it('should return custom default when undefined', () => {
             expect(envParsers.number('NEXT_PUBLIC_MISSING', 8080)).toBe(8080)
+        })
+
+        it('should return the default for empty or whitespace-only values', () => {
+            process.env.NEXT_PUBLIC_PORT = ''
+            expect(envParsers.number('NEXT_PUBLIC_PORT', 8080)).toBe(8080)
+            process.env.NEXT_PUBLIC_PORT = '   '
+            expect(envParsers.number('NEXT_PUBLIC_PORT', 8080)).toBe(8080)
+        })
+
+        it('should throw for non-finite values', () => {
+            process.env.NEXT_PUBLIC_PORT = 'Infinity'
+            expect(() => envParsers.number('NEXT_PUBLIC_PORT')).toThrow(
+                "Environment variable 'NEXT_PUBLIC_PORT' is not a valid number: 'Infinity'",
+            )
         })
 
         it('should throw for non-numeric values', () => {

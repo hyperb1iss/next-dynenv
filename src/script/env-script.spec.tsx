@@ -133,6 +133,14 @@ describe('EnvScript', () => {
         })
     })
 
+    it("should rethrow Next's dynamic rendering bailout", async () => {
+        headersMock.mockImplementation(() => {
+            throw new Error("Dynamic server usage: Route / couldn't be rendered statically because it used `headers`.")
+        })
+
+        await expect(EnvScript({ env: {}, nonce: { headerKey: 'x-nonce' } })).rejects.toThrow('Dynamic server usage')
+    })
+
     it('should escape HTML special characters in env values', async () => {
         const env = { NEXT_PUBLIC_XSS: '</script><script>alert(1)</script>' }
 
